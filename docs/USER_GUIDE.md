@@ -192,8 +192,11 @@ implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
   **Apply Octane-Compatible Material Preview** (currently falls back to the
   Standard preview and reports it), and **Show AOV Plan** (the desired
   compositing passes; manual setup for now). Native Octane material/AOV creation
-  isn't implemented yet. See [`OCTANE_INTEGRATION.md`](OCTANE_INTEGRATION.md) and
-  [`AOV_PIPELINE.md`](AOV_PIPELINE.md).
+  isn't implemented yet. **Export Experimental OSL Camera** writes a placeholder
+  OSL shader (experimental, not wired into Octane). See
+  [`OCTANE_INTEGRATION.md`](OCTANE_INTEGRATION.md),
+  [`AOV_PIPELINE.md`](AOV_PIPELINE.md), and
+  [`OSL_CAMERA_EXPERIMENTS.md`](OSL_CAMERA_EXPERIMENTS.md).
 - **Bake** workflow.
 
 Changing the values now is safe and will be honored once those features land.

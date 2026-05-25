@@ -140,6 +140,10 @@ done; the rest below is unstarted.
   velocity/mask), the *Show AOV Plan* command, and render-settings detection;
   automatic Octane AOV creation is honestly unsupported (manual setup documented
   in `AOV_PIPELINE.md`).
+- 🟡 **Experimental OSL camera** (Phase D, may not be feasible). *Started:*
+  `octane/osl_camera.py` + the *Export Experimental OSL Camera* command write a
+  clearly-marked placeholder shader; it is **not wired into Octane** (ray I/O
+  binding unverified). See `OSL_CAMERA_EXPERIMENTS.md`.
 - ⬜ **Per-frame bake workflow** for deformed geometry so Octane renders the
   apparent shapes.
 - ⬜ Presets and artist-facing UX (sensible defaults, unit handling, helpful

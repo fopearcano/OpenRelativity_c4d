@@ -286,4 +286,21 @@ def register_all():
                   ids.COMMAND_SHOW_AOV_PLAN)
         ok = False
 
+    # --- Export Experimental OSL Camera command ----------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_EXPORT_OSL_CAMERA,
+        str="{0}: Export Experimental OSL Camera".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Write the experimental (placeholder) OSL camera shader to a file.",
+        dat=commands.ExportOSLCameraCommand(),
+    )
+    if registered:
+        log.info("Registered 'Export Experimental OSL Camera' (id=%s).",
+                 ids.COMMAND_EXPORT_OSL_CAMERA)
+    else:
+        log.error("Failed to register 'Export Experimental OSL Camera' (id=%s).",
+                  ids.COMMAND_EXPORT_OSL_CAMERA)
+        ok = False
+
     return ok

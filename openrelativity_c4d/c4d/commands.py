@@ -11,9 +11,10 @@
   duplicates (see lorentz_preview).
 * *Create Test Scene* / *Apply All Previews* - one-click demo + combined apply
   (see test_scene).
-* *Octane Status* / *Apply Octane-Compatible Material Preview* / *Show AOV Plan*
-  - Octane detection, material preview (with Standard fallback), and the AOV
-  plan (see the octane package).
+* *Octane Status* / *Apply Octane-Compatible Material Preview* / *Show AOV Plan* /
+  *Export Experimental OSL Camera* - Octane detection, material preview (with
+  Standard fallback), the AOV plan, and the experimental OSL camera export (see
+  the octane package).
 """
 
 import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
@@ -23,6 +24,7 @@ from ..logging_utils import get_logger
 from ..octane import adapter as octane_adapter
 from ..octane import aov_adapter as octane_aov
 from ..octane import detection as octane_detection
+from ..octane import osl_camera as octane_osl
 from . import (
     camera_tools,
     lorentz_preview,
@@ -621,6 +623,35 @@ class ShowAOVPlanCommand(c4d.plugins.CommandData):
             "OpenRelativity C4D - AOV Plan\n\n"
             + octane_aov.format_aov_plan(plan, render_info)
         )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class ExportOSLCameraCommand(c4d.plugins.CommandData):
+    """Export the experimental OSL camera shader to a user-selected file."""
+
+    def Execute(self, doc):
+        path = c4d.storage.SaveDialog(
+            title="Export Experimental OSL Camera Shader",
+            force_suffix="osl",
+            def_file=octane_osl.OSL_FILENAME,
+        )
+        if not path:
+            return True  # user cancelled
+
+        result = octane_osl.export_osl_camera(path)
+        if result["ok"]:
+            c4d.gui.MessageDialog(
+                "Wrote the EXPERIMENTAL OSL camera shader to:\n{0}\n\n"
+                "This is a physically-incomplete placeholder and is NOT wired "
+                "into Octane. See docs/OSL_CAMERA_EXPERIMENTS.md for how to "
+                "experiment with it.".format(result["path"])
+            )
+        else:
+            c4d.gui.MessageDialog(
+                "Failed to write the OSL shader:\n{0}".format(result["error"]))
         return True
 
     def GetState(self, doc):

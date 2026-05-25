@@ -115,10 +115,15 @@ Plan* command, and best-effort render-settings detection exist; automatic AOV
 creation is honestly reported as **not supported** (manual setup for now). Full
 workflow and the TODO list are in [`AOV_PIPELINE.md`](AOV_PIPELINE.md).
 
-### Phase D - Optional OSL camera shader generation (experimental)
+### Phase D - Optional OSL camera shader generation (Phase 3, experimental)
 Investigate generating an **OSL camera** that bends/retimes rays for true
 apparent-position effects. Clearly experimental, version-dependent, and **not
-promised**; `octane/camera_adapter.py` is the intended home.
+promised**. **Started:** `octane/osl_camera.py` generates a clearly-marked
+placeholder shader and the *Export Experimental OSL Camera* command writes it to
+a user-chosen file (committed reference:
+`examples/osl/relativity_camera_experimental.osl`). It is **not wired into
+Octane** - the Octane OSL-camera ray I/O binding is unverified. Full notes in
+[`OSL_CAMERA_EXPERIMENTS.md`](OSL_CAMERA_EXPERIMENTS.md).
 
 ### Phase E - External renderer bridge
 For pipelines that render Octane outside the C4D UI, define a bridge that exports
@@ -132,6 +137,7 @@ plugin code  ──▶  octane/adapter.py  ──▶  octane/detection.py       
 (never imports        (facade)            octane/material_adapter.py  (Phase B stub)
  an Octane module)                        octane/camera_adapter.py    (Phase D stub)
                                           octane/aov_adapter.py       (Phase C scaffold)
+                                          octane/osl_camera.py        (Phase D experimental)
 ```
 
 Only modules inside `octane/` may import an Octane module, always guarded. See

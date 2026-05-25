@@ -96,9 +96,11 @@ Implemented now (Phase 1):
   (tries Octane, falls back to Standard), and *Show AOV Plan* (the desired
   Relativity AOVs + support status). The plugin imports and runs **without Octane
   installed**; native Octane material/AOV creation is pending a verified API
-  mapping (manual AOV setup documented). See
-  [`docs/OCTANE_INTEGRATION.md`](docs/OCTANE_INTEGRATION.md) and
-  [`docs/AOV_PIPELINE.md`](docs/AOV_PIPELINE.md).
+  mapping (manual AOV setup documented). *Export Experimental OSL Camera* writes a
+  clearly-marked placeholder OSL camera shader (not wired into Octane). See
+  [`docs/OCTANE_INTEGRATION.md`](docs/OCTANE_INTEGRATION.md),
+  [`docs/AOV_PIPELINE.md`](docs/AOV_PIPELINE.md), and
+  [`docs/OSL_CAMERA_EXPERIMENTS.md`](docs/OSL_CAMERA_EXPERIMENTS.md).
 
 Planned (later phases — see [`docs/ROADMAP.md`](docs/ROADMAP.md)):
 
