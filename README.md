@@ -158,11 +158,17 @@ OpenRelativity_c4d/
 │   │   └── aov_adapter.py          # placeholder (Phase 3)
 │   └── tests/
 │       └── test_core_math.py       # unit tests for core/ (no Cinema 4D)
-├── docs/                           # charter, architecture, roadmap, upstream reference
+├── docs/                           # charter, architecture, roadmap, guides, schema
 ├── tools/
-│   └── run_core_tests.py           # run the core tests without Cinema 4D
+│   ├── run_core_tests.py           # run the core tests without Cinema 4D
+│   ├── verify_repo.py              # repo health check (files/no-c4d/tests/docs)
+│   └── make_plugin_zip.py          # build an installable plugin zip
 └── MITLicense.md                   # upstream MIT license (attribution)
 ```
+
+> The package also includes `export/` (metadata JSON) and `c4d/control_panel.py`
+> (the Control Panel dialog); see [`docs/DEVELOPER_NOTES.md`](docs/DEVELOPER_NOTES.md)
+> for the full module map.
 
 > `import c4d` inside `openrelativity_c4d/c4d/*` resolves to **Cinema 4D's**
 > top-level module (Python 3 absolute import), not to the `openrelativity_c4d.c4d`
@@ -194,12 +200,14 @@ OpenRelativity_c4d/
    ```
 
    (Copying the whole repository works too; Cinema 4D only executes the `.pyp`.)
+   To build a clean, installable zip, run `python tools/make_plugin_zip.py`.
 3. **Restart Cinema 4D.**
-4. **Open the** *Extensions* **menu** and choose **“OpenRelativity C4D: About”**.
-   A dialog reports the plugin version, the target and running Cinema 4D
-   versions, whether Octane was detected, and the current status. If you don't
-   see it, open the *Extensions > Console* and check for `[OpenRelativity C4D]`
-   log lines.
+4. **Open the** *Extensions* **menu** and run **“OpenRelativity C4D: Control
+   Panel”** (or **“About”**). If you don't see it, open *Extensions > Console* and
+   check for `[OpenRelativity C4D]` log lines.
+
+Full details (preferences folder, building the zip, what can/can't be tested,
+Octane, ID replacement) are in [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
 
 > The bundled plugin IDs in `openrelativity_c4d/ids.py` are **development
 > placeholders**. Obtain unique IDs from the Maxon Plugin Café and replace them
@@ -210,13 +218,16 @@ OpenRelativity_c4d/
 The physics core runs without Cinema 4D. From the repository root:
 
 ```
-python -m unittest                       # discover & run all core tests
-# or
+python -m unittest                       # discover & run all pure tests
 python tools/run_core_tests.py           # same, with verbose output
+python tools/verify_repo.py              # files + no-c4d + tests + docs + entrypoint
+python tools/make_plugin_zip.py          # build build/OpenRelativity_c4d_v<ver>.zip
 ```
 
-The core (`openrelativity_c4d/core/`) must never `import c4d`; a unit test
-enforces this so the math stays portable (and migratable to C++ later).
+The core (`openrelativity_c4d/core/`) must never `import c4d`; a unit test and
+`verify_repo.py` enforce this so the math stays portable (and migratable to C++
+later). The `c4d/` layer is tested manually inside Cinema 4D. See
+[`docs/DEVELOPER_NOTES.md`](docs/DEVELOPER_NOTES.md).
 
 ## Attribution & license
 

@@ -195,7 +195,11 @@ Tracked so they aren't mistaken for plans:
 
 ## Cross-cutting, every phase
 
-- Keep `relativity_core` free of `c4d` and of third-party deps.
-- Keep Octane imports confined to `adapters/octane`.
+- Keep the physics core (`openrelativity_c4d/core`) free of `c4d` and third-party deps.
+- Keep Octane imports confined to `openrelativity_c4d/octane`.
 - Keep tests runnable without Cinema 4D.
 - Update docs alongside code; keep this roadmap's status markers current.
+- Run `tools/verify_repo.py` (files / no-c4d / tests / docs / entrypoint) before
+  committing; build installable zips with `tools/make_plugin_zip.py`. Packaging,
+  testing limits, Octane status, and ID replacement are documented in
+  `docs/INSTALLATION.md` and `docs/DEVELOPER_NOTES.md`.
