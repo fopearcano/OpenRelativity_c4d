@@ -53,16 +53,22 @@ Done:
   preview toggles, Octane/OSL placeholders) and `compute_observer_beta` resolving
   `beta` from the camera + controller via the math core. Shared User Data plumbing
   factored into `c4d/userdata.py`. Octane/OSL remain stubs.
+- ✅ **Relativistic Objects (v1)** — *Setup Selected Relativistic Objects* adds
+  per-object User Data (ORC object enabled, object beta, velocity X/Y/Z,
+  use-camera-relative-direction, material preview toggles, bake-eligible, Octane
+  material sync) to the selection, skipping the controller and cameras;
+  *Select Relativistic Objects* re-selects them. `object_tools` provides
+  `is_orc_object` / `add_orc_object_data` / `read_orc_object_settings` /
+  `collect_orc_objects`. Metadata only - no geometry/material change yet.
 - ✅ **Octane adapter stubs** — `detection.is_octane_available()` + no-op
   facade; verified the plugin imports with Octane **not** installed.
 
 Remaining:
 
-- 🔜 **Distribute controller state to effects** (deformer + materials read `c`,
-  beta, strengths from the controller; camera supplies `beta`/direction).
-- 🔜 **Relativistic Object Tag** — per-object world velocity + flags.
-  (placeholder module present)
-- 🔜 Description resources under `c4d/descriptions/` for the above.
+- 🔜 **Distribute state to effects** (deformer + materials read `c`, beta,
+  strengths from the controller; camera supplies `beta`/direction; objects supply
+  per-object velocity/flags).
+- 🔜 Description resources under `c4d/descriptions/` if/when these move to tags.
 - 🔜 **Lorentz Deformer / bake utility** — geometric transform on real points.
 - 🔜 **Approximate Doppler/searchlight material adjustment** — per-object color
   & luminance on standard C4D materials.

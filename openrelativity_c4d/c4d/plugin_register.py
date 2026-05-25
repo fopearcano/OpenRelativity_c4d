@@ -68,8 +68,38 @@ def register_all():
                   ids.COMMAND_SETUP_CAMERA)
         ok = False
 
-    # --- Later phases (not implemented yet) --------------------------------
-    # from . import object_tools
-    # ok &= object_tools.register()
+    # --- Setup Selected Relativistic Objects command -----------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_SETUP_OBJECTS,
+        str="{0}: Setup Selected Relativistic Objects".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Add relativistic User Data to the selected objects.",
+        dat=commands.SetupObjectsCommand(),
+    )
+    if registered:
+        log.info("Registered 'Setup Selected Relativistic Objects' (id=%s).",
+                 ids.COMMAND_SETUP_OBJECTS)
+    else:
+        log.error("Failed to register 'Setup Selected Relativistic Objects' (id=%s).",
+                  ids.COMMAND_SETUP_OBJECTS)
+        ok = False
+
+    # --- Select Relativistic Objects command -------------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_SELECT_OBJECTS,
+        str="{0}: Select Relativistic Objects".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Select every object that has relativistic User Data.",
+        dat=commands.SelectObjectsCommand(),
+    )
+    if registered:
+        log.info("Registered 'Select Relativistic Objects' (id=%s).",
+                 ids.COMMAND_SELECT_OBJECTS)
+    else:
+        log.error("Failed to register 'Select Relativistic Objects' (id=%s).",
+                  ids.COMMAND_SELECT_OBJECTS)
+        ok = False
 
     return ok

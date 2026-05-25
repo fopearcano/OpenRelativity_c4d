@@ -11,7 +11,7 @@ import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
 
 from .. import constants, ids
 from ..logging_utils import get_logger
-from . import camera_tools, scene_controller
+from . import camera_tools, object_tools, scene_controller
 
 log = get_logger("commands")
 
@@ -53,6 +53,15 @@ def _camera_status():
         return "unknown"
 
 
+def _object_status():
+    """Return the count of relativistic objects in the active document."""
+    try:
+        doc = c4d.documents.GetActiveDocument()
+        return "{0} relativistic".format(len(object_tools.collect_orc_objects(doc)))
+    except Exception:  # noqa: BLE001
+        return "unknown"
+
+
 def about_info_lines():
     """Build the list of text lines shown in the About dialog."""
     return [
@@ -64,6 +73,7 @@ def about_info_lines():
         "Octane:         {0}".format(_octane_status()),
         "Controller:     {0}".format(_controller_status()),
         "Camera:         {0}".format(_camera_status()),
+        "Objects:        {0}".format(_object_status()),
         "Phase:          {0}".format(constants.DEVELOPMENT_PHASE),
         "",
         "Status:",
@@ -189,6 +199,93 @@ class SetupCameraCommand(c4d.plugins.CommandData):
             )
         log.info("Setup Relativistic Camera: %s (%s).", name, action)
         c4d.gui.MessageDialog(message)
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class SetupObjectsCommand(c4d.plugins.CommandData):
+    """Add relativistic-object User Data to each eligible selected object.
+
+    Cameras and the Relativity Controller are skipped; objects that already have
+    the data are left unchanged.
+    """
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        selected = doc.GetActiveObjects(c4d.GETACTIVEOBJECTFLAGS_0)
+        if not selected:
+            c4d.gui.MessageDialog(
+                "Select one or more objects first, then run this command."
+            )
+            return True
+
+        controller = scene_controller.find_controller(doc)
+        controller_name = scene_controller.CONTROLLER_NAME
+
+        def excluded(op):
+            if op.GetType() == c4d.Ocamera:
+                return True
+            if op.GetName() == controller_name:
+                return True
+            if controller is not None and op == controller:
+                return True
+            return False
+
+        added = 0
+        already = 0
+        doc.StartUndo()
+        for op in selected:
+            if excluded(op):
+                continue
+            if object_tools.is_orc_object(op):
+                already += 1
+                continue
+            doc.AddUndo(c4d.UNDOTYPE_CHANGE, op)
+            if object_tools.add_orc_object_data(op):
+                added += 1
+        doc.EndUndo()
+        c4d.EventAdd()
+
+        log.info("Setup objects: %d configured, %d already set up.", added, already)
+        if added == 0 and already == 0:
+            c4d.gui.MessageDialog(
+                "No eligible objects in the selection "
+                "(the controller and cameras are skipped)."
+            )
+        else:
+            c4d.gui.MessageDialog(
+                "Set up {0} object(s) as relativistic; {1} already had data.".format(
+                    added, already
+                )
+            )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class SelectObjectsCommand(c4d.plugins.CommandData):
+    """Select every relativistic object in the active document."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        objects = object_tools.collect_orc_objects(doc)
+        if not objects:
+            c4d.gui.MessageDialog("No relativistic objects found in the scene.")
+            return True
+
+        for index, op in enumerate(objects):
+            mode = c4d.SELECTION_NEW if index == 0 else c4d.SELECTION_ADD
+            doc.SetActiveObject(op, mode)
+        c4d.EventAdd()
+
+        log.info("Selected %d relativistic object(s).", len(objects))
         return True
 
     def GetState(self, doc):

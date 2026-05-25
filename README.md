@@ -16,14 +16,13 @@ physically-based renderer (Octane), rather than a real-time game engine. See
 for the concept-by-concept mapping.
 
 > **Status: Phase 1 — in progress.**
-> The plugin loads in Cinema 4D 2023+ and registers three *Extensions* commands:
-> **About**, **Create Relativity Controller** (an `ORC_Relativity_Controller`
-> Null with scene settings), and **Setup Relativistic Camera** (an observer
-> camera with its own settings). The pure-Python physics core
-> (`openrelativity_c4d.core`) is implemented and unit-tested. Object tags,
-> deformers, and Octane mapping are placeholders for later phases. See
-> [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) to get started and
-> [`docs/ROADMAP.md`](docs/ROADMAP.md) for the plan.
+> The plugin loads in Cinema 4D 2023+ and registers *Extensions* commands to set
+> up the relativity **controller**, an observer **camera**, and per-**object**
+> settings (plus an **About** dialog). All three carry organized User Data; the
+> pure-Python physics core (`openrelativity_c4d.core`) is implemented and
+> unit-tested. The effects those settings drive (deformation, materials, Octane)
+> are placeholders for later phases. See [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md)
+> to get started and [`docs/ROADMAP.md`](docs/ROADMAP.md) for the plan.
 
 ---
 
@@ -67,12 +66,15 @@ Implemented now (Phase 1):
   velocity, preview toggles, and Octane/OSL placeholders, plus a
   `compute_observer_beta` helper that resolves `beta` from the camera and
   controller.
+- **Relativistic Objects** — *Extensions > Setup Selected Relativistic Objects*
+  adds per-object User Data (object beta, velocity X/Y/Z, preview toggles, bake /
+  Octane flags) to the selection (skipping the controller and cameras), and
+  *Select Relativistic Objects* re-selects them all.
 - **Octane adapter (optional, isolated)** — soft-detects Octane; the plugin
   imports and runs **without Octane installed**. Mapping is stubbed.
 
 Planned (later phases — see [`docs/ROADMAP.md`](docs/ROADMAP.md)):
 
-- **Relativistic Object Tag** — per-object velocity, causal visibility, effect flags.
 - **Lorentz deformation / bake utility** — moves real mesh points.
 - **Approximate Doppler / searchlight material adjustment** — per-object color & luminance.
 - **Real Octane material/camera/AOV mapping.**

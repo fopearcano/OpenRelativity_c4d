@@ -109,11 +109,50 @@ Select the camera and open the **Attribute Manager** to edit its **User Data**:
 
 The result is always clamped to ≤ `99.9%` of `c`.
 
-## 5. What the fields do *not* do yet
+## 5. Set up relativistic objects
 
-In Phase 1 the controller **stores** these values and exposes clean read/write
-helpers for the rest of the plugin. The following are intentionally **not
-implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
+Any scene object can be marked as relativistic by giving it its own User Data.
+
+1. Select one or more objects.
+2. Open **Extensions > “OpenRelativity C4D: Setup Selected Relativistic
+   Objects”**. Each eligible object gets the User Data below. The Relativity
+   Controller and any cameras in the selection are **skipped**, and objects that
+   already have the data are left unchanged.
+3. To gather them again later, run **Extensions > “OpenRelativity C4D: Select
+   Relativistic Objects”**, which selects every object that has the data. The
+   **About** dialog's `Objects:` line shows how many exist.
+
+Select an object and open the **Attribute Manager** to edit its **User Data**:
+
+### Relativistic Object
+
+| Field | Type | Default | Meaning |
+|---|---|---|---|
+| **ORC Object Enabled** | Bool | On | Whether this object participates in relativity. |
+| **Object Beta** | Percent | `0%` | The object's speed as a fraction of `c`, set directly. `0%` means "derive from the velocity below". |
+| **Velocity X / Y / Z** | Float ×3 | `0` | The object's velocity vector in scene units/second (three separate fields). |
+| **Use Camera Relative Direction** | Bool | On | When on, the line-of-sight direction for Doppler/searchlight is computed relative to the active relativistic camera. |
+
+### Material Preview
+
+| Field | Type | Default | Meaning |
+|---|---|---|---|
+| **Doppler Material Preview** | Bool | On | Show this object's Doppler color shift (when previews exist). |
+| **Searchlight Material Preview** | Bool | On | Show this object's searchlight/beaming brightness. |
+| **Lorentz Deformation Preview** | Bool | On | Show this object's length contraction. |
+
+### Integration
+
+| Field | Type | Default | Meaning |
+|---|---|---|---|
+| **Bake Eligible** | Bool | Off | Mark this object to be included when baking effects for rendering. |
+| **Octane Material Sync Enabled** | Bool | Off | *Stub* - will mirror the Doppler/searchlight result onto the object's Octane material (Phase 3). Octane is **not** required. |
+
+## 6. What the fields do *not* do yet
+
+In Phase 1 the controller, camera, and objects **store** these values and expose
+clean read/write helpers; nothing yet reads them to change your scene. The
+following are intentionally **not implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
 
 - Lorentz **deformation** of geometry.
 - Doppler / searchlight **material** changes.
@@ -121,16 +160,17 @@ implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
 - **Bake** workflow.
 
 Changing the values now is safe and will be honored once those features land.
-The camera's *Aberration*, *Octane Camera Sync*, and *OSL* fields are likewise
-placeholders/stubs (no OSL is generated and no Octane tag is touched).
+Placeholder/stub fields (no effect yet): the camera's *Aberration*, *Octane
+Camera Sync*, and *OSL*; and each object's *Bake Eligible* and *Octane Material
+Sync*. No OSL is generated and no Octane material/tag is touched.
 
-## 6. For developers
+## 7. For developers
 
-Read and write values by **field name** (no hard-coded IDs). Controller and
-camera share the same accessor style:
+Read and write values by **field name** (no hard-coded IDs). Controller, camera,
+and objects share the same accessor style:
 
 ```python
-from openrelativity_c4d.c4d import scene_controller, camera_tools
+from openrelativity_c4d.c4d import scene_controller, camera_tools, object_tools
 
 doc = c4d.documents.GetActiveDocument()
 
@@ -140,10 +180,14 @@ scene_controller.set_value(controller, scene_controller.FIELD_DOPPLER_STRENGTH, 
 
 camera = camera_tools.find_relativistic_camera(doc)
 beta = camera_tools.compute_observer_beta(camera, controller)  # effective v/c
-state = camera_tools.read_state(camera)  # dict of every camera field
+
+for obj in object_tools.collect_orc_objects(doc):
+    settings = object_tools.read_orc_object_settings(obj)   # dict of every field
+    vx, vy, vz = object_tools.get_object_velocity(obj)      # (x, y, z) tuple
 ```
 
 Field-name constants, defaults, and creation logic live in
-`openrelativity_c4d/c4d/scene_controller.py` and
-`openrelativity_c4d/c4d/camera_tools.py`; the shared User Data plumbing is in
+`openrelativity_c4d/c4d/scene_controller.py`,
+`openrelativity_c4d/c4d/camera_tools.py`, and
+`openrelativity_c4d/c4d/object_tools.py`; the shared User Data plumbing is in
 `openrelativity_c4d/c4d/userdata.py`.
