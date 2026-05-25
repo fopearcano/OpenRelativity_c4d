@@ -38,6 +38,8 @@ COMMAND_APPLY_DOPPLER = 1000011     # PLACEHOLDER (out of test range!) - "Apply 
 COMMAND_CLEAR_PREVIEW = 1000012     # PLACEHOLDER (out of test range!) - "Clear Material Preview"
 COMMAND_APPLY_SEARCHLIGHT = 1000013 # PLACEHOLDER (out of test range!) - "Apply Searchlight Preview"
 COMMAND_APPLY_RELATIVITY_PREVIEW = 1000014  # PLACEHOLDER (out of test range!) - "Apply Relativity Material Preview"
+COMMAND_CREATE_LORENTZ = 1000015    # PLACEHOLDER (out of test range!) - "Create Lorentz Preview Copies"
+COMMAND_REMOVE_LORENTZ = 1000016    # PLACEHOLDER (out of test range!) - "Remove Lorentz Preview Copies"
 
 # --- Dialog layout IDs ------------------------------------------------------
 DIALOG_ABOUT = 1000002  # PLACEHOLDER - replace with a registered Plugin Cafe ID

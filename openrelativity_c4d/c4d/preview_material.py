@@ -79,20 +79,6 @@ def _controller_settings(controller):
 
 
 # --- per-object math inputs --------------------------------------------------
-def _object_beta(obj_settings, velocity, settings):
-    """Effective beta: global override (if > 0), else object beta, else |v|/c."""
-    if settings["global_beta"] > 0.0:
-        return relativity_math.clamp_beta(settings["global_beta"])
-    own = float(obj_settings.get(object_tools.FIELD_OBJECT_BETA, 0.0) or 0.0)
-    if own > 0.0:
-        return relativity_math.clamp_beta(own)
-    speed = transforms.length(velocity)
-    if speed > 0.0:
-        return relativity_math.clamp_beta(
-            relativity_math.beta_from_speed(speed, settings["c"]))
-    return 0.0
-
-
 def _line_of_sight(obj, camera, use_camera_direction):
     """Direction from the object **toward** the observer, as an (x, y, z) tuple."""
     obj_pos = obj.GetMg().off
@@ -110,7 +96,8 @@ def _line_of_sight(obj, camera, use_camera_direction):
 def _compute_inputs(obj, obj_settings, settings, camera):
     """Return ``(beta, cos_theta)`` for an object."""
     velocity = object_tools.get_object_velocity(obj)
-    beta = _object_beta(obj_settings, velocity, settings)
+    beta = object_tools.effective_beta(
+        obj_settings, velocity, settings["c"], settings["global_beta"])
     use_camera_direction = bool(
         obj_settings.get(object_tools.FIELD_USE_CAMERA_DIRECTION, True))
     los = _line_of_sight(obj, camera, use_camera_direction)

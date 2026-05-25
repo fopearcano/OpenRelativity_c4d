@@ -49,6 +49,7 @@ Select `ORC_Relativity_Controller` and open the **Attribute Manager**. Its
 | **Searchlight Strength** | Percent | `100%` | Art-directable blend of the beaming/searchlight intensity. |
 | **Lorentz Deformation Strength** | Percent | `100%` | Art-directable blend of the geometric length contraction. |
 | **Preview Mode** | Cycle | `Doppler + Searchlight` | Which previews to show: `Off`, `Doppler`, `Searchlight`, or `Doppler + Searchlight`. |
+| **Hide Originals (Lorentz Preview)** | Bool | On | When the Lorentz preview copies are created, hide the originals (restored on removal). |
 
 ### Integration
 
@@ -160,20 +161,29 @@ objects with a beta/velocity, use the *Extensions* menu:
 - **Apply Relativity Material Preview** — both at once (the usual choice).
 - **Clear Material Preview** — removes them all.
 
-All three generate one Standard material per object (`ORC_Preview_<name>`),
-applied non-destructively (a layered Texture tag; your materials are untouched),
-and render in Standard/Physical. These are **artistic approximations, not
-spectral/radiometric rendering** - see
-[`DOPPLER_PREVIEW.md`](DOPPLER_PREVIEW.md) and
-[`SEARCHLIGHT_PREVIEW.md`](SEARCHLIGHT_PREVIEW.md) for details and limitations.
+These material commands generate one Standard material per object
+(`ORC_Preview_<name>`), applied non-destructively (a layered Texture tag; your
+materials are untouched), and render in Standard/Physical. For **geometry**:
+
+- **Create Lorentz Preview Copies** — makes a contracted duplicate
+  (`ORC_LorentzPreview_<name>`) of each object, shortened along its velocity
+  axis, and hides the original (restored on removal).
+- **Remove Lorentz Preview Copies** — deletes the copies and restores originals.
+
+These are **artistic approximations, not spectral/radiometric rendering**, and
+the Lorentz copy is an **axis-aligned length contraction only** (no Terrell
+rotation/apparent geometry). See [`DOPPLER_PREVIEW.md`](DOPPLER_PREVIEW.md),
+[`SEARCHLIGHT_PREVIEW.md`](SEARCHLIGHT_PREVIEW.md), and
+[`LORENTZ_PREVIEW.md`](LORENTZ_PREVIEW.md) for details and limitations.
 
 ## 7. What the fields do *not* do yet
 
-The **Doppler and searchlight material previews** above are implemented. The
-following are still intentionally **not implemented yet** (see
-[`ROADMAP.md`](ROADMAP.md)):
+The **Doppler/searchlight material previews** and an **axis-aligned Lorentz
+geometry preview** are implemented. The following are still intentionally **not
+implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
 
-- Lorentz **deformation** of geometry.
+- **Terrell rotation / true apparent geometry** (the Lorentz preview is a simple
+  axis-aligned contraction only).
 - **Octane** output (the adapter is a safe no-op until Phase 3).
 - **Bake** workflow.
 

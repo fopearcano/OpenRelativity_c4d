@@ -69,6 +69,29 @@ def add_vector(obj, name, default=None, group=None):
     return descid
 
 
+def add_long(obj, name, default=0, group=None):
+    bc = c4d.GetCustomDatatypeDefault(c4d.DTYPE_LONG)
+    bc[c4d.DESC_NAME] = name
+    bc[c4d.DESC_SHORT_NAME] = name
+    bc[c4d.DESC_DEFAULT] = int(default)
+    if group is not None:
+        bc[c4d.DESC_PARENTGROUP] = group
+    descid = obj.AddUserData(bc)
+    obj[descid] = int(default)
+    return descid
+
+
+def add_link(obj, name, group=None):
+    """Add a link (object reference) User Data field. Set the value with
+    ``obj[descid] = other_object`` and read it back the same way."""
+    bc = c4d.GetCustomDatatypeDefault(c4d.DTYPE_BASELISTLINK)
+    bc[c4d.DESC_NAME] = name
+    bc[c4d.DESC_SHORT_NAME] = name
+    if group is not None:
+        bc[c4d.DESC_PARENTGROUP] = group
+    return obj.AddUserData(bc)
+
+
 def add_cycle(obj, name, items, default, group=None):
     bc = c4d.GetCustomDatatypeDefault(c4d.DTYPE_LONG)
     bc[c4d.DESC_NAME] = name

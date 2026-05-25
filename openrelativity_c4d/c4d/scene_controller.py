@@ -40,6 +40,7 @@ FIELD_DOPPLER_STRENGTH = "Doppler Strength"
 FIELD_SEARCHLIGHT_STRENGTH = "Searchlight Strength"
 FIELD_LORENTZ_STRENGTH = "Lorentz Deformation Strength"
 FIELD_PREVIEW_MODE = "Preview Mode"
+FIELD_HIDE_ORIGINALS_LORENTZ = "Hide Originals (Lorentz Preview)"
 FIELD_OCTANE_ENABLED = "Octane Adapter Enabled"
 FIELD_BAKE_ENABLED = "Bake Mode Enabled"
 
@@ -56,6 +57,7 @@ DEFAULTS = {
     FIELD_SEARCHLIGHT_STRENGTH: 1.0,
     FIELD_LORENTZ_STRENGTH: 1.0,
     FIELD_PREVIEW_MODE: PREVIEW_MODE_DEFAULT,
+    FIELD_HIDE_ORIGINALS_LORENTZ: True,
     FIELD_OCTANE_ENABLED: False,
     FIELD_BAKE_ENABLED: False,
 }
@@ -79,6 +81,8 @@ def _build_user_data(null):
                           unit=c4d.DESC_UNIT_PERCENT)
     userdata.add_cycle(null, FIELD_PREVIEW_MODE, PREVIEW_MODES,
                        DEFAULTS[FIELD_PREVIEW_MODE], g_fx)
+    userdata.add_bool(null, FIELD_HIDE_ORIGINALS_LORENTZ,
+                      DEFAULTS[FIELD_HIDE_ORIGINALS_LORENTZ], g_fx)
 
     g_int = userdata.add_group(null, "Integration")
     userdata.add_bool(null, FIELD_OCTANE_ENABLED, DEFAULTS[FIELD_OCTANE_ENABLED], g_int)

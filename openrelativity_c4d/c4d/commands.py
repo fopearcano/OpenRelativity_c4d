@@ -13,7 +13,13 @@ import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
 
 from .. import constants, ids
 from ..logging_utils import get_logger
-from . import camera_tools, object_tools, preview_material, scene_controller
+from . import (
+    camera_tools,
+    lorentz_preview,
+    object_tools,
+    preview_material,
+    scene_controller,
+)
 
 log = get_logger("commands")
 
@@ -74,6 +80,16 @@ def _preview_status():
         return "unknown"
 
 
+def _lorentz_status():
+    """Return the count of Lorentz preview copies."""
+    try:
+        doc = c4d.documents.GetActiveDocument()
+        return "{0} preview copy(ies)".format(
+            lorentz_preview.count_preview_copies(doc))
+    except Exception:  # noqa: BLE001
+        return "unknown"
+
+
 def about_info_lines():
     """Build the list of text lines shown in the About dialog."""
     return [
@@ -87,6 +103,7 @@ def about_info_lines():
         "Camera:         {0}".format(_camera_status()),
         "Objects:        {0}".format(_object_status()),
         "Preview:        {0}".format(_preview_status()),
+        "Lorentz:        {0}".format(_lorentz_status()),
         "Phase:          {0}".format(constants.DEVELOPMENT_PHASE),
         "",
         "Status:",
@@ -385,6 +402,61 @@ class ClearMaterialPreviewCommand(c4d.plugins.CommandData):
                 "Cleared the material preview: removed {0} tag(s) and "
                 "{1} material(s). Original materials were left untouched.".format(
                     tags, materials
+                )
+            )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class CreateLorentzPreviewCommand(c4d.plugins.CommandData):
+    """Create non-destructive, contracted duplicate copies for Lorentz preview."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        count, status = lorentz_preview.create_preview(doc)
+        if status == "disabled":
+            c4d.gui.MessageDialog(
+                "The Relativity Controller is disabled (Enabled = off).\n"
+                "Nothing was created."
+            )
+        elif status == "no_objects":
+            c4d.gui.MessageDialog(
+                "No relativistic objects found.\n"
+                "Run 'Setup Selected Relativistic Objects' first."
+            )
+        else:
+            c4d.gui.MessageDialog(
+                "Created {0} Lorentz preview copy(ies) "
+                "('ORC_LorentzPreview_<name>').\n"
+                "Axis-aligned length-contraction approximation only - no Terrell "
+                "rotation / apparent geometry yet (see docs/LORENTZ_PREVIEW.md). "
+                "Originals are unchanged; use 'Remove Lorentz Preview Copies' to "
+                "restore.".format(count)
+            )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class RemoveLorentzPreviewCommand(c4d.plugins.CommandData):
+    """Remove Lorentz preview copies and restore the originals' visibility."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        removed = lorentz_preview.remove_preview(doc)
+        if removed == 0:
+            c4d.gui.MessageDialog("No Lorentz preview copies to remove.")
+        else:
+            c4d.gui.MessageDialog(
+                "Removed {0} Lorentz preview copy(ies); originals restored.".format(
+                    removed
                 )
             )
         return True

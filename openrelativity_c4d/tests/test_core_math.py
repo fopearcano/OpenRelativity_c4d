@@ -297,5 +297,23 @@ class TestCosThetaTowardsObserver(unittest.TestCase):
         )
 
 
+class TestDominantAxis(unittest.TestCase):
+    def test_picks_largest_component(self):
+        self.assertEqual(transforms.dominant_axis((3, 1, 2)), 0)
+        self.assertEqual(transforms.dominant_axis((1, 5, 2)), 1)
+        self.assertEqual(transforms.dominant_axis((1, 2, 9)), 2)
+
+    def test_uses_magnitude(self):
+        self.assertEqual(transforms.dominant_axis((-5, 1, 2)), 0)
+        self.assertEqual(transforms.dominant_axis((1, 1, -9)), 2)
+
+    def test_zero_vector_has_no_axis(self):
+        self.assertEqual(transforms.dominant_axis((0, 0, 0)), -1)
+
+    def test_ties_prefer_x_then_y(self):
+        self.assertEqual(transforms.dominant_axis((3, 3, 1)), 0)
+        self.assertEqual(transforms.dominant_axis((1, 3, 3)), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

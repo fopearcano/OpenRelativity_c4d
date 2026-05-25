@@ -78,12 +78,17 @@ Implemented now (Phase 1):
   (Standard/Physical compatible, Octane not required). Artistic approximations,
   not spectral — see [`docs/DOPPLER_PREVIEW.md`](docs/DOPPLER_PREVIEW.md) and
   [`docs/SEARCHLIGHT_PREVIEW.md`](docs/SEARCHLIGHT_PREVIEW.md).
+- **Lorentz geometry preview** — *Create Lorentz Preview Copies* makes a
+  non-destructive contracted duplicate (`ORC_LorentzPreview_<name>`) of each
+  object, scaled along its velocity axis, and hides the original (restored by
+  *Remove Lorentz Preview Copies*). Axis-aligned length contraction only — no
+  Terrell rotation yet. See [`docs/LORENTZ_PREVIEW.md`](docs/LORENTZ_PREVIEW.md).
 - **Octane adapter (optional, isolated)** — soft-detects Octane; the plugin
   imports and runs **without Octane installed**. Mapping is stubbed.
 
 Planned (later phases — see [`docs/ROADMAP.md`](docs/ROADMAP.md)):
 
-- **Lorentz deformation / bake utility** — moves real mesh points.
+- **Terrell rotation / true apparent geometry** and a **point-level bake**.
 - **Real Octane material/camera/AOV mapping.**
 
 ## What is explicitly out of scope (Phase 1)

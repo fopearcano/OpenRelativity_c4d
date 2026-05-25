@@ -69,19 +69,27 @@ Done:
   `core.transforms.cos_theta_towards_observer`. Standard/Physical compatible;
   Octane not required. See `docs/DOPPLER_PREVIEW.md` and
   `docs/SEARCHLIGHT_PREVIEW.md`.
+- ✅ **Lorentz geometry preview** — *Create / Remove Lorentz Preview Copies*
+  build non-destructive contracted duplicates (`ORC_LorentzPreview_<name>`),
+  scaling along the dominant velocity axis via
+  `core.relativity_math.lorentz_contraction_scale` and
+  `core.transforms.dominant_axis`; originals are optionally hidden and restored.
+  Axis-aligned approximation only (no Terrell rotation). See
+  `docs/LORENTZ_PREVIEW.md`.
 - ✅ **Octane adapter stubs** — `detection.is_octane_available()` + no-op
   facade; verified the plugin imports with Octane **not** installed.
 
-Remaining:
+**Exit criteria (met):** plugin loads without Octane; core tests pass in plain
+Python; raising velocity visibly contracts and recolours a tagged object; the
+Octane adapter is a safe no-op.
+
+Remaining (rolls into Phase 2):
 
 - 🔜 **Combine the camera's velocity** into the object↔observer relative beta
   (currently beta is object/global only).
-- 🔜 **Lorentz Deformer / bake utility** — geometric transform on real points.
+- 🔜 **Arbitrary-axis / point-level Lorentz** and **Terrell rotation** (true
+  apparent geometry), plus a bake.
 - 🔜 Description resources under `c4d/descriptions/` if/when these move to tags.
-
-**Exit criteria:** plugin loads without Octane; core tests pass in plain Python
-(done); lowering `c` (or raising velocity) visibly contracts and recolors a
-tagged object; the Octane adapter is a safe no-op.
 
 ---
 

@@ -16,10 +16,17 @@ geometry is deformed and no material is changed.
 
 import c4d
 
+from ..core import relativity_math, transforms
 from ..logging_utils import get_logger
 from . import userdata
 
 log = get_logger("object_tools")
+
+#: Reserved name prefix for plugin-generated Lorentz preview copies. Objects with
+#: this prefix are clones, NOT authored relativistic objects, so they are
+#: excluded from :func:`is_orc_object` and every ORC collection. The Lorentz
+#: module imports this constant so there is a single source of truth.
+LORENTZ_PREVIEW_PREFIX = "ORC_LorentzPreview_"
 
 # --- User Data field names (central identifiers for relativistic objects) ---
 FIELD_ORC_ENABLED = "ORC Object Enabled"
@@ -88,12 +95,37 @@ def _iter_objects(op):
 
 # --- public utilities --------------------------------------------------------
 def is_orc_object(obj):
-    """``True`` if ``obj`` carries relativistic-object User Data.
+    """``True`` if ``obj`` is an authored relativistic object.
 
     Matches on the object-specific field name, so it never reports ``True`` for
     the Relativity Controller or the camera (which use different field names).
+    Plugin-generated Lorentz preview copies (see :data:`LORENTZ_PREVIEW_PREFIX`)
+    are excluded so they are never treated as source objects.
     """
+    if obj is None:
+        return False
+    if obj.GetName().startswith(LORENTZ_PREVIEW_PREFIX):
+        return False
     return userdata.has_field(obj, FIELD_ORC_ENABLED)
+
+
+def effective_beta(obj_settings, velocity, c_value, global_override=0.0):
+    """Resolve an object's effective beta in ``[0, MAX_BETA]``.
+
+    Priority: global override (if > 0), else the object's *Object Beta* (if > 0),
+    else ``|velocity| / c_value``. ``obj_settings`` is a dict from
+    :func:`read_orc_object_settings`; ``velocity`` is an ``(x, y, z)`` tuple.
+    """
+    if global_override and global_override > 0.0:
+        return relativity_math.clamp_beta(global_override)
+    own = float(obj_settings.get(FIELD_OBJECT_BETA, 0.0) or 0.0)
+    if own > 0.0:
+        return relativity_math.clamp_beta(own)
+    speed = transforms.length(velocity)
+    if speed > 0.0:
+        return relativity_math.clamp_beta(
+            relativity_math.beta_from_speed(speed, c_value))
+    return 0.0
 
 
 def add_orc_object_data(obj):

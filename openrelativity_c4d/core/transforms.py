@@ -139,3 +139,21 @@ def cos_theta_towards_observer(velocity, line_of_sight):
     if d > 1.0:
         return 1.0
     return d
+
+
+def dominant_axis(vector):
+    """Return the index (0=x, 1=y, 2=z) of the largest-magnitude component.
+
+    Ties resolve x > y > z. Returns ``-1`` for a ~zero vector (no direction).
+    Used by the Lorentz preview to pick an approximate, axis-aligned contraction
+    axis from a velocity vector.
+    """
+    ax, ay, az = abs(vector[0]), abs(vector[1]), abs(vector[2])
+    m = max(ax, ay, az)
+    if m < _EPS:
+        return -1
+    if ax == m:
+        return 0
+    if ay == m:
+        return 1
+    return 2

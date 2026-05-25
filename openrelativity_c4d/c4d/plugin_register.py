@@ -170,4 +170,38 @@ def register_all():
                   ids.COMMAND_CLEAR_PREVIEW)
         ok = False
 
+    # --- Create Lorentz Preview Copies command -----------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_CREATE_LORENTZ,
+        str="{0}: Create Lorentz Preview Copies".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Create non-destructive contracted duplicates for Lorentz preview.",
+        dat=commands.CreateLorentzPreviewCommand(),
+    )
+    if registered:
+        log.info("Registered 'Create Lorentz Preview Copies' (id=%s).",
+                 ids.COMMAND_CREATE_LORENTZ)
+    else:
+        log.error("Failed to register 'Create Lorentz Preview Copies' (id=%s).",
+                  ids.COMMAND_CREATE_LORENTZ)
+        ok = False
+
+    # --- Remove Lorentz Preview Copies command -----------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_REMOVE_LORENTZ,
+        str="{0}: Remove Lorentz Preview Copies".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Remove the Lorentz preview copies and restore the originals.",
+        dat=commands.RemoveLorentzPreviewCommand(),
+    )
+    if registered:
+        log.info("Registered 'Remove Lorentz Preview Copies' (id=%s).",
+                 ids.COMMAND_REMOVE_LORENTZ)
+    else:
+        log.error("Failed to register 'Remove Lorentz Preview Copies' (id=%s).",
+                  ids.COMMAND_REMOVE_LORENTZ)
+        ok = False
+
     return ok
