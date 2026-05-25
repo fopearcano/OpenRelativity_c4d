@@ -25,8 +25,9 @@ for the concept-by-concept mapping.
 > phase.
 >
 > **New here?** Follow [`docs/QUICKSTART.md`](docs/QUICKSTART.md) (5 minutes).
-> Full reference: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md);
-> plan: [`docs/ROADMAP.md`](docs/ROADMAP.md).
+> Full reference: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md); plan:
+> [`docs/ROADMAP.md`](docs/ROADMAP.md); changes: [`CHANGELOG.md`](CHANGELOG.md);
+> next steps: [`TODO.md`](TODO.md).
 
 ---
 

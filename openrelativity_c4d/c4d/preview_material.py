@@ -27,7 +27,7 @@ import c4d
 
 from ..core import doppler, relativity_math, searchlight, transforms
 from ..logging_utils import get_logger
-from . import camera_tools, object_tools, scene_controller
+from . import camera_tools, object_tools, scene_controller, scene_utils
 
 log = get_logger("preview_material")
 
@@ -45,37 +45,6 @@ MAX_BRIGHTNESS = 4.0
 #: Above multiplier 1 we add a little luminance ("glow"); gain and cap here.
 LUMINANCE_GAIN = 0.5
 MAX_LUMINANCE = 1.0
-
-
-# --- scene traversal ---------------------------------------------------------
-def _iter_objects(op):
-    while op:
-        yield op
-        for child in _iter_objects(op.GetDown()):
-            yield child
-        op = op.GetNext()
-
-
-# --- controller settings -----------------------------------------------------
-def _controller_settings(controller):
-    """Read the controller fields we need, with safe defaults if absent."""
-    if controller is None:
-        return {
-            "enabled": True,
-            "c": relativity_math.DEFAULT_SPEED_OF_LIGHT,
-            "global_beta": 0.0,
-            "doppler_strength": 1.0,
-            "searchlight_strength": 1.0,
-        }
-    get = scene_controller.get_value
-    default_c = relativity_math.DEFAULT_SPEED_OF_LIGHT
-    return {
-        "enabled": bool(get(controller, scene_controller.FIELD_ENABLED, True)),
-        "c": float(get(controller, scene_controller.FIELD_SPEED_OF_LIGHT, default_c) or default_c),
-        "global_beta": float(get(controller, scene_controller.FIELD_BETA_OVERRIDE, 0.0) or 0.0),
-        "doppler_strength": float(get(controller, scene_controller.FIELD_DOPPLER_STRENGTH, 1.0) or 1.0),
-        "searchlight_strength": float(get(controller, scene_controller.FIELD_SEARCHLIGHT_STRENGTH, 1.0) or 1.0),
-    }
 
 
 # --- per-object math inputs --------------------------------------------------
@@ -241,7 +210,7 @@ def compute_object_factors(controller, camera, obj):
     Does not modify the scene. ``controller``/``camera`` may be ``None`` (defaults
     are used). Shared by the preview and the metadata export so both agree.
     """
-    settings = _controller_settings(controller)
+    settings = scene_controller.read_runtime(controller)
     obj_settings = object_tools.read_orc_object_settings(obj)
     beta, cos_theta = _compute_inputs(obj, obj_settings, settings, camera)
     return {
@@ -282,7 +251,7 @@ def apply_preview(doc, do_doppler=True, do_searchlight=True, writer=None):
     """
     if doc is None:
         return 0, "no_objects"
-    settings = _controller_settings(scene_controller.find_controller(doc))
+    settings = scene_controller.read_runtime(scene_controller.find_controller(doc))
     if not settings["enabled"]:
         return 0, "disabled"
 
@@ -316,7 +285,7 @@ def clear_preview(doc):
 
     doc.StartUndo()
     # Remove our texture tags first (while their material link is still valid).
-    for obj in _iter_objects(doc.GetFirstObject()):
+    for obj in scene_utils.iter_objects(doc.GetFirstObject()):
         for tag in list(obj.GetTags()):
             if tag.GetType() != c4d.Ttexture:
                 continue

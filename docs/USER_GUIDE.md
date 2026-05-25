@@ -34,13 +34,15 @@ plus a live status read-out, so you rarely need the Extensions menu directly.
 
 **Buttons**, grouped to stay compact:
 
-- *Scene setup*: Create / Select Controller, Setup Relativistic Camera, Setup
-  Selected Objects, Create Test Scene.
-- *Material preview*: Apply Doppler Preview, Apply Searchlight Preview, Apply All
-  Material Previews.
-- *Lorentz geometry*: Create / Remove Lorentz Copies.
-- *Octane / export*: Octane Status, Show AOV Plan, Export Metadata JSON.
+- *Scene setup*: Create Relativity Controller, Setup Relativistic Camera, Setup
+  Selected Relativistic Objects, Create Test Scene.
+- *Material preview*: Apply Doppler Material Preview, Apply Searchlight Preview,
+  Apply Relativity Material Preview (both), Clear Material Preview.
+- *Lorentz geometry*: Create Lorentz Preview Copies, Remove Lorentz Preview Copies.
+- *Octane / export*: Octane Status, Show AOV Plan, Export Relativity Metadata JSON.
 - *Info*: About.
+
+Button labels match the menu command names exactly.
 
 Each button runs the matching command described in the rest of this guide. The
 panel is **non-modal** - keep it open while you work, and it stays narrow/short

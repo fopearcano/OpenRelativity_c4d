@@ -24,8 +24,9 @@ the accessors keep working even if the layout/order changes later.
 
 import c4d
 
+from ..core import relativity_math
 from ..logging_utils import get_logger
-from . import userdata
+from . import scene_utils, userdata
 
 log = get_logger("scene_controller")
 
@@ -90,20 +91,11 @@ def _build_user_data(null):
 
 
 # --- Lookup / creation -------------------------------------------------------
-def _iter_objects(op):
-    """Depth-first iterate an object and its siblings/children."""
-    while op:
-        yield op
-        for child in _iter_objects(op.GetDown()):
-            yield child
-        op = op.GetNext()
-
-
 def find_controller(doc):
     """Return the controller Null in ``doc`` (by name + type), or ``None``."""
     if doc is None:
         return None
-    for op in _iter_objects(doc.GetFirstObject()):
+    for op in scene_utils.iter_objects(doc.GetFirstObject()):
         if op.GetName() == CONTROLLER_NAME and op.GetType() == c4d.Onull:
             return op
     return None
@@ -169,3 +161,34 @@ def read_state(controller):
     """
     return {name: get_value(controller, name, DEFAULTS.get(name))
             for name in DEFAULTS}
+
+
+def read_runtime(controller):
+    """Return the numeric/flag fields the effects need, with safe defaults.
+
+    Shared by the material preview and the Lorentz preview so they read the
+    controller the same way. Keys: ``enabled``, ``c`` (speed of light),
+    ``global_beta``, ``doppler_strength``, ``searchlight_strength``,
+    ``lorentz_strength``, ``hide_originals_lorentz``. ``controller`` may be
+    ``None`` (all defaults).
+    """
+    default_c = relativity_math.DEFAULT_SPEED_OF_LIGHT
+    if controller is None:
+        return {
+            "enabled": True,
+            "c": default_c,
+            "global_beta": 0.0,
+            "doppler_strength": 1.0,
+            "searchlight_strength": 1.0,
+            "lorentz_strength": 1.0,
+            "hide_originals_lorentz": True,
+        }
+    return {
+        "enabled": bool(get_value(controller, FIELD_ENABLED, True)),
+        "c": float(get_value(controller, FIELD_SPEED_OF_LIGHT, default_c) or default_c),
+        "global_beta": float(get_value(controller, FIELD_BETA_OVERRIDE, 0.0) or 0.0),
+        "doppler_strength": float(get_value(controller, FIELD_DOPPLER_STRENGTH, 1.0) or 1.0),
+        "searchlight_strength": float(get_value(controller, FIELD_SEARCHLIGHT_STRENGTH, 1.0) or 1.0),
+        "lorentz_strength": float(get_value(controller, FIELD_LORENTZ_STRENGTH, 1.0) or 1.0),
+        "hide_originals_lorentz": bool(get_value(controller, FIELD_HIDE_ORIGINALS_LORENTZ, True)),
+    }

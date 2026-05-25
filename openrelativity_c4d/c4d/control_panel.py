@@ -49,27 +49,30 @@ class ControlPanelDialog(c4d.gui.GeDialog):
     _ID_CLOSE = 1006
     _BUTTON_BASE = 3000
 
-    # (section title, [(button label, command id), ...]) - grouped to stay short.
+    # (section title, [(button label, command id), ...]). Button labels match the
+    # registered command names (minus the "OpenRelativity C4D: " prefix) for
+    # consistency; grouped into sections to stay compact.
     _SECTIONS = (
         ("Scene setup", (
-            ("Create / Select Controller", ids.COMMAND_CREATE_CONTROLLER),
+            ("Create Relativity Controller", ids.COMMAND_CREATE_CONTROLLER),
             ("Setup Relativistic Camera", ids.COMMAND_SETUP_CAMERA),
-            ("Setup Selected Objects", ids.COMMAND_SETUP_OBJECTS),
+            ("Setup Selected Relativistic Objects", ids.COMMAND_SETUP_OBJECTS),
             ("Create Test Scene", ids.COMMAND_CREATE_TEST_SCENE),
         )),
         ("Material preview", (
-            ("Apply Doppler Preview", ids.COMMAND_APPLY_DOPPLER),
+            ("Apply Doppler Material Preview", ids.COMMAND_APPLY_DOPPLER),
             ("Apply Searchlight Preview", ids.COMMAND_APPLY_SEARCHLIGHT),
-            ("Apply All Material Previews", ids.COMMAND_APPLY_RELATIVITY_PREVIEW),
+            ("Apply Relativity Material Preview", ids.COMMAND_APPLY_RELATIVITY_PREVIEW),
+            ("Clear Material Preview", ids.COMMAND_CLEAR_PREVIEW),
         )),
         ("Lorentz geometry", (
-            ("Create Lorentz Copies", ids.COMMAND_CREATE_LORENTZ),
-            ("Remove Lorentz Copies", ids.COMMAND_REMOVE_LORENTZ),
+            ("Create Lorentz Preview Copies", ids.COMMAND_CREATE_LORENTZ),
+            ("Remove Lorentz Preview Copies", ids.COMMAND_REMOVE_LORENTZ),
         )),
         ("Octane / export", (
             ("Octane Status", ids.COMMAND_OCTANE_STATUS),
             ("Show AOV Plan", ids.COMMAND_SHOW_AOV_PLAN),
-            ("Export Metadata JSON", ids.COMMAND_EXPORT_METADATA),
+            ("Export Relativity Metadata JSON", ids.COMMAND_EXPORT_METADATA),
         )),
         ("Info", (
             ("About", ids.COMMAND_ABOUT),

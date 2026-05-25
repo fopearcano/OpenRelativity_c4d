@@ -22,7 +22,7 @@ import c4d
 
 from ..core import relativity_math
 from ..logging_utils import get_logger
-from . import scene_controller, userdata
+from . import scene_controller, scene_utils, userdata
 
 log = get_logger("camera_tools")
 
@@ -89,19 +89,11 @@ def get_selected_camera(doc):
     return None
 
 
-def _iter_objects(op):
-    while op:
-        yield op
-        for child in _iter_objects(op.GetDown()):
-            yield child
-        op = op.GetNext()
-
-
 def find_relativistic_camera(doc):
     """Return the first camera carrying ORC User Data, or ``None``."""
     if doc is None:
         return None
-    for op in _iter_objects(doc.GetFirstObject()):
+    for op in scene_utils.iter_objects(doc.GetFirstObject()):
         if op.GetType() == c4d.Ocamera and userdata.has_field(op, FIELD_ORC_ENABLED):
             return op
     return None

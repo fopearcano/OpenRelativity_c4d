@@ -18,7 +18,7 @@ import c4d
 
 from ..core import relativity_math, transforms
 from ..logging_utils import get_logger
-from . import userdata
+from . import scene_utils, userdata
 
 log = get_logger("object_tools")
 
@@ -82,15 +82,6 @@ def _build_user_data(obj):
     userdata.add_bool(obj, FIELD_BAKE_ELIGIBLE, DEFAULTS[FIELD_BAKE_ELIGIBLE], g_int)
     userdata.add_bool(obj, FIELD_OCTANE_MATERIAL_SYNC,
                       DEFAULTS[FIELD_OCTANE_MATERIAL_SYNC], g_int)
-
-
-# --- traversal ---------------------------------------------------------------
-def _iter_objects(op):
-    while op:
-        yield op
-        for child in _iter_objects(op.GetDown()):
-            yield child
-        op = op.GetNext()
 
 
 # --- public utilities --------------------------------------------------------
@@ -160,4 +151,4 @@ def collect_orc_objects(doc):
     """Return a list of every relativistic object in ``doc`` (depth-first)."""
     if doc is None:
         return []
-    return [op for op in _iter_objects(doc.GetFirstObject()) if is_orc_object(op)]
+    return [op for op in scene_utils.iter_objects(doc.GetFirstObject()) if is_orc_object(op)]

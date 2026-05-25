@@ -59,6 +59,8 @@ EXPECTED_FILES = [
 
 EXPECTED_DOCS = [
     "README.md",
+    "CHANGELOG.md",
+    "TODO.md",
     "docs/PROJECT_CHARTER.md",
     "docs/ARCHITECTURE.md",
     "docs/ROADMAP.md",

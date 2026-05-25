@@ -23,7 +23,7 @@ import c4d
 
 from ..core import relativity_math, transforms
 from ..logging_utils import get_logger
-from . import object_tools, scene_controller, userdata
+from . import object_tools, scene_controller, scene_utils, userdata
 
 log = get_logger("lorentz_preview")
 
@@ -36,29 +36,6 @@ FIELD_SRC_EDITOR_VIS = "ORC Source Editor Visibility"
 FIELD_SRC_RENDER_VIS = "ORC Source Render Visibility"
 
 
-def _iter_objects(op):
-    while op:
-        yield op
-        for child in _iter_objects(op.GetDown()):
-            yield child
-        op = op.GetNext()
-
-
-def _settings(controller):
-    get = scene_controller.get_value
-    default_c = relativity_math.DEFAULT_SPEED_OF_LIGHT
-    if controller is None:
-        return {"enabled": True, "c": default_c, "global_beta": 0.0,
-                "strength": 1.0, "hide": True}
-    return {
-        "enabled": bool(get(controller, scene_controller.FIELD_ENABLED, True)),
-        "c": float(get(controller, scene_controller.FIELD_SPEED_OF_LIGHT, default_c) or default_c),
-        "global_beta": float(get(controller, scene_controller.FIELD_BETA_OVERRIDE, 0.0) or 0.0),
-        "strength": float(get(controller, scene_controller.FIELD_LORENTZ_STRENGTH, 1.0) or 1.0),
-        "hide": bool(get(controller, scene_controller.FIELD_HIDE_ORIGINALS_LORENTZ, True)),
-    }
-
-
 def _collect_sources(doc):
     """Selected relativistic objects if any are selected, else all of them."""
     all_orc = object_tools.collect_orc_objects(doc)  # already excludes copies
@@ -69,7 +46,7 @@ def _collect_sources(doc):
 
 def _existing_copy(doc, source_name):
     target = PREFIX + source_name
-    for op in _iter_objects(doc.GetFirstObject()):
+    for op in scene_utils.iter_objects(doc.GetFirstObject()):
         if op.GetName() == target:
             return op
     return None
@@ -91,7 +68,8 @@ def _make_copy(doc, source, settings):
     velocity = object_tools.get_object_velocity(source)
     beta = object_tools.effective_beta(
         obj_settings, velocity, settings["c"], settings["global_beta"])
-    contraction = relativity_math.lorentz_contraction_scale(beta, settings["strength"])
+    contraction = relativity_math.lorentz_contraction_scale(
+        beta, settings["lorentz_strength"])
 
     axis = transforms.dominant_axis(velocity)
     if axis < 0:
@@ -121,7 +99,7 @@ def _make_copy(doc, source, settings):
     clone.InsertAfter(source)
     doc.AddUndo(c4d.UNDOTYPE_NEWOBJ, clone)
 
-    if settings["hide"]:
+    if settings["hide_originals_lorentz"]:
         doc.AddUndo(c4d.UNDOTYPE_CHANGE, source)
         source.SetEditorMode(c4d.MODE_OFF)
         source.SetRenderMode(c4d.MODE_OFF)
@@ -139,7 +117,7 @@ def create_preview(doc):
     """
     if doc is None:
         return 0, "no_objects"
-    settings = _settings(scene_controller.find_controller(doc))
+    settings = scene_controller.read_runtime(scene_controller.find_controller(doc))
     if not settings["enabled"]:
         return 0, "disabled"
 
@@ -168,7 +146,7 @@ def remove_preview(doc):
     """
     if doc is None:
         return 0
-    copies = [op for op in _iter_objects(doc.GetFirstObject())
+    copies = [op for op in scene_utils.iter_objects(doc.GetFirstObject())
               if op.GetName().startswith(PREFIX)]
     if not copies:
         return 0
@@ -196,5 +174,5 @@ def count_preview_copies(doc):
     """Return the number of Lorentz preview copies in the document."""
     if doc is None:
         return 0
-    return sum(1 for op in _iter_objects(doc.GetFirstObject())
+    return sum(1 for op in scene_utils.iter_objects(doc.GetFirstObject())
                if op.GetName().startswith(PREFIX))

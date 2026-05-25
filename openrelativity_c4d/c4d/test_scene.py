@@ -16,7 +16,7 @@ camera's viewing axis - independent of where they sit - for a predictable demo.
 import c4d
 
 from ..logging_utils import get_logger
-from . import camera_tools, object_tools, scene_controller, userdata
+from . import camera_tools, object_tools, scene_controller, scene_utils, userdata
 
 log = get_logger("test_scene")
 
@@ -40,17 +40,9 @@ TEST_OBJECTS = (
 )
 
 
-def _iter_objects(op):
-    while op:
-        yield op
-        for child in _iter_objects(op.GetDown()):
-            yield child
-        op = op.GetNext()
-
-
 def _next_slot(doc):
     """Return a name suffix ('' , '_2', '_3', ...) free of name collisions."""
-    existing = {op.GetName() for op in _iter_objects(doc.GetFirstObject())}
+    existing = {op.GetName() for op in scene_utils.iter_objects(doc.GetFirstObject())}
     index = 1
     while True:
         suffix = "" if index == 1 else "_{0}".format(index)
