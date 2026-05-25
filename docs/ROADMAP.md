@@ -40,15 +40,20 @@ Done:
 - ✅ Unit tests under plain Python (`python -m unittest`), **no `c4d`**, including
   a guard that the core never imports `c4d`.
 - ✅ Plugin package + `openrelativity_c4d.pyp` entry point with defensive imports
-  and logging; registers an *Extensions > OpenRelativity C4D: About* command that
-  opens a dialog (version, target/running C4D version, Octane status).
+  and logging; registers the *Extensions > OpenRelativity C4D: About* command
+  (version, target/running C4D version, Octane status, controller presence).
+- ✅ **Relativity Scene Controller (v1)** — *Create Relativity Controller* command
+  builds an `ORC_Relativity_Controller` Null with organized User Data (speed of
+  light, global beta, effect strengths, preview mode, Octane/bake toggles) and
+  safe defaults; clean name-based read/write helpers in `scene_controller`.
+  (A future `ObjectData`/SceneHook version may replace the Null.)
 - ✅ **Octane adapter stubs** — `detection.is_octane_available()` + no-op
   facade; verified the plugin imports with Octane **not** installed.
 
 Remaining:
 
-- 🔜 **Relativity Scene Controller** — owns `c`, observer velocity, time;
-  distributes state. (placeholder module present)
+- 🔜 **Distribute controller state to effects** (deformer + materials read `c`,
+  beta, strengths from the controller).
 - 🔜 **Relativistic Camera Tag** — observer velocity (via the core), exposes
   FOV/aspect. (placeholder module present)
 - 🔜 **Relativistic Object Tag** — per-object world velocity + flags.

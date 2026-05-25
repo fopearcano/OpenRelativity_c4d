@@ -1,14 +1,17 @@
-"""The "About" command and its dialog (the only functional UI in this skeleton).
+"""Plugin commands.
 
-Adds *Extensions > OpenRelativity C4D: About*, which opens a small modal dialog
-showing the plugin version, the target Cinema 4D version, the running build, the
-current development status, and whether an Octane integration was detected.
+* *Extensions > OpenRelativity C4D: About* - a modal dialog with the plugin
+  version, target/running Cinema 4D version, Octane detection, whether a
+  Relativity Controller exists in the scene, and the development status.
+* *Extensions > OpenRelativity C4D: Create Relativity Controller* - creates (or
+  re-selects) the ``ORC_Relativity_Controller`` Null with its User Data.
 """
 
 import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
 
 from .. import constants, ids
 from ..logging_utils import get_logger
+from . import scene_controller
 
 log = get_logger("commands")
 
@@ -31,6 +34,15 @@ def _octane_status():
         return "unknown"
 
 
+def _controller_status():
+    """Return whether a Relativity Controller exists in the active document."""
+    try:
+        doc = c4d.documents.GetActiveDocument()
+        return "present" if scene_controller.find_controller(doc) else "not in scene"
+    except Exception:  # noqa: BLE001
+        return "unknown"
+
+
 def about_info_lines():
     """Build the list of text lines shown in the About dialog."""
     return [
@@ -40,6 +52,7 @@ def about_info_lines():
         "Target C4D:     Cinema 4D {0}".format(constants.TARGET_C4D_VERSION),
         "Running build:  {0}".format(_c4d_build()),
         "Octane:         {0}".format(_octane_status()),
+        "Controller:     {0}".format(_controller_status()),
         "Phase:          {0}".format(constants.DEVELOPMENT_PHASE),
         "",
         "Status:",
@@ -93,6 +106,42 @@ class AboutCommand(c4d.plugins.CommandData):
             pluginid=ids.DIALOG_ABOUT,
             defaultw=460,
             defaulth=260,
+        )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class CreateControllerCommand(c4d.plugins.CommandData):
+    """Create (or re-select) the ``ORC_Relativity_Controller`` Null."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        existing = scene_controller.find_controller(doc)
+        if existing is not None:
+            doc.SetActiveObject(existing)
+            c4d.EventAdd()
+            log.info("Relativity Controller already present; selected it.")
+            c4d.gui.MessageDialog(
+                "A Relativity Controller already exists.\n"
+                "It has been selected - edit its User Data in the Attribute Manager."
+            )
+            return True
+
+        controller = scene_controller.create_controller(doc)
+        if controller is None:
+            c4d.gui.MessageDialog("Failed to create the Relativity Controller.")
+            return False
+
+        c4d.gui.MessageDialog(
+            "Created '{0}'.\n"
+            "Select it and open the Attribute Manager (User Data) to adjust the "
+            "speed of light, beta, and effect strengths.".format(
+                scene_controller.CONTROLLER_NAME
+            )
         )
         return True
 

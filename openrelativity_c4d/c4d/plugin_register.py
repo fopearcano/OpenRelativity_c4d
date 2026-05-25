@@ -34,9 +34,25 @@ def register_all():
         log.error("Failed to register the 'About' command (id=%s).", ids.COMMAND_ABOUT)
         ok = False
 
+    # --- Create Relativity Controller command ------------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_CREATE_CONTROLLER,
+        str="{0}: Create Relativity Controller".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Create the ORC_Relativity_Controller Null with relativity settings.",
+        dat=commands.CreateControllerCommand(),
+    )
+    if registered:
+        log.info("Registered 'Create Relativity Controller' (id=%s).",
+                 ids.COMMAND_CREATE_CONTROLLER)
+    else:
+        log.error("Failed to register 'Create Relativity Controller' (id=%s).",
+                  ids.COMMAND_CREATE_CONTROLLER)
+        ok = False
+
     # --- Later phases (not implemented yet) --------------------------------
-    # from . import scene_controller, camera_tools, object_tools
-    # ok &= scene_controller.register()
+    # from . import camera_tools, object_tools
     # ok &= camera_tools.register()
     # ok &= object_tools.register()
 

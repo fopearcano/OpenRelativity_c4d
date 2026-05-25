@@ -15,12 +15,14 @@ physically-based renderer (Octane), rather than a real-time game engine. See
 [`docs/ORIGINAL_OPENRELATIVITY_REFERENCE.md`](docs/ORIGINAL_OPENRELATIVITY_REFERENCE.md)
 for the concept-by-concept mapping.
 
-> **Status: Phase 1 — plugin skeleton.**
-> The plugin loads in Cinema 4D 2023+ and registers an *Extensions >
-> OpenRelativity C4D: About* command. The pure-Python physics core
-> (`openrelativity_c4d.core`) is implemented and unit-tested. The relativistic
-> Scene Controller, Camera/Object tags, deformers, and Octane mapping are
-> placeholders for later phases. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+> **Status: Phase 1 — in progress.**
+> The plugin loads in Cinema 4D 2023+ and registers two *Extensions* commands:
+> **About** and **Create Relativity Controller** (which adds an
+> `ORC_Relativity_Controller` Null with organized settings). The pure-Python
+> physics core (`openrelativity_c4d.core`) is implemented and unit-tested. The
+> Camera/Object tags, deformers, and Octane mapping are placeholders for later
+> phases. See [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) to get started and
+> [`docs/ROADMAP.md`](docs/ROADMAP.md) for the plan.
 
 ---
 
@@ -53,14 +55,17 @@ Implemented now (Phase 1):
   in plain Python.
 - **About command** — registers under *Extensions* and opens a minimal dialog
   showing the plugin version, target/running Cinema 4D version, Octane
-  detection, and status.
+  detection, whether a Relativity Controller exists, and status.
+- **Relativity Controller** — *Extensions > Create Relativity Controller* adds an
+  `ORC_Relativity_Controller` Null with organized User Data (speed of light,
+  global beta, effect strengths, preview mode, Octane/bake toggles) and clean
+  read/write helpers. Stores settings now; drives effects in later phases. See
+  [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md).
 - **Octane adapter (optional, isolated)** — soft-detects Octane; the plugin
   imports and runs **without Octane installed**. Mapping is stubbed.
 
 Planned (later phases — see [`docs/ROADMAP.md`](docs/ROADMAP.md)):
 
-- **Relativity Scene Controller** — global `c`, observer velocity, simulation
-  time / time dilation.
 - **Relativistic Camera Tag** — observer frame & relativistic velocity addition.
 - **Relativistic Object Tag** — per-object velocity, causal visibility, effect flags.
 - **Lorentz deformation / bake utility** — moves real mesh points.

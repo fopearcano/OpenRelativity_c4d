@@ -23,19 +23,22 @@ Shipping with these placeholders can break other plugins and corrupt user
 scenes that reference the wrong ID.
 """
 
-# --- Commands (active in this skeleton) -------------------------------------
-COMMAND_ABOUT = 1000001  # PLACEHOLDER - replace with a registered Plugin Cafe ID
+# --- Commands (active) ------------------------------------------------------
+COMMAND_ABOUT = 1000001             # PLACEHOLDER - replace with a registered ID
+COMMAND_CREATE_CONTROLLER = 1000007 # PLACEHOLDER - "Create Relativity Controller"
 
 # --- Dialog layout IDs ------------------------------------------------------
 DIALOG_ABOUT = 1000002  # PLACEHOLDER - replace with a registered Plugin Cafe ID
 
 # --- Reserved for later phases (NOT registered/used yet) --------------------
 # Declared now so the numbers are tracked in one place; wiring comes later.
-SCENEHOOK_RELATIVITY = 1000003     # PLACEHOLDER - Relativity Scene Controller
+# Note: the Relativity Controller is currently a Null + User Data (see
+# c4d/scene_controller.py); its fields are addressed by name, so they need no
+# registered IDs. SCENEHOOK_RELATIVITY is reserved for a future ObjectData/hook.
+SCENEHOOK_RELATIVITY = 1000003     # PLACEHOLDER - Relativity Scene Controller (future)
 TAG_RELATIVISTIC_CAMERA = 1000004  # PLACEHOLDER - Relativistic Camera Tag
 TAG_RELATIVISTIC_OBJECT = 1000005  # PLACEHOLDER - Relativistic Object Tag
 OBJECT_LORENTZ_DEFORMER = 1000006  # PLACEHOLDER - Lorentz deformer / bake
-COMMAND_SCENE_CONTROLLER = 1000007 # PLACEHOLDER - create/sync Scene Controller
 
 
 def all_ids():
