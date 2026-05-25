@@ -31,6 +31,51 @@ The active-renderer check identifies Octane by the active engine's **plugin
 name** (again ID-independent), falling back to `unknown` when it cannot be
 determined.
 
+## Octane-compatible material preview (graceful fallback)
+
+There is now a first **material adapter** with a safe fallback path:
+
+- **Extensions > “OpenRelativity C4D: Apply Octane-Compatible Material Preview”**
+  applies the combined Doppler + searchlight preview, trying Octane first and
+  otherwise using the Standard `ORC_Preview` material (which Octane can also
+  render). The result dialog reports how many objects used Octane vs. the
+  Standard fallback.
+- `octane/material_adapter.py`:
+  - `create_or_update_octane_doppler_material(doc, obj, color, intensity)` -
+    attempts a native Octane material; **never raises**. It returns a structured
+    result dict: `ok` (bool), `method` (`octane` / `unavailable` / `unsupported`),
+    `warnings` (list), `missing` (list of the exact Octane data still needed).
+  - `required_octane_material_info()` - the documented list of what is missing.
+- `octane/adapter.py`:
+  - `apply_octane_or_fallback_material(doc, obj, color, intensity)` - tries the
+    Octane material, then falls back to `preview_material.set_preview_material`,
+    returning a structured result (`method` = `octane` / `fallback` / `error`).
+
+**Current implementation status:** native Octane material creation is **not done
+yet** - we do not have a verified Octane material type/parameter mapping, so the
+adapter deliberately reports `unsupported` and **always falls back** to a Standard
+material rather than create a half-configured Octane material. The fallback uses
+the same `ORC_Preview_<name>` material as the other previews, so *Clear Material
+Preview* cleans it up.
+
+### TODO to make native Octane materials work
+
+`required_octane_material_info()` enumerates exactly what is needed (verified at
+runtime, not assumed):
+
+1. The verified Octane **material type/plugin ID** (community candidate: 1029501)
+   and which material to target (diffuse / universal / standard-surface).
+2. Whether the installed Octane version's material is **node-graph based**
+   (`GraphNode`/`NodeMaterial`) or classic `BaseMaterial` parameters.
+3. Parameter/description IDs (or node names) for **diffuse/albedo colour**.
+4. Parameter/description IDs (or node names) for **emission colour and power**
+   (to carry the searchlight intensity).
+5. The exact **Python API** path for the above on the target Octane version.
+
+Once these are confirmed, build/configure the material inside
+`create_or_update_octane_doppler_material` and return `method="octane"`,
+`ok=True`; the fallback then only triggers when Octane is genuinely absent.
+
 ## Hard caveats (please read)
 
 - **No Octane dependency is required** for the core plugin.
@@ -53,11 +98,14 @@ the existing previews already do this (generated Standard materials, contracted
 geometry copies). This phase formalizes a clean, bake-friendly scene state that
 Octane can pick up unchanged.
 
-### Phase B - Octane material / node adapter
-`octane/material_adapter.py` maps the per-object Doppler colour and searchlight
-intensity onto **Octane material nodes** (e.g. diffuse/emission colour and power)
-when Octane is present, mirroring what the Standard preview does. Driven through
-`adapter.apply_doppler_to_material(...)`; a no-op stub today.
+### Phase B - Octane material / node adapter (started: stub + fallback)
+`octane/material_adapter.py` will map the per-object Doppler colour and
+searchlight intensity onto **Octane material nodes** (e.g. diffuse/emission colour
+and power), mirroring the Standard preview. **Started**: the adapter and the
+*Apply Octane-Compatible Material Preview* command exist and fall back safely to
+Standard materials; native Octane material creation is pending the data listed in
+"TODO to make native Octane materials work" above. Driven through
+`adapter.apply_octane_or_fallback_material(doc, obj, color, intensity)`.
 
 ### Phase C - AOV / render pass setup
 `octane/aov_adapter.py` optionally exposes relativistic quantities (e.g. the

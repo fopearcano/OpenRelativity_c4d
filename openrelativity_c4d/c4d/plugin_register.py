@@ -253,4 +253,21 @@ def register_all():
                   ids.COMMAND_OCTANE_STATUS)
         ok = False
 
+    # --- Apply Octane-Compatible Material Preview command ------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_APPLY_OCTANE_MATERIAL,
+        str="{0}: Apply Octane-Compatible Material Preview".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Apply the preview via Octane if supported, else a Standard fallback.",
+        dat=commands.ApplyOctaneCompatibleMaterialPreviewCommand(),
+    )
+    if registered:
+        log.info("Registered 'Apply Octane-Compatible Material Preview' (id=%s).",
+                 ids.COMMAND_APPLY_OCTANE_MATERIAL)
+    else:
+        log.error("Failed to register 'Apply Octane-Compatible Material Preview' "
+                  "(id=%s).", ids.COMMAND_APPLY_OCTANE_MATERIAL)
+        ok = False
+
     return ok

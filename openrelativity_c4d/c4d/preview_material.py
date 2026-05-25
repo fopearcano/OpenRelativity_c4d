@@ -164,22 +164,26 @@ def _ensure_texture_tag(doc, obj, mat):
 
 
 # --- the effect --------------------------------------------------------------
-def _apply_to_object(doc, obj, settings, camera, do_doppler, do_searchlight):
-    obj_settings = object_tools.read_orc_object_settings(obj)
+def _object_color_and_multiplier(obj, obj_settings, settings, camera,
+                                 do_doppler, do_searchlight):
+    """Return ``(color, multiplier)`` for an object, or ``None`` if it is skipped.
+
+    ``color`` is the (Doppler-shifted or base) ``(r, g, b)``; ``multiplier`` is the
+    searchlight intensity multiplier (``1.0`` when searchlight is off).
+    """
     if not obj_settings.get(object_tools.FIELD_ORC_ENABLED, True):
-        return False
+        return None
 
     eff_doppler = do_doppler and bool(
         obj_settings.get(object_tools.FIELD_DOPPLER_PREVIEW, True))
     eff_searchlight = do_searchlight and bool(
         obj_settings.get(object_tools.FIELD_SEARCHLIGHT_PREVIEW, True))
     if not (eff_doppler or eff_searchlight):
-        return False
+        return None
 
     beta, cos_theta = _compute_inputs(obj, obj_settings, settings, camera)
     base = _base_color(obj)
 
-    # Colour channel (Doppler tint), or the untinted base colour.
     if eff_doppler:
         factor = doppler.doppler_factor(beta, cos_theta)
         color = doppler.approximate_rgb_doppler_shift(
@@ -187,19 +191,25 @@ def _apply_to_object(doc, obj, settings, camera, do_doppler, do_searchlight):
     else:
         color = base
 
-    # Brightness + emission (searchlight), or neutral.
     if eff_searchlight:
         multiplier = searchlight.searchlight_intensity_multiplier(
             beta, cos_theta, settings["searchlight_strength"])
-        brightness = relativity_math.clamp(multiplier, MIN_BRIGHTNESS, MAX_BRIGHTNESS)
-        luminance_on = multiplier > 1.0
-        luminance = (relativity_math.clamp(
-            (multiplier - 1.0) * LUMINANCE_GAIN, 0.0, MAX_LUMINANCE)
-            if luminance_on else 0.0)
     else:
-        brightness = 1.0
-        luminance_on = False
-        luminance = 0.0
+        multiplier = 1.0
+    return color, multiplier
+
+
+def _write_material(doc, obj, color, multiplier):
+    """Create/update the object's ``ORC_Preview_<name>`` Standard material.
+
+    ``color`` is ``(r, g, b)``; ``multiplier`` is the searchlight intensity
+    (``1.0`` = neutral). Returns the material.
+    """
+    brightness = relativity_math.clamp(multiplier, MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+    luminance_on = multiplier > 1.0
+    luminance = (relativity_math.clamp(
+        (multiplier - 1.0) * LUMINANCE_GAIN, 0.0, MAX_LUMINANCE)
+        if luminance_on else 0.0)
 
     color_vec = c4d.Vector(color[0], color[1], color[2])
     mat = _get_or_create_material(doc, PREFIX + obj.GetName())
@@ -213,18 +223,43 @@ def _apply_to_object(doc, obj, settings, camera, do_doppler, do_searchlight):
     mat.Update(True, True)
 
     _ensure_texture_tag(doc, obj, mat)
-    log.debug("Preview %s: beta=%.3f cosT=%.3f doppler=%s searchlight=%s",
-              obj.GetName(), beta, cos_theta, eff_doppler, eff_searchlight)
+    return mat
+
+
+def set_preview_material(doc, obj, color, intensity=1.0):
+    """Public: write an object's preview material from an explicit colour and
+    searchlight intensity. Used by the Octane adapter's Standard fallback so the
+    result is identical to the native Standard preview (and Clear cleans it up).
+    """
+    return _write_material(doc, obj, color, 1.0 if intensity is None else intensity)
+
+
+def _apply_to_object(doc, obj, settings, camera, do_doppler, do_searchlight,
+                     writer=None):
+    obj_settings = object_tools.read_orc_object_settings(obj)
+    computed = _object_color_and_multiplier(
+        obj, obj_settings, settings, camera, do_doppler, do_searchlight)
+    if computed is None:
+        return False
+    color, multiplier = computed
+    if writer is not None:
+        writer(doc, obj, color, multiplier)
+    else:
+        _write_material(doc, obj, color, multiplier)
+    log.debug("Preview %s: color=%s multiplier=%.3f", obj.GetName(), color, multiplier)
     return True
 
 
-def apply_preview(doc, do_doppler=True, do_searchlight=True):
+def apply_preview(doc, do_doppler=True, do_searchlight=True, writer=None):
     """Apply the relativity material preview to all eligible objects.
 
     ``do_doppler`` / ``do_searchlight`` select which effects to fold in (the
-    per-object preview flags still gate each effect). Returns ``(count, status)``
-    where ``status`` is ``"ok"``, ``"disabled"`` (controller master Enabled off),
-    or ``"no_objects"``.
+    per-object preview flags still gate each effect). ``writer`` is an optional
+    ``callable(doc, obj, color, multiplier)`` that performs the actual material
+    write; when ``None`` the built-in Standard material write is used. (The
+    Octane-compatible command passes a writer that tries Octane first.) Returns
+    ``(count, status)`` where ``status`` is ``"ok"``, ``"disabled"`` (controller
+    master Enabled off), or ``"no_objects"``.
     """
     if doc is None:
         return 0, "no_objects"
@@ -241,7 +276,8 @@ def apply_preview(doc, do_doppler=True, do_searchlight=True):
     doc.StartUndo()
     for obj in objects:
         try:
-            if _apply_to_object(doc, obj, settings, camera, do_doppler, do_searchlight):
+            if _apply_to_object(doc, obj, settings, camera, do_doppler,
+                                do_searchlight, writer):
                 count += 1
         except Exception:  # noqa: BLE001 - keep going for the other objects
             log.exception("Failed to apply preview to %s.", obj.GetName())

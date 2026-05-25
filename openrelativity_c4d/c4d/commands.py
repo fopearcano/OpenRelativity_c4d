@@ -18,6 +18,7 @@ import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
 
 from .. import constants, ids
 from ..logging_utils import get_logger
+from ..octane import adapter as octane_adapter
 from ..octane import detection as octane_detection
 from . import (
     camera_tools,
@@ -544,6 +545,63 @@ class OctaneStatusCommand(c4d.plugins.CommandData):
             "OpenRelativity C4D - Octane Status\n\n"
             + octane_detection.format_status_report(report)
         )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class ApplyOctaneCompatibleMaterialPreviewCommand(c4d.plugins.CommandData):
+    """Apply the combined preview via Octane if supported, else Standard fallback."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        tally = {}
+        warnings_seen = []
+
+        def writer(d, obj, color, multiplier):
+            result = octane_adapter.apply_octane_or_fallback_material(
+                d, obj, color, multiplier)
+            method = result.get("method", "error")
+            tally[method] = tally.get(method, 0) + 1
+            for warning in result.get("warnings", []):
+                if warning not in warnings_seen:
+                    warnings_seen.append(warning)
+
+        count, status = preview_material.apply_preview(
+            doc, do_doppler=True, do_searchlight=True, writer=writer)
+
+        if status == "disabled":
+            c4d.gui.MessageDialog(
+                "The Relativity Controller is disabled (Enabled = off).\n"
+                "Nothing was applied."
+            )
+            return True
+        if status == "no_objects":
+            c4d.gui.MessageDialog(
+                "No relativistic objects found.\n"
+                "Run 'Create Test Scene' or 'Setup Selected Relativistic "
+                "Objects' first."
+            )
+            return True
+
+        octane_n = tally.get("octane", 0)
+        fallback_n = tally.get("fallback", 0)
+        error_n = tally.get("error", 0)
+        lines = [
+            "Octane-compatible material preview applied to {0} object(s):".format(count),
+            "  - via Octane material: {0}".format(octane_n),
+            "  - via Standard fallback: {0}".format(fallback_n),
+        ]
+        if error_n:
+            lines.append("  - failed: {0}".format(error_n))
+        if warnings_seen:
+            lines.append("")
+            lines.append("Notes:")
+            lines.extend("- " + warning for warning in warnings_seen)
+        c4d.gui.MessageDialog("\n".join(lines))
         return True
 
     def GetState(self, doc):

@@ -188,9 +188,10 @@ implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
 
 - **Terrell rotation / true apparent geometry** (the Lorentz preview is a simple
   axis-aligned contraction only).
-- **Octane** output. The plugin can *detect* Octane and report status via
-  **Extensions > “OpenRelativity C4D: Octane Status”**, but does not modify Octane
-  yet (the adapter is a safe no-op). See
+- **Octane** output. The plugin can *detect* Octane (**Octane Status**) and run
+  **Apply Octane-Compatible Material Preview**, but native Octane material
+  creation isn't implemented yet - that command currently falls back to the
+  Standard preview (and reports it). See
   [`OCTANE_INTEGRATION.md`](OCTANE_INTEGRATION.md).
 - **Bake** workflow.
 

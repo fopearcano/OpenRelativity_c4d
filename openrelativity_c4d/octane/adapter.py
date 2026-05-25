@@ -1,11 +1,13 @@
 """Octane adapter facade.
 
 The rest of the plugin talks to Octane only through this small, stable API -
-never to an Octane module directly. When Octane is unavailable, calls are safe
-no-ops that return ``False``/``None``.
+never to an Octane module directly. When Octane is unavailable, calls degrade
+gracefully (safe no-ops or Standard-material fallbacks).
 
-Phase 1: stubs. The concrete mapping lives in the sibling ``*_adapter`` modules
-and is implemented in Phase 3 (see docs/ROADMAP.md).
+Implemented: detection/status (:func:`is_available`, :func:`status_report`) and
+:func:`apply_octane_or_fallback_material` (tries Octane, falls back to the
+Standard preview). The native Octane material/camera/AOV mapping is still future
+work - see docs/OCTANE_INTEGRATION.md and docs/ROADMAP.md (Phase 3).
 """
 
 from ..logging_utils import get_logger
@@ -24,16 +26,44 @@ def status_report(doc):
     return detection.get_octane_status_report(doc)
 
 
-def apply_doppler_to_material(material, base_color, intensity):
-    """Mirror a per-object Doppler/searchlight result onto an Octane material.
+def apply_octane_or_fallback_material(doc, obj, color, intensity):
+    """Apply an Octane material to ``obj`` if feasible, else a Standard fallback.
 
-    ``material`` is a Cinema 4D material; ``base_color`` an ``(r, g, b)`` tuple;
-    ``intensity`` the searchlight scale factor. Returns ``True`` on success.
-    No-op stub in Phase 1.
+    ``color`` is ``(r, g, b)``; ``intensity`` is the searchlight multiplier.
+    Returns a structured result dict with keys ``ok``, ``method``
+    (``"octane"`` / ``"fallback"`` / ``"error"``), ``warnings``, ``missing``.
+    Never raises.
+
+    Octane is tried first via
+    :func:`material_adapter.create_or_update_octane_doppler_material`; if that is
+    not feasible (no verified Octane mapping yet), it falls back to the Standard
+    ``ORC_Preview`` material - which Octane can also render - so the preview always
+    appears.
     """
-    if not is_available():
-        return False
-    return material_adapter.apply_doppler(material, base_color, intensity)
+    result = material_adapter.create_or_update_octane_doppler_material(
+        doc, obj, color, intensity)
+    if result.get("ok"):
+        return result  # native Octane material applied (future)
+
+    # Fall back to the Standard preview material (renderer-agnostic). Imported
+    # lazily so this module stays import-safe without Cinema 4D.
+    try:
+        from ..c4d import preview_material
+
+        preview_material.set_preview_material(doc, obj, color, intensity)
+        result = dict(result)
+        result["method"] = "fallback"
+        result["ok"] = True
+        result.setdefault("warnings", []).append(
+            "Applied a Standard material fallback (ORC_Preview_<name>).")
+        return result
+    except Exception:  # noqa: BLE001
+        log.exception("Standard material fallback failed.")
+        result = dict(result)
+        result["method"] = "error"
+        result["ok"] = False
+        result.setdefault("warnings", []).append("Standard fallback failed.")
+        return result
 
 
 def sync_camera(c4d_camera, observer_state):

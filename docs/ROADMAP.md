@@ -130,8 +130,11 @@ experimental OSL camera, E: external bridge) lives in
 [`OCTANE_INTEGRATION.md`](OCTANE_INTEGRATION.md). Detection/status (Phase 1) is
 done; the rest below is unstarted.
 
-- ⬜ Map per-object Doppler color + searchlight intensity onto **Octane material
+- 🟡 Map per-object Doppler color + searchlight intensity onto **Octane material
   nodes** (e.g. diffuse/emission color and power) through the adapter only.
+  *Started:* `octane/material_adapter.py` + the *Apply Octane-Compatible Material
+  Preview* command exist with a safe Standard fallback; native Octane material
+  creation is pending a verified parameter mapping (see `OCTANE_INTEGRATION.md`).
 - ⬜ **Per-frame bake workflow** for deformed geometry so Octane renders the
   apparent shapes.
 - ⬜ Presets and artist-facing UX (sensible defaults, unit handling, helpful
