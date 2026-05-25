@@ -27,6 +27,7 @@ from ..logging_utils import get_logger
 from ..octane import adapter as octane_adapter
 from ..octane import aov_adapter as octane_aov
 from ..octane import detection as octane_detection
+from ..octane import diagnostics as octane_diagnostics
 from ..octane import osl_camera as octane_osl
 from . import (
     camera_tools,
@@ -552,6 +553,21 @@ class OctaneStatusCommand(c4d.plugins.CommandData):
         c4d.gui.MessageDialog(
             "OpenRelativity C4D - Octane Status\n\n"
             + octane_detection.format_status_report(report)
+        )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class OctaneDiagnosticsCommand(c4d.plugins.CommandData):
+    """Print detected Octane IDs/classes/material parameters (read-only)."""
+
+    def Execute(self, doc):
+        data = octane_diagnostics.collect_diagnostics(doc)
+        c4d.gui.MessageDialog(
+            "OpenRelativity C4D - Octane Diagnostics\n\n"
+            + octane_diagnostics.format_diagnostics(data)
         )
         return True
 

@@ -132,6 +132,33 @@ def _ensure_texture_tag(doc, obj, mat):
     return tag
 
 
+def ensure_preview_tag(doc, obj, mat):
+    """Public: ensure ``obj`` has a preview Texture tag pointing to ``mat``.
+
+    Reused by the Octane material adapter so native Octane materials get the same
+    layered Texture tag as the Standard preview (and are cleared the same way).
+    """
+    return _ensure_texture_tag(doc, obj, mat)
+
+
+def remove_object_preview_tag(doc, obj):
+    """Remove ``obj``'s ORC preview Texture tag(s). Returns the count removed.
+
+    Used when the adapter swaps a Standard preview material for an Octane one (to
+    avoid leaving a tag pointing at a removed material).
+    """
+    removed = 0
+    for tag in list(obj.GetTags()):
+        if tag.GetType() != c4d.Ttexture:
+            continue
+        mat = tag[c4d.TEXTURETAG_MATERIAL]
+        if mat is not None and mat.GetName().startswith(PREFIX):
+            doc.AddUndo(c4d.UNDOTYPE_DELETEOBJ, tag)
+            tag.Remove()
+            removed += 1
+    return removed
+
+
 # --- the effect --------------------------------------------------------------
 def _object_color_and_multiplier(obj, obj_settings, settings, camera,
                                  do_doppler, do_searchlight):

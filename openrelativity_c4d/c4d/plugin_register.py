@@ -252,6 +252,23 @@ def register_all():
                   ids.COMMAND_OCTANE_STATUS)
         ok = False
 
+    # --- Octane Diagnostics command ----------------------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_OCTANE_DIAGNOSTICS,
+        str="{0}: Octane Diagnostics".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Report detected Octane IDs/classes/material parameters (read-only).",
+        dat=commands.OctaneDiagnosticsCommand(),
+    )
+    if registered:
+        log.info("Registered 'Octane Diagnostics' (id=%s).",
+                 ids.COMMAND_OCTANE_DIAGNOSTICS)
+    else:
+        log.error("Failed to register 'Octane Diagnostics' (id=%s).",
+                  ids.COMMAND_OCTANE_DIAGNOSTICS)
+        ok = False
+
     # --- Apply Octane-Compatible Material Preview command ------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.COMMAND_APPLY_OCTANE_MATERIAL,

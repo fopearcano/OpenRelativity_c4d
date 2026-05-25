@@ -49,21 +49,34 @@ def octane_module():
 
 
 def _named_octane_plugins():
-    """Return the names of registered plugins that look like Octane.
+    """Return the names of registered plugins that look like Octane (back-compat)."""
+    return [p["name"] for p in octane_plugins()]
 
-    ID-independent: scans the video-post / material / shader plugin lists for the
-    word "octane". Never raises (returns ``[]`` on any problem or outside C4D).
+
+#: Plugin categories scanned for Octane (label, c4d.PLUGINTYPE_* attribute name).
+_PLUGIN_CATEGORIES = (
+    ("material", "PLUGINTYPE_MATERIAL"),
+    ("videopost", "PLUGINTYPE_VIDEOPOST"),
+    ("shader", "PLUGINTYPE_SHADER"),
+    ("object", "PLUGINTYPE_OBJECT"),
+    ("tag", "PLUGINTYPE_TAG"),
+)
+
+
+def octane_plugins():
+    """Return Octane-looking registered plugins as ``[{name, id, type}, ...]``.
+
+    ID-independent (matches the name token "octane") and never raises; scans
+    material / video-post / shader / object / tag categories so the diagnostic can
+    surface material, camera (object/tag), and renderer IDs. Returns ``[]`` outside
+    Cinema 4D.
     """
     c4d = _c4d()
     if c4d is None:
         return []
-    names = []
-    plugin_types = (
-        getattr(c4d, "PLUGINTYPE_VIDEOPOST", None),
-        getattr(c4d, "PLUGINTYPE_MATERIAL", None),
-        getattr(c4d, "PLUGINTYPE_SHADER", None),
-    )
-    for ptype in plugin_types:
+    found = []
+    for label, attr in _PLUGIN_CATEGORIES:
+        ptype = getattr(c4d, attr, None)
         if ptype is None:
             continue
         try:
@@ -73,11 +86,12 @@ def _named_octane_plugins():
         for plugin in plugins:
             try:
                 name = plugin.GetName()
+                if name and _OCTANE_NAME_TOKEN in name.lower():
+                    found.append({"name": name, "id": int(plugin.GetID()),
+                                  "type": label})
             except Exception:  # noqa: BLE001
                 continue
-            if name and _OCTANE_NAME_TOKEN in name.lower():
-                names.append(name)
-    return names
+    return found
 
 
 def detect_octane_available():

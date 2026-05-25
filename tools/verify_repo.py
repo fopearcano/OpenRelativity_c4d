@@ -47,6 +47,7 @@ EXPECTED_FILES = [
     "openrelativity_c4d/c4d/test_scene.py",
     "openrelativity_c4d/c4d/userdata.py",
     "openrelativity_c4d/octane/detection.py",
+    "openrelativity_c4d/octane/diagnostics.py",
     "openrelativity_c4d/octane/adapter.py",
     "openrelativity_c4d/octane/material_adapter.py",
     "openrelativity_c4d/octane/aov_adapter.py",

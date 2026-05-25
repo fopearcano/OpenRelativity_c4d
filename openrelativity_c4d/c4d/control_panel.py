@@ -71,6 +71,7 @@ class ControlPanelDialog(c4d.gui.GeDialog):
         )),
         ("Octane / export", (
             ("Octane Status", ids.COMMAND_OCTANE_STATUS),
+            ("Octane Diagnostics", ids.COMMAND_OCTANE_DIAGNOSTICS),
             ("Show AOV Plan", ids.COMMAND_SHOW_AOV_PLAN),
             ("Export Relativity Metadata JSON", ids.COMMAND_EXPORT_METADATA),
         )),

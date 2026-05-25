@@ -28,6 +28,10 @@ class TestOctaneDetectionIsSafe(unittest.TestCase):
     def test_named_plugins_empty_without_c4d(self):
         self.assertEqual(detection._named_octane_plugins(), [])
 
+    def test_octane_plugins_empty_without_c4d(self):
+        # The structured scan must also return an empty list (never raise).
+        self.assertEqual(detection.octane_plugins(), [])
+
 
 class TestOctaneStatusReport(unittest.TestCase):
     def test_report_has_expected_keys(self):
