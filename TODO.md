@@ -6,11 +6,14 @@ Prioritized roadmap of the next work, highest first. See
 approximate today.
 
 ## 1. Registered plugin IDs (blocker for distribution)
-Replace the placeholder IDs in `openrelativity_c4d/ids.py` with **registered
-Plugin Café IDs** (https://plugincafe.maxon.net/). Several IDs currently sit
-**past** Maxon's `1000001-1000010` test range and can collide with other plugins.
-- One unique ID per command/dialog.
-- Keep `ids.all_ids()` for the collision self-check.
+Replace the **temporary private prototype IDs** in `openrelativity_c4d/ids.py`
+(derived from `ORC_ID_BASE`) with **registered Plugin Café IDs**
+(https://plugincafe.maxon.net/). They are off Maxon's `1000001-1000010` test
+range but are unregistered guesses, so they can still collide with other plugins.
+- One unique ID per command/dialog (or register a contiguous block and set
+  `ORC_ID_BASE` to its first ID).
+- Keep `ids.all_ids()` and run `python tools/audit_plugin_ids.py` for the
+  collision/usage self-check.
 - This must be done before the plugin is shipped or run alongside third-party
   plugins.
 

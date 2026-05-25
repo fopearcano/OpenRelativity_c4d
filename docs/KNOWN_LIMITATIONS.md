@@ -82,12 +82,26 @@ look-dev experiment, not a feature.
   inside Cinema 4D (see [`TEST_PLAN_C4D.md`](TEST_PLAN_C4D.md) and
   [`TEST_PLAN_OCTANE.md`](TEST_PLAN_OCTANE.md)); only the pure math and
   import-safe helpers are unit-tested.
-- **Plugin IDs are development placeholders** and must be replaced with
-  registered Maxon Plugin Café IDs before public distribution (see
-  [`DEVELOPER_NOTES.md`](DEVELOPER_NOTES.md) and `openrelativity_c4d/ids.py`).
 - **Metadata export is single-frame.** Export per frame for sequences; values are
   the same approximations described above (noted in each file's
   `approximation_notes`).
 - **Version coverage.** Targets Cinema 4D 2023+; not validated across every C4D /
   Octane version, and several Cinema 4D APIs used by the `c4d/` layer have not
   been exercised in this environment.
+
+### Plugin IDs
+
+Cinema 4D requires every plugin element to have a **globally unique** integer ID;
+if two plugins claim the same ID, only one of them loads at startup. So a
+duplicate ID can make this plugin **block another plugin** (or be blocked).
+
+- All IDs are centralized in `openrelativity_c4d/ids.py` and every registration
+  uses a named `ids.ID_ORC_*` constant.
+- They are **temporary private prototype IDs** (derived from a single
+  `ORC_ID_BASE`), **not** registered with Maxon and **not** guaranteed unique -
+  they only avoid the reused `1000001–1000010` test range.
+- **Before public distribution**, replace them with official IDs from the Maxon
+  Plugin Café (https://plugincafe.maxon.net/). See
+  [`DEVELOPER_NOTES.md`](DEVELOPER_NOTES.md) → "Plugin IDs".
+- **If another local plugin is blocked**, change `ORC_ID_BASE` in `ids.py` and
+  restart Cinema 4D; verify with `python tools/audit_plugin_ids.py`.

@@ -170,7 +170,7 @@ class AboutCommand(c4d.plugins.CommandData):
         dlg = AboutDialog()
         dlg.Open(
             dlgtype=c4d.DLG_TYPE_MODAL,
-            pluginid=ids.DIALOG_ABOUT,
+            pluginid=ids.ID_ORC_ABOUT_DIALOG,
             defaultw=460,
             defaulth=260,
         )

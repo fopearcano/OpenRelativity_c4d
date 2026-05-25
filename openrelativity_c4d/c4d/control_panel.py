@@ -54,29 +54,29 @@ class ControlPanelDialog(c4d.gui.GeDialog):
     # consistency; grouped into sections to stay compact.
     _SECTIONS = (
         ("Scene setup", (
-            ("Create Relativity Controller", ids.COMMAND_CREATE_CONTROLLER),
-            ("Setup Relativistic Camera", ids.COMMAND_SETUP_CAMERA),
-            ("Setup Selected Relativistic Objects", ids.COMMAND_SETUP_OBJECTS),
-            ("Create Test Scene", ids.COMMAND_CREATE_TEST_SCENE),
+            ("Create Relativity Controller", ids.ID_ORC_CREATE_CONTROLLER_COMMAND),
+            ("Setup Relativistic Camera", ids.ID_ORC_SETUP_CAMERA_COMMAND),
+            ("Setup Selected Relativistic Objects", ids.ID_ORC_SETUP_OBJECTS_COMMAND),
+            ("Create Test Scene", ids.ID_ORC_CREATE_TEST_SCENE_COMMAND),
         )),
         ("Material preview", (
-            ("Apply Doppler Material Preview", ids.COMMAND_APPLY_DOPPLER),
-            ("Apply Searchlight Preview", ids.COMMAND_APPLY_SEARCHLIGHT),
-            ("Apply Relativity Material Preview", ids.COMMAND_APPLY_RELATIVITY_PREVIEW),
-            ("Clear Material Preview", ids.COMMAND_CLEAR_PREVIEW),
+            ("Apply Doppler Material Preview", ids.ID_ORC_APPLY_DOPPLER_PREVIEW_COMMAND),
+            ("Apply Searchlight Preview", ids.ID_ORC_APPLY_SEARCHLIGHT_PREVIEW_COMMAND),
+            ("Apply Relativity Material Preview", ids.ID_ORC_APPLY_RELATIVITY_PREVIEW_COMMAND),
+            ("Clear Material Preview", ids.ID_ORC_CLEAR_PREVIEW_COMMAND),
         )),
         ("Lorentz geometry", (
-            ("Create Lorentz Preview Copies", ids.COMMAND_CREATE_LORENTZ),
-            ("Remove Lorentz Preview Copies", ids.COMMAND_REMOVE_LORENTZ),
+            ("Create Lorentz Preview Copies", ids.ID_ORC_CREATE_LORENTZ_PREVIEWS_COMMAND),
+            ("Remove Lorentz Preview Copies", ids.ID_ORC_REMOVE_LORENTZ_PREVIEWS_COMMAND),
         )),
         ("Octane / export", (
-            ("Octane Status", ids.COMMAND_OCTANE_STATUS),
-            ("Octane Diagnostics", ids.COMMAND_OCTANE_DIAGNOSTICS),
-            ("Show AOV Plan", ids.COMMAND_SHOW_AOV_PLAN),
-            ("Export Relativity Metadata JSON", ids.COMMAND_EXPORT_METADATA),
+            ("Octane Status", ids.ID_ORC_OCTANE_STATUS_COMMAND),
+            ("Octane Diagnostics", ids.ID_ORC_OCTANE_DIAGNOSTICS_COMMAND),
+            ("Show AOV Plan", ids.ID_ORC_SHOW_AOV_PLAN_COMMAND),
+            ("Export Relativity Metadata JSON", ids.ID_ORC_EXPORT_METADATA_COMMAND),
         )),
         ("Info", (
-            ("About", ids.COMMAND_ABOUT),
+            ("About", ids.ID_ORC_ABOUT_COMMAND),
         )),
     )
 
@@ -153,7 +153,7 @@ class ControlPanelCommand(c4d.plugins.CommandData):
             self.dialog = ControlPanelDialog()
         return self.dialog.Open(
             dlgtype=c4d.DLG_TYPE_ASYNC,
-            pluginid=ids.DIALOG_CONTROL_PANEL,
+            pluginid=ids.ID_ORC_CONTROL_PANEL_DIALOG,
             defaultw=300,
             defaulth=0,
         )
@@ -161,7 +161,7 @@ class ControlPanelCommand(c4d.plugins.CommandData):
     def RestoreLayout(self, sec_ref):
         if self.dialog is None:
             self.dialog = ControlPanelDialog()
-        return self.dialog.Restore(pluginid=ids.DIALOG_CONTROL_PANEL, secret=sec_ref)
+        return self.dialog.Restore(pluginid=ids.ID_ORC_CONTROL_PANEL_DIALOG, secret=sec_ref)
 
     def GetState(self, doc):
         return c4d.CMD_ENABLED

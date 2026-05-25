@@ -20,7 +20,7 @@ def register_all():
 
     # --- About command -----------------------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_ABOUT,
+        id=ids.ID_ORC_ABOUT_COMMAND,
         str="{0}: About".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -28,14 +28,14 @@ def register_all():
         dat=commands.AboutCommand(),
     )
     if registered:
-        log.info("Registered command 'About' (id=%s).", ids.COMMAND_ABOUT)
+        log.info("Registered command 'About' (id=%s).", ids.ID_ORC_ABOUT_COMMAND)
     else:
-        log.error("Failed to register the 'About' command (id=%s).", ids.COMMAND_ABOUT)
+        log.error("Failed to register the 'About' command (id=%s).", ids.ID_ORC_ABOUT_COMMAND)
         ok = False
 
     # --- Create Relativity Controller command ------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_CREATE_CONTROLLER,
+        id=ids.ID_ORC_CREATE_CONTROLLER_COMMAND,
         str="{0}: Create Relativity Controller".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -44,15 +44,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Create Relativity Controller' (id=%s).",
-                 ids.COMMAND_CREATE_CONTROLLER)
+                 ids.ID_ORC_CREATE_CONTROLLER_COMMAND)
     else:
         log.error("Failed to register 'Create Relativity Controller' (id=%s).",
-                  ids.COMMAND_CREATE_CONTROLLER)
+                  ids.ID_ORC_CREATE_CONTROLLER_COMMAND)
         ok = False
 
     # --- Setup Relativistic Camera command ---------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_SETUP_CAMERA,
+        id=ids.ID_ORC_SETUP_CAMERA_COMMAND,
         str="{0}: Setup Relativistic Camera".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -61,15 +61,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Setup Relativistic Camera' (id=%s).",
-                 ids.COMMAND_SETUP_CAMERA)
+                 ids.ID_ORC_SETUP_CAMERA_COMMAND)
     else:
         log.error("Failed to register 'Setup Relativistic Camera' (id=%s).",
-                  ids.COMMAND_SETUP_CAMERA)
+                  ids.ID_ORC_SETUP_CAMERA_COMMAND)
         ok = False
 
     # --- Setup Selected Relativistic Objects command -----------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_SETUP_OBJECTS,
+        id=ids.ID_ORC_SETUP_OBJECTS_COMMAND,
         str="{0}: Setup Selected Relativistic Objects".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -78,15 +78,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Setup Selected Relativistic Objects' (id=%s).",
-                 ids.COMMAND_SETUP_OBJECTS)
+                 ids.ID_ORC_SETUP_OBJECTS_COMMAND)
     else:
         log.error("Failed to register 'Setup Selected Relativistic Objects' (id=%s).",
-                  ids.COMMAND_SETUP_OBJECTS)
+                  ids.ID_ORC_SETUP_OBJECTS_COMMAND)
         ok = False
 
     # --- Select Relativistic Objects command -------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_SELECT_OBJECTS,
+        id=ids.ID_ORC_SELECT_OBJECTS_COMMAND,
         str="{0}: Select Relativistic Objects".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -95,15 +95,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Select Relativistic Objects' (id=%s).",
-                 ids.COMMAND_SELECT_OBJECTS)
+                 ids.ID_ORC_SELECT_OBJECTS_COMMAND)
     else:
         log.error("Failed to register 'Select Relativistic Objects' (id=%s).",
-                  ids.COMMAND_SELECT_OBJECTS)
+                  ids.ID_ORC_SELECT_OBJECTS_COMMAND)
         ok = False
 
     # --- Apply Doppler Material Preview command ----------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_APPLY_DOPPLER,
+        id=ids.ID_ORC_APPLY_DOPPLER_PREVIEW_COMMAND,
         str="{0}: Apply Doppler Material Preview".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -112,15 +112,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Apply Doppler Material Preview' (id=%s).",
-                 ids.COMMAND_APPLY_DOPPLER)
+                 ids.ID_ORC_APPLY_DOPPLER_PREVIEW_COMMAND)
     else:
         log.error("Failed to register 'Apply Doppler Material Preview' (id=%s).",
-                  ids.COMMAND_APPLY_DOPPLER)
+                  ids.ID_ORC_APPLY_DOPPLER_PREVIEW_COMMAND)
         ok = False
 
     # --- Apply Searchlight Preview command ---------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_APPLY_SEARCHLIGHT,
+        id=ids.ID_ORC_APPLY_SEARCHLIGHT_PREVIEW_COMMAND,
         str="{0}: Apply Searchlight Preview".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -129,15 +129,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Apply Searchlight Preview' (id=%s).",
-                 ids.COMMAND_APPLY_SEARCHLIGHT)
+                 ids.ID_ORC_APPLY_SEARCHLIGHT_PREVIEW_COMMAND)
     else:
         log.error("Failed to register 'Apply Searchlight Preview' (id=%s).",
-                  ids.COMMAND_APPLY_SEARCHLIGHT)
+                  ids.ID_ORC_APPLY_SEARCHLIGHT_PREVIEW_COMMAND)
         ok = False
 
     # --- Apply Relativity Material Preview (combined) command --------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_APPLY_RELATIVITY_PREVIEW,
+        id=ids.ID_ORC_APPLY_RELATIVITY_PREVIEW_COMMAND,
         str="{0}: Apply Relativity Material Preview".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -146,15 +146,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Apply Relativity Material Preview' (id=%s).",
-                 ids.COMMAND_APPLY_RELATIVITY_PREVIEW)
+                 ids.ID_ORC_APPLY_RELATIVITY_PREVIEW_COMMAND)
     else:
         log.error("Failed to register 'Apply Relativity Material Preview' (id=%s).",
-                  ids.COMMAND_APPLY_RELATIVITY_PREVIEW)
+                  ids.ID_ORC_APPLY_RELATIVITY_PREVIEW_COMMAND)
         ok = False
 
     # --- Clear Material Preview command ------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_CLEAR_PREVIEW,
+        id=ids.ID_ORC_CLEAR_PREVIEW_COMMAND,
         str="{0}: Clear Material Preview".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -163,15 +163,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Clear Material Preview' (id=%s).",
-                 ids.COMMAND_CLEAR_PREVIEW)
+                 ids.ID_ORC_CLEAR_PREVIEW_COMMAND)
     else:
         log.error("Failed to register 'Clear Material Preview' (id=%s).",
-                  ids.COMMAND_CLEAR_PREVIEW)
+                  ids.ID_ORC_CLEAR_PREVIEW_COMMAND)
         ok = False
 
     # --- Create Lorentz Preview Copies command -----------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_CREATE_LORENTZ,
+        id=ids.ID_ORC_CREATE_LORENTZ_PREVIEWS_COMMAND,
         str="{0}: Create Lorentz Preview Copies".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -180,15 +180,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Create Lorentz Preview Copies' (id=%s).",
-                 ids.COMMAND_CREATE_LORENTZ)
+                 ids.ID_ORC_CREATE_LORENTZ_PREVIEWS_COMMAND)
     else:
         log.error("Failed to register 'Create Lorentz Preview Copies' (id=%s).",
-                  ids.COMMAND_CREATE_LORENTZ)
+                  ids.ID_ORC_CREATE_LORENTZ_PREVIEWS_COMMAND)
         ok = False
 
     # --- Remove Lorentz Preview Copies command -----------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_REMOVE_LORENTZ,
+        id=ids.ID_ORC_REMOVE_LORENTZ_PREVIEWS_COMMAND,
         str="{0}: Remove Lorentz Preview Copies".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -197,15 +197,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Remove Lorentz Preview Copies' (id=%s).",
-                 ids.COMMAND_REMOVE_LORENTZ)
+                 ids.ID_ORC_REMOVE_LORENTZ_PREVIEWS_COMMAND)
     else:
         log.error("Failed to register 'Remove Lorentz Preview Copies' (id=%s).",
-                  ids.COMMAND_REMOVE_LORENTZ)
+                  ids.ID_ORC_REMOVE_LORENTZ_PREVIEWS_COMMAND)
         ok = False
 
     # --- Create Test Scene command -----------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_CREATE_TEST_SCENE,
+        id=ids.ID_ORC_CREATE_TEST_SCENE_COMMAND,
         str="{0}: Create Test Scene".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -214,15 +214,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Create Test Scene' (id=%s).",
-                 ids.COMMAND_CREATE_TEST_SCENE)
+                 ids.ID_ORC_CREATE_TEST_SCENE_COMMAND)
     else:
         log.error("Failed to register 'Create Test Scene' (id=%s).",
-                  ids.COMMAND_CREATE_TEST_SCENE)
+                  ids.ID_ORC_CREATE_TEST_SCENE_COMMAND)
         ok = False
 
     # --- Apply All Previews command ----------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_APPLY_ALL,
+        id=ids.ID_ORC_APPLY_ALL_PREVIEWS_COMMAND,
         str="{0}: Apply All Previews".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -230,15 +230,15 @@ def register_all():
         dat=commands.ApplyAllPreviewsCommand(),
     )
     if registered:
-        log.info("Registered 'Apply All Previews' (id=%s).", ids.COMMAND_APPLY_ALL)
+        log.info("Registered 'Apply All Previews' (id=%s).", ids.ID_ORC_APPLY_ALL_PREVIEWS_COMMAND)
     else:
         log.error("Failed to register 'Apply All Previews' (id=%s).",
-                  ids.COMMAND_APPLY_ALL)
+                  ids.ID_ORC_APPLY_ALL_PREVIEWS_COMMAND)
         ok = False
 
     # --- Octane Status command ---------------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_OCTANE_STATUS,
+        id=ids.ID_ORC_OCTANE_STATUS_COMMAND,
         str="{0}: Octane Status".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -246,15 +246,15 @@ def register_all():
         dat=commands.OctaneStatusCommand(),
     )
     if registered:
-        log.info("Registered 'Octane Status' (id=%s).", ids.COMMAND_OCTANE_STATUS)
+        log.info("Registered 'Octane Status' (id=%s).", ids.ID_ORC_OCTANE_STATUS_COMMAND)
     else:
         log.error("Failed to register 'Octane Status' (id=%s).",
-                  ids.COMMAND_OCTANE_STATUS)
+                  ids.ID_ORC_OCTANE_STATUS_COMMAND)
         ok = False
 
     # --- Octane Diagnostics command ----------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_OCTANE_DIAGNOSTICS,
+        id=ids.ID_ORC_OCTANE_DIAGNOSTICS_COMMAND,
         str="{0}: Octane Diagnostics".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -263,15 +263,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Octane Diagnostics' (id=%s).",
-                 ids.COMMAND_OCTANE_DIAGNOSTICS)
+                 ids.ID_ORC_OCTANE_DIAGNOSTICS_COMMAND)
     else:
         log.error("Failed to register 'Octane Diagnostics' (id=%s).",
-                  ids.COMMAND_OCTANE_DIAGNOSTICS)
+                  ids.ID_ORC_OCTANE_DIAGNOSTICS_COMMAND)
         ok = False
 
     # --- Apply Octane-Compatible Material Preview command ------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_APPLY_OCTANE_MATERIAL,
+        id=ids.ID_ORC_APPLY_OCTANE_MATERIAL_COMMAND,
         str="{0}: Apply Octane-Compatible Material Preview".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -280,15 +280,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Apply Octane-Compatible Material Preview' (id=%s).",
-                 ids.COMMAND_APPLY_OCTANE_MATERIAL)
+                 ids.ID_ORC_APPLY_OCTANE_MATERIAL_COMMAND)
     else:
         log.error("Failed to register 'Apply Octane-Compatible Material Preview' "
-                  "(id=%s).", ids.COMMAND_APPLY_OCTANE_MATERIAL)
+                  "(id=%s).", ids.ID_ORC_APPLY_OCTANE_MATERIAL_COMMAND)
         ok = False
 
     # --- Show AOV Plan command ---------------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_SHOW_AOV_PLAN,
+        id=ids.ID_ORC_SHOW_AOV_PLAN_COMMAND,
         str="{0}: Show AOV Plan".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -296,15 +296,15 @@ def register_all():
         dat=commands.ShowAOVPlanCommand(),
     )
     if registered:
-        log.info("Registered 'Show AOV Plan' (id=%s).", ids.COMMAND_SHOW_AOV_PLAN)
+        log.info("Registered 'Show AOV Plan' (id=%s).", ids.ID_ORC_SHOW_AOV_PLAN_COMMAND)
     else:
         log.error("Failed to register 'Show AOV Plan' (id=%s).",
-                  ids.COMMAND_SHOW_AOV_PLAN)
+                  ids.ID_ORC_SHOW_AOV_PLAN_COMMAND)
         ok = False
 
     # --- Export Experimental OSL Camera command ----------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_EXPORT_OSL_CAMERA,
+        id=ids.ID_ORC_EXPORT_OSL_CAMERA_COMMAND,
         str="{0}: Export Experimental OSL Camera".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -313,15 +313,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Export Experimental OSL Camera' (id=%s).",
-                 ids.COMMAND_EXPORT_OSL_CAMERA)
+                 ids.ID_ORC_EXPORT_OSL_CAMERA_COMMAND)
     else:
         log.error("Failed to register 'Export Experimental OSL Camera' (id=%s).",
-                  ids.COMMAND_EXPORT_OSL_CAMERA)
+                  ids.ID_ORC_EXPORT_OSL_CAMERA_COMMAND)
         ok = False
 
     # --- Export Relativity Metadata JSON command ---------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_EXPORT_METADATA,
+        id=ids.ID_ORC_EXPORT_METADATA_COMMAND,
         str="{0}: Export Relativity Metadata JSON".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -330,15 +330,15 @@ def register_all():
     )
     if registered:
         log.info("Registered 'Export Relativity Metadata JSON' (id=%s).",
-                 ids.COMMAND_EXPORT_METADATA)
+                 ids.ID_ORC_EXPORT_METADATA_COMMAND)
     else:
         log.error("Failed to register 'Export Relativity Metadata JSON' (id=%s).",
-                  ids.COMMAND_EXPORT_METADATA)
+                  ids.ID_ORC_EXPORT_METADATA_COMMAND)
         ok = False
 
     # --- Control Panel command ---------------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_CONTROL_PANEL,
+        id=ids.ID_ORC_CONTROL_PANEL_COMMAND,
         str="{0}: Control Panel".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
@@ -346,10 +346,10 @@ def register_all():
         dat=control_panel.ControlPanelCommand(),
     )
     if registered:
-        log.info("Registered 'Control Panel' (id=%s).", ids.COMMAND_CONTROL_PANEL)
+        log.info("Registered 'Control Panel' (id=%s).", ids.ID_ORC_CONTROL_PANEL_COMMAND)
     else:
         log.error("Failed to register 'Control Panel' (id=%s).",
-                  ids.COMMAND_CONTROL_PANEL)
+                  ids.ID_ORC_CONTROL_PANEL_COMMAND)
         ok = False
 
     return ok

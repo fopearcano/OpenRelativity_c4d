@@ -72,8 +72,9 @@ materials/AOVs not implemented;
 OSL camera experimental. Full list: [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md).
 
 ### Notes
-- **Plugin IDs are placeholders** (some past Maxon's `1000001-1000010` test
-  range) and **must be replaced** with registered Plugin Café IDs before any
-  public distribution.
+- **Plugin IDs are temporary private prototype IDs**, centralized in `ids.py` and
+  derived from a single `ORC_ID_BASE` (off Maxon's `1000001-1000010` test range,
+  but unregistered). They **must be replaced** with registered Plugin Café IDs
+  before any public distribution; audit with `tools/audit_plugin_ids.py`.
 - C4D-side behaviour is **manual-tested** (see the test plans); only the pure
   math and import-safe helpers are unit-tested.

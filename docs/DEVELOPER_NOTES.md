@@ -103,10 +103,26 @@ you need verified Octane IDs/API data - enumerated in
 `octane/aov_adapter.REQUIRED_OCTANE_AOV_INFO`, with the plan in
 [`OCTANE_INTEGRATION.md`](OCTANE_INTEGRATION.md).
 
-## Plugin IDs - replace before public release
+## Plugin IDs
 
-`ids.py` uses **placeholder** IDs: `1000001–1000010` (Maxon's test range) and
-several **beyond** it (which can collide with real plugins). Obtain unique IDs
-from the Maxon Plugin Café (https://plugincafe.maxon.net/) and replace **every**
-value before distributing publicly. `ids.all_ids()` returns the full map (a
-collision check is easy: `len(set(values)) == len(values)`).
+Cinema 4D requires every plugin element (command, dialog, tag, object, scene
+hook) to have a **globally unique** integer ID. If two installed plugins claim
+the same ID, Cinema 4D loads only **one** of them at startup - a duplicated or
+copied-from-sample ID here can silently block another plugin (and vice versa).
+
+- **All IDs live in one file:** `openrelativity_c4d/ids.py`. Every registration
+  uses a named `ids.ID_ORC_*` constant - never a raw number.
+- **They are temporary private prototype IDs**, derived as `ORC_ID_BASE + n`.
+  They are **not** registered with Maxon and **not** guaranteed unique; they only
+  move the plugin off the heavily-reused `1000001–1000010` test range.
+- **Before public distribution:** obtain unique IDs (free) from the Maxon Plugin
+  Café (https://plugincafe.maxon.net/, https://developers.maxon.net/) and either
+  set `ORC_ID_BASE` to your first registered ID (registering a contiguous block)
+  or give each constant its own registered ID; then remove the warning in
+  `ids.py`.
+- **If another local plugin is blocked:** change `ORC_ID_BASE` in `ids.py` to a
+  different high number and restart Cinema 4D - that relocates the whole block at
+  once.
+- **Audit:** run `python tools/audit_plugin_ids.py` to list the IDs, confirm
+  uniqueness, flag any known sample IDs, and confirm every registration uses an
+  `ids.*` constant. `ids.all_ids()` returns the full `{name: id}` map.

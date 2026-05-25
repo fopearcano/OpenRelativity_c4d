@@ -92,11 +92,11 @@ specific feature needs a fixed `.res`.
 
 - Each `TagData`/`ObjectData`/`SceneHookData` needs a **globally unique,
   registered** plugin ID (free from the Maxon Plugin Café).
-- Reserved placeholders already exist in `ids.py`: `TAG_RELATIVISTIC_CAMERA`
-  (1000004), `TAG_RELATIVISTIC_OBJECT` (1000005), `OBJECT_LORENTZ_DEFORMER`
-  (1000006), `SCENEHOOK_RELATIVITY` (1000003). These are **placeholders in/again
-  near Maxon's test range and MUST be replaced with registered IDs** before the
-  tags ship (see [`TODO.md`](../TODO.md) #1 and `ids.py`).
+- Reserved constants already exist in `ids.py`: `ID_ORC_RELATIVISTIC_CAMERA_TAG`,
+  `ID_ORC_RELATIVISTIC_OBJECT_TAG`, `ID_ORC_LORENTZ_DEFORMER_OBJECT`,
+  `ID_ORC_RELATIVITY_SCENEHOOK` (all derived from `ORC_ID_BASE`). These are
+  **temporary private prototype IDs and MUST be replaced with registered IDs**
+  before the tags ship (see [`TODO.md`](../TODO.md) #1 and `ids.py`).
 - Programmatic-description parameter IDs are local to each plugin (small ints),
   so only the top-level plugin IDs need registration.
 

@@ -79,12 +79,22 @@ implemented yet. See [`OCTANE_INTEGRATION.md`](OCTANE_INTEGRATION.md),
 [`OSL_CAMERA_EXPERIMENTS.md`](OSL_CAMERA_EXPERIMENTS.md). Render previews with the
 **Standard/Physical** renderers.
 
-## 5. Plugin IDs must be replaced before public distribution
+## 5. Plugin IDs (and fixing a plugin conflict)
 
-The plugin IDs in `openrelativity_c4d/ids.py` are **development placeholders**.
-The early ones use Maxon's `1000001–1000010` test range and the later ones go
-**past** it, so they can collide with other plugins. **Before distributing the
-plugin publicly**, obtain unique IDs (free) from the Maxon Plugin Café /
-developer portal (https://plugincafe.maxon.net/, https://developers.maxon.net/)
-and replace every value in `ids.py`. See the warnings in that file and
-[`DEVELOPER_NOTES.md`](DEVELOPER_NOTES.md).
+Cinema 4D requires **globally unique** plugin IDs. If two installed plugins use
+the same ID, only one of them loads at startup - so a duplicate ID can make this
+plugin block another (or be blocked itself).
+
+The IDs in `openrelativity_c4d/ids.py` are **temporary private prototype IDs**,
+all derived from a single `ORC_ID_BASE`. They are deliberately off Maxon's reused
+`1000001–1000010` test range, but they are **not** registered and **not**
+guaranteed unique.
+
+- **If another local plugin appears blocked** after installing this one: open
+  `openrelativity_c4d/ids.py`, change `ORC_ID_BASE` to a different high number,
+  and restart Cinema 4D. That moves every ID at once. Re-run
+  `python tools/audit_plugin_ids.py` to confirm.
+- **Before distributing publicly:** obtain unique IDs (free) from the Maxon
+  Plugin Café / developer portal (https://plugincafe.maxon.net/,
+  https://developers.maxon.net/) and replace them as described in
+  [`DEVELOPER_NOTES.md`](DEVELOPER_NOTES.md) → "Plugin IDs".
