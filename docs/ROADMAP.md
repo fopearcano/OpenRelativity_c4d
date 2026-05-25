@@ -135,6 +135,11 @@ done; the rest below is unstarted.
   *Started:* `octane/material_adapter.py` + the *Apply Octane-Compatible Material
   Preview* command exist with a safe Standard fallback; native Octane material
   creation is pending a verified parameter mapping (see `OCTANE_INTEGRATION.md`).
+- 🟡 **Relativity AOVs / render passes** for compositing. *Started:*
+  `octane/aov_adapter.py` defines the desired AOVs (Doppler/beta/searchlight/
+  velocity/mask), the *Show AOV Plan* command, and render-settings detection;
+  automatic Octane AOV creation is honestly unsupported (manual setup documented
+  in `AOV_PIPELINE.md`).
 - ⬜ **Per-frame bake workflow** for deformed geometry so Octane renders the
   apparent shapes.
 - ⬜ Presets and artist-facing UX (sensible defaults, unit handling, helpful

@@ -188,11 +188,12 @@ implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
 
 - **Terrell rotation / true apparent geometry** (the Lorentz preview is a simple
   axis-aligned contraction only).
-- **Octane** output. The plugin can *detect* Octane (**Octane Status**) and run
-  **Apply Octane-Compatible Material Preview**, but native Octane material
-  creation isn't implemented yet - that command currently falls back to the
-  Standard preview (and reports it). See
-  [`OCTANE_INTEGRATION.md`](OCTANE_INTEGRATION.md).
+- **Octane** output. The plugin can *detect* Octane (**Octane Status**), run
+  **Apply Octane-Compatible Material Preview** (currently falls back to the
+  Standard preview and reports it), and **Show AOV Plan** (the desired
+  compositing passes; manual setup for now). Native Octane material/AOV creation
+  isn't implemented yet. See [`OCTANE_INTEGRATION.md`](OCTANE_INTEGRATION.md) and
+  [`AOV_PIPELINE.md`](AOV_PIPELINE.md).
 - **Bake** workflow.
 
 Changing the values now is safe and will be honored once those features land.

@@ -92,12 +92,13 @@ Implemented now (Phase 1):
   static; safe to run repeatedly); *Apply All Previews* runs the material and
   Lorentz previews together. See [`docs/QUICKSTART.md`](docs/QUICKSTART.md).
 - **Octane adapter (optional, isolated)** — safely detects Octane (ID-independent,
-  never hard-fails); *Octane Status* reports availability/active-renderer/warnings,
-  and *Apply Octane-Compatible Material Preview* tries Octane then falls back to
-  Standard materials (with a structured report). The plugin imports and runs
-  **without Octane installed**; native Octane material creation is pending a
-  verified parameter mapping (camera/AOV mapping still planned). See
-  [`docs/OCTANE_INTEGRATION.md`](docs/OCTANE_INTEGRATION.md).
+  never hard-fails); *Octane Status*, *Apply Octane-Compatible Material Preview*
+  (tries Octane, falls back to Standard), and *Show AOV Plan* (the desired
+  Relativity AOVs + support status). The plugin imports and runs **without Octane
+  installed**; native Octane material/AOV creation is pending a verified API
+  mapping (manual AOV setup documented). See
+  [`docs/OCTANE_INTEGRATION.md`](docs/OCTANE_INTEGRATION.md) and
+  [`docs/AOV_PIPELINE.md`](docs/AOV_PIPELINE.md).
 
 Planned (later phases — see [`docs/ROADMAP.md`](docs/ROADMAP.md)):
 

@@ -270,4 +270,20 @@ def register_all():
                   "(id=%s).", ids.COMMAND_APPLY_OCTANE_MATERIAL)
         ok = False
 
+    # --- Show AOV Plan command ---------------------------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_SHOW_AOV_PLAN,
+        str="{0}: Show AOV Plan".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Show the desired Relativity AOVs and Octane AOV support status.",
+        dat=commands.ShowAOVPlanCommand(),
+    )
+    if registered:
+        log.info("Registered 'Show AOV Plan' (id=%s).", ids.COMMAND_SHOW_AOV_PLAN)
+    else:
+        log.error("Failed to register 'Show AOV Plan' (id=%s).",
+                  ids.COMMAND_SHOW_AOV_PLAN)
+        ok = False
+
     return ok

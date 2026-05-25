@@ -44,6 +44,7 @@ COMMAND_CREATE_TEST_SCENE = 1000017 # PLACEHOLDER (out of test range!) - "Create
 COMMAND_APPLY_ALL = 1000018         # PLACEHOLDER (out of test range!) - "Apply All Previews"
 COMMAND_OCTANE_STATUS = 1000019     # PLACEHOLDER (out of test range!) - "Octane Status"
 COMMAND_APPLY_OCTANE_MATERIAL = 1000020  # PLACEHOLDER (out of test range!) - "Apply Octane-Compatible Material Preview"
+COMMAND_SHOW_AOV_PLAN = 1000021     # PLACEHOLDER (out of test range!) - "Show AOV Plan"
 
 # --- Dialog layout IDs ------------------------------------------------------
 DIALOG_ABOUT = 1000002  # PLACEHOLDER - replace with a registered Plugin Cafe ID

@@ -107,10 +107,13 @@ Standard materials; native Octane material creation is pending the data listed i
 "TODO to make native Octane materials work" above. Driven through
 `adapter.apply_octane_or_fallback_material(doc, obj, color, intensity)`.
 
-### Phase C - AOV / render pass setup
-`octane/aov_adapter.py` optionally exposes relativistic quantities (e.g. the
-per-object Doppler shift or beaming factor) as Octane **AOVs/passes** for
-compositing. Stub today.
+### Phase C - AOV / render pass setup (scaffolding started)
+`octane/aov_adapter.py` exposes relativistic quantities (Doppler factor, beta,
+searchlight, object velocity, relativity mask) as Octane **AOVs/passes** for
+compositing. **Scaffolding done:** the desired-AOV data model, the *Show AOV
+Plan* command, and best-effort render-settings detection exist; automatic AOV
+creation is honestly reported as **not supported** (manual setup for now). Full
+workflow and the TODO list are in [`AOV_PIPELINE.md`](AOV_PIPELINE.md).
 
 ### Phase D - Optional OSL camera shader generation (experimental)
 Investigate generating an **OSL camera** that bends/retimes rays for true
@@ -128,7 +131,7 @@ lowest priority.
 plugin code  ──▶  octane/adapter.py  ──▶  octane/detection.py        (safe checks)
 (never imports        (facade)            octane/material_adapter.py  (Phase B stub)
  an Octane module)                        octane/camera_adapter.py    (Phase D stub)
-                                          octane/aov_adapter.py       (Phase C stub)
+                                          octane/aov_adapter.py       (Phase C scaffold)
 ```
 
 Only modules inside `octane/` may import an Octane module, always guarded. See

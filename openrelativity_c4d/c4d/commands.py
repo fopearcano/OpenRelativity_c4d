@@ -11,7 +11,9 @@
   duplicates (see lorentz_preview).
 * *Create Test Scene* / *Apply All Previews* - one-click demo + combined apply
   (see test_scene).
-* *Octane Status* - report Octane availability (detection only; see octane).
+* *Octane Status* / *Apply Octane-Compatible Material Preview* / *Show AOV Plan*
+  - Octane detection, material preview (with Standard fallback), and the AOV
+  plan (see the octane package).
 """
 
 import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
@@ -19,6 +21,7 @@ import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
 from .. import constants, ids
 from ..logging_utils import get_logger
 from ..octane import adapter as octane_adapter
+from ..octane import aov_adapter as octane_aov
 from ..octane import detection as octane_detection
 from . import (
     camera_tools,
@@ -602,6 +605,22 @@ class ApplyOctaneCompatibleMaterialPreviewCommand(c4d.plugins.CommandData):
             lines.append("Notes:")
             lines.extend("- " + warning for warning in warnings_seen)
         c4d.gui.MessageDialog("\n".join(lines))
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class ShowAOVPlanCommand(c4d.plugins.CommandData):
+    """Show the desired Relativity AOVs and whether auto-creation is supported."""
+
+    def Execute(self, doc):
+        plan = octane_aov.get_relativity_aov_plan()
+        render_info = octane_aov.detect_render_settings(doc)
+        c4d.gui.MessageDialog(
+            "OpenRelativity C4D - AOV Plan\n\n"
+            + octane_aov.format_aov_plan(plan, render_info)
+        )
         return True
 
     def GetState(self, doc):
