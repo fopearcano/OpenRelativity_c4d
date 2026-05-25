@@ -42,6 +42,7 @@ COMMAND_CREATE_LORENTZ = 1000015    # PLACEHOLDER (out of test range!) - "Create
 COMMAND_REMOVE_LORENTZ = 1000016    # PLACEHOLDER (out of test range!) - "Remove Lorentz Preview Copies"
 COMMAND_CREATE_TEST_SCENE = 1000017 # PLACEHOLDER (out of test range!) - "Create Test Scene"
 COMMAND_APPLY_ALL = 1000018         # PLACEHOLDER (out of test range!) - "Apply All Previews"
+COMMAND_OCTANE_STATUS = 1000019     # PLACEHOLDER (out of test range!) - "Octane Status"
 
 # --- Dialog layout IDs ------------------------------------------------------
 DIALOG_ABOUT = 1000002  # PLACEHOLDER - replace with a registered Plugin Cafe ID

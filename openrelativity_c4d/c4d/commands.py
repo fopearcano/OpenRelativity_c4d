@@ -11,12 +11,14 @@
   duplicates (see lorentz_preview).
 * *Create Test Scene* / *Apply All Previews* - one-click demo + combined apply
   (see test_scene).
+* *Octane Status* - report Octane availability (detection only; see octane).
 """
 
 import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
 
 from .. import constants, ids
 from ..logging_utils import get_logger
+from ..octane import detection as octane_detection
 from . import (
     camera_tools,
     lorentz_preview,
@@ -40,9 +42,8 @@ def _c4d_build():
 def _octane_status():
     """Return a short human-readable Octane availability string."""
     try:
-        from ..octane import detection
-
-        return "detected" if detection.is_octane_available() else "not detected"
+        return ("detected" if octane_detection.detect_octane_available()
+                else "not detected")
     except Exception:  # noqa: BLE001
         return "unknown"
 
@@ -527,6 +528,21 @@ class ApplyAllPreviewsCommand(c4d.plugins.CommandData):
             "Lorentz preview copy(ies).\n\n"
             "These are artistic approximations (not spectral/radiometric). "
             "Render with Standard or Physical.".format(mat_count, lorentz_count)
+        )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class OctaneStatusCommand(c4d.plugins.CommandData):
+    """Report Octane availability/status (detection only; no Octane changes)."""
+
+    def Execute(self, doc):
+        report = octane_detection.get_octane_status_report(doc)
+        c4d.gui.MessageDialog(
+            "OpenRelativity C4D - Octane Status\n\n"
+            + octane_detection.format_status_report(report)
         )
         return True
 

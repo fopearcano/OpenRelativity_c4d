@@ -16,7 +16,12 @@ log = get_logger("octane.adapter")
 
 def is_available():
     """Return ``True`` if an Octane integration was detected."""
-    return detection.is_octane_available()
+    return detection.detect_octane_available()
+
+
+def status_report(doc):
+    """Return the safe Octane status dict (see ``detection.get_octane_status_report``)."""
+    return detection.get_octane_status_report(doc)
 
 
 def apply_doppler_to_material(material, base_color, intensity):

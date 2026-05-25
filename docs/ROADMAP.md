@@ -80,8 +80,11 @@ Done:
   camera + light + approaching/receding/lateral/static objects; re-runnable with
   uniquely-named sets) and *Apply All Previews* (material + Lorentz together).
   See `docs/QUICKSTART.md`.
-- ✅ **Octane adapter stubs** — `detection.is_octane_available()` + no-op
-  facade; verified the plugin imports with Octane **not** installed.
+- ✅ **Octane detection & status** — `detect_octane_available()` (ID-independent,
+  never raises) + `get_octane_status_report(doc)`, surfaced by the *Octane Status*
+  command; no-op adapter facade. Verified import/run with Octane **absent**
+  (unit-tested). Material/camera/AOV mapping remains stubbed. See
+  `docs/OCTANE_INTEGRATION.md`.
 
 **Exit criteria (met):** plugin loads without Octane; core tests pass in plain
 Python; *Create Test Scene* + *Apply All Previews* visibly contracts and
@@ -121,7 +124,11 @@ timing.
 
 ## Phase 3 — Octane integration (real) ⬜
 
-**Goal:** turn the adapter stubs into genuine Octane output.
+**Goal:** turn the adapter stubs into genuine Octane output. The detailed,
+phased plan (A: scene/material prep, B: material/node adapter, C: AOVs, D:
+experimental OSL camera, E: external bridge) lives in
+[`OCTANE_INTEGRATION.md`](OCTANE_INTEGRATION.md). Detection/status (Phase 1) is
+done; the rest below is unstarted.
 
 - ⬜ Map per-object Doppler color + searchlight intensity onto **Octane material
   nodes** (e.g. diffuse/emission color and power) through the adapter only.

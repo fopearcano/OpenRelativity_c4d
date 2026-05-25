@@ -188,7 +188,10 @@ implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
 
 - **Terrell rotation / true apparent geometry** (the Lorentz preview is a simple
   axis-aligned contraction only).
-- **Octane** output (the adapter is a safe no-op until Phase 3).
+- **Octane** output. The plugin can *detect* Octane and report status via
+  **Extensions > “OpenRelativity C4D: Octane Status”**, but does not modify Octane
+  yet (the adapter is a safe no-op). See
+  [`OCTANE_INTEGRATION.md`](OCTANE_INTEGRATION.md).
 - **Bake** workflow.
 
 Changing the values now is safe and will be honored once those features land.

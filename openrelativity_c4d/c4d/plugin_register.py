@@ -237,4 +237,20 @@ def register_all():
                   ids.COMMAND_APPLY_ALL)
         ok = False
 
+    # --- Octane Status command ---------------------------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_OCTANE_STATUS,
+        str="{0}: Octane Status".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Report Octane availability and status (no Octane changes).",
+        dat=commands.OctaneStatusCommand(),
+    )
+    if registered:
+        log.info("Registered 'Octane Status' (id=%s).", ids.COMMAND_OCTANE_STATUS)
+    else:
+        log.error("Failed to register 'Octane Status' (id=%s).",
+                  ids.COMMAND_OCTANE_STATUS)
+        ok = False
+
     return ok

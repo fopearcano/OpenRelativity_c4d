@@ -91,8 +91,11 @@ Implemented now (Phase 1):
   camera, light, and four moving test objects (approaching / receding / lateral /
   static; safe to run repeatedly); *Apply All Previews* runs the material and
   Lorentz previews together. See [`docs/QUICKSTART.md`](docs/QUICKSTART.md).
-- **Octane adapter (optional, isolated)** — soft-detects Octane; the plugin
-  imports and runs **without Octane installed**. Mapping is stubbed.
+- **Octane adapter (optional, isolated)** — safely detects Octane (ID-independent,
+  never hard-fails); *Octane Status* reports availability/active-renderer/warnings.
+  The plugin imports and runs **without Octane installed**; material/camera/AOV
+  mapping is planned, not yet implemented. See
+  [`docs/OCTANE_INTEGRATION.md`](docs/OCTANE_INTEGRATION.md).
 
 Planned (later phases — see [`docs/ROADMAP.md`](docs/ROADMAP.md)):
 
