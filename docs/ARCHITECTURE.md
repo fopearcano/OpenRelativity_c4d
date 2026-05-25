@@ -68,19 +68,34 @@ This document describes *how* the prototype is structured. For *why*, see
 
 ## 3. `relativity_core` (`openrelativity_c4d.core`) — the portable physics layer
 
-A small set of dependency-free modules. All functions take and return plain
-numbers / tuples / lists so the API is trivially portable to C++.
+**Role.** This is the renderer-agnostic math core: every relativistic quantity
+the plugin needs is computed here and nowhere else. The Cinema 4D layer and the
+Octane adapter are thin consumers that feed it numbers (speeds, directions,
+colors) and apply what comes back to scene geometry and materials. Keeping the
+math here — with no `c4d`, no Octane, and no third-party imports — is what makes
+it testable in plain Python and migratable to C++ behind the same signatures.
+
+**Prototype, not physics-grade.** The functions are *approximate, stable, and
+art-directable* by design (this is a visualization prototype, not a spectral
+renderer). Two conventions hold throughout:
+
+- **`beta = v/c` is a clamped magnitude** in `[0, MAX_BETA]` (`MAX_BETA = 0.999`).
+  Reaching/exceeding `c` clamps rather than raising, so geometry/color never blow
+  up. Direction is carried by `cos_theta`, not by the sign of `beta`.
+- **`cos_theta = +1` means approaching, `-1` means receding** (used by both
+  `doppler` and `searchlight`). `strength` parameters in `[0, 1]` blend an effect
+  from off (`0`, identity) to full (`1`).
 
 | Module | Responsibility | Representative API |
 |---|---|---|
-| `relativity_math` | Lorentz factor, length contraction, time dilation, collinear velocity addition; default `c` & epsilon guards | `gamma_from_beta`, `inverse_gamma_from_beta`, `contract_length`, `dilate_time`, `add_velocities_collinear` |
-| `doppler` | Relativistic Doppler shift factor | `doppler_shift(beta_rel, cos_theta)`, `is_blueshift`, `is_redshift` |
-| `searchlight` | Beaming / searchlight intensity | `searchlight_intensity(shift)` |
-| `transforms` | Vector helpers, 3D velocity addition, apparent position | `add_velocity(v, u, c)`, `apparent_time_offset`, `apparent_position` |
+| `relativity_math` | Clamping, Lorentz factor, contraction scale | `clamp_beta`, `beta_from_speed(speed, c)`, `gamma_from_beta`, `inverse_gamma_from_beta`, `lorentz_contraction_scale(beta, strength)`, `clamp`/`clamp01` |
+| `doppler` | Doppler factor + art-directable recolor | `doppler_factor(beta, cos_theta)`, `approximate_rgb_doppler_shift(rgb, factor, strength)`, `is_blueshift`, `is_redshift` |
+| `searchlight` | Beaming / searchlight intensity (clamped) | `searchlight_intensity_multiplier(beta, cos_theta, strength)` |
+| `transforms` | Safe vector helpers, 3D velocity addition, apparent position | `safe_normalize`, `dot`/`add`/`sub`/`scale`/`length`, `add_velocity(v, u, c)`, `apparent_position` |
 
-> A `spectrum` module (RGB↔XYZ + approximate wavelength-shift recolor) is planned
-> for a later phase; in Phase 1 the Doppler/searchlight results are scalar
-> factors. Tests for these modules live in `openrelativity_c4d/tests`.
+> A `spectrum` module (RGB↔XYZ + wavelength-shift recolor) is planned for a later
+> phase; for now `approximate_rgb_doppler_shift` is a simple red/blue tint, not a
+> spectral transform. Tests live in `openrelativity_c4d/tests/test_core_math.py`.
 
 ### 3.1 Physical relationships (reference, as realized in upstream)
 

@@ -1,71 +1,99 @@
-"""Core special-relativity scalar math.
+"""Core special-relativity scalar math (prototype approximations).
 
-Pure Python (``math`` only). Conventions:
+Renderer-agnostic, pure Python (``math`` only). **No Cinema 4D imports.**
 
-* ``c`` is the speed of light in scene units. OpenRelativity keeps it adjustable
-  (and small) so effects are visible at ordinary speeds; the default here is
-  ``1.0`` so that velocities can be expressed directly as ``beta = v / c``.
-* ``beta`` always means ``v / c`` and must satisfy ``|beta| < 1`` for finite
-  results.
+These functions are intentionally *approximate, stable, and art-directable* - they
+are not physics-grade. Stability is favoured over strict validity: instead of
+raising when a velocity reaches or exceeds the speed of light, ``beta`` is clamped
+to a safe maximum (:data:`MAX_BETA`) so downstream geometry/color never blows up.
+
+Conventions used throughout the core:
+
+* ``beta`` means ``v / c`` and is treated as a **magnitude** in ``[0, MAX_BETA]``;
+  direction is carried separately (e.g. ``cos_theta`` in the Doppler functions).
+* ``strength`` parameters in ``[0, 1]`` are art-directable blends: ``0`` disables
+  the effect (identity), ``1`` applies the full approximate effect. Values above
+  ``1`` are allowed for exaggeration but may need clamping by the caller.
 """
 
 import math
 
-#: Default speed of light in scene units (adjustable by the Scene Controller).
+#: Speeds at/above ``c`` are clamped to this fraction of ``c`` for stability.
+MAX_BETA = 0.999
+
+#: Default speed of light in scene units (the Scene Controller overrides this).
 DEFAULT_SPEED_OF_LIGHT = 1.0
 
-#: Speeds within this of ``c`` are treated as "at c" to avoid division blow-ups.
-_EPS = 1e-12
+
+def clamp(value, lo, hi):
+    """Clamp a scalar to ``[lo, hi]``."""
+    if value < lo:
+        return lo
+    if value > hi:
+        return hi
+    return value
 
 
-def beta(speed, c=DEFAULT_SPEED_OF_LIGHT):
-    """Return ``v / c`` for a scalar ``speed``."""
-    return speed / c
+def clamp01(value):
+    """Clamp a scalar to ``[0.0, 1.0]``."""
+    return clamp(value, 0.0, 1.0)
 
 
-def gamma_from_beta(b):
-    """Lorentz factor ``gamma = 1 / sqrt(1 - beta**2)``.
+def clamp_beta(beta):
+    """Clamp ``beta = v/c`` to the safe range ``[0.0, MAX_BETA]``.
 
-    Raises :class:`ValueError` if ``|b| >= 1`` (gamma diverges at ``c``).
+    Negative inputs are clamped to ``0`` (``beta`` is a magnitude here) and any
+    value at/above ``1`` is clamped to :data:`MAX_BETA` (default ``0.999``) so the
+    Lorentz factor stays finite.
     """
-    b2 = b * b
-    if b2 >= 1.0 - _EPS:
-        raise ValueError("beta must satisfy |v/c| < 1 (got {0!r})".format(b))
-    return 1.0 / math.sqrt(1.0 - b2)
+    return clamp(beta, 0.0, MAX_BETA)
 
 
-def gamma(speed, c=DEFAULT_SPEED_OF_LIGHT):
-    """Lorentz factor for a scalar ``speed`` (convenience wrapper)."""
-    return gamma_from_beta(beta(speed, c))
+def beta_from_speed(speed, c_value):
+    """Return the raw ratio ``beta = speed / c_value``.
 
-
-def inverse_gamma_from_beta(b):
-    """Return ``1 / gamma = sqrt(1 - beta**2)``.
-
-    This is the factor OpenRelativity caches. Unlike :func:`gamma_from_beta`
-    this is well defined at and beyond ``c`` (it clamps to ``0``), because the
-    contracted/time-dilated quantities go smoothly to zero there.
+    May be negative or exceed ``1``; callers that need a stable value should pass
+    the result through :func:`clamp_beta`. A non-positive ``c_value`` is
+    degenerate (everything is ultra-relativistic) and returns :data:`MAX_BETA`.
     """
-    b2 = b * b
-    if b2 >= 1.0:
-        return 0.0
-    return math.sqrt(1.0 - b2)
+    if c_value <= 0.0:
+        return MAX_BETA
+    return speed / c_value
 
 
-def contract_length(rest_length, b):
-    """Length contraction along the motion: ``L = L0 * sqrt(1 - beta**2)``."""
-    return rest_length * inverse_gamma_from_beta(b)
+def gamma_from_beta(beta):
+    """Lorentz factor ``gamma = 1 / sqrt(1 - beta**2)`` (stable).
 
-
-def dilate_time(proper_time, b):
-    """Observer (coordinate) time for a given proper time: ``dt = gamma * dtau``."""
-    return proper_time * gamma_from_beta(b)
-
-
-def add_velocities_collinear(u, v, c=DEFAULT_SPEED_OF_LIGHT):
-    """Relativistic addition of two **collinear** velocities.
-
-    ``w = (u + v) / (1 + u*v/c**2)``. Never exceeds ``c`` for ``|u|,|v| < c``,
-    and adding ``c`` returns ``c``.
+    ``beta`` is clamped via :func:`clamp_beta` first, so this never divides by
+    zero or raises; ``gamma`` is ``1.0`` at ``beta == 0`` and increases
+    monotonically with ``beta`` up to a finite maximum at :data:`MAX_BETA`.
     """
-    return (u + v) / (1.0 + (u * v) / (c * c))
+    b = clamp_beta(beta)
+    return 1.0 / math.sqrt(1.0 - b * b)
+
+
+def inverse_gamma_from_beta(beta):
+    """Return ``1 / gamma = sqrt(1 - beta**2)`` (stable, clamped).
+
+    This is the contraction / time-dilation factor. It is ``1.0`` at rest and
+    approaches ``0`` as ``beta`` approaches :data:`MAX_BETA`.
+    """
+    b = clamp_beta(beta)
+    return math.sqrt(1.0 - b * b)
+
+
+def lorentz_contraction_scale(beta, strength=1.0):
+    """Return the scale factor to apply **along the velocity axis**.
+
+    Prototype approximation: the physical contraction is ``1/gamma``
+    (:func:`inverse_gamma_from_beta`). ``strength`` blends between no contraction
+    (``1.0``) and the full physical contraction::
+
+        scale = 1 + strength * (inverse_gamma - 1)
+
+    ``strength == 0`` returns ``1.0`` (geometry unchanged); ``strength == 1``
+    returns the physical ``1/gamma``. The result decreases as ``beta`` increases
+    (for ``strength > 0``) and stays in ``(0, 1]`` for ``strength`` in ``[0, 1]``.
+    """
+    inv_gamma = inverse_gamma_from_beta(beta)
+    return 1.0 + strength * (inv_gamma - 1.0)

@@ -1,8 +1,9 @@
-"""Vector helpers and relativistic geometric transforms.
+"""Vector helpers and relativistic geometric transforms (prototype).
 
-Pure Python. Vectors are 3-tuples/lists of floats ``(x, y, z)``; functions
-return tuples. No Cinema 4D vector types are used here so the module stays
-testable and portable (the C4D layer converts to/from ``c4d.Vector``).
+Renderer-agnostic, pure Python. **No Cinema 4D imports** - vectors are plain
+3-tuples/lists ``(x, y, z)`` and functions return tuples, so the C4D layer
+converts to/from ``c4d.Vector`` at the boundary. These are approximate prototype
+utilities, not physics-grade.
 """
 
 import math
@@ -34,21 +35,28 @@ def length(a):
     return math.sqrt(dot(a, a))
 
 
-def normalize(a):
-    """Return the unit vector along ``a`` (or ``(0,0,0)`` if ``a`` is zero)."""
+def safe_normalize(a, fallback=(0.0, 0.0, 0.0)):
+    """Return the unit vector along ``a``; ``fallback`` if ``a`` is ~zero.
+
+    Never divides by zero - the "safe" vector helper used wherever a direction
+    might be degenerate (e.g. an object exactly at the observer).
+    """
     n = length(a)
     if n < _EPS:
-        return (0.0, 0.0, 0.0)
+        return fallback
     return (a[0] / n, a[1] / n, a[2] / n)
+
+
+#: Backwards-friendly alias; normalisation is always the safe variant here.
+normalize = safe_normalize
 
 
 # --- relativistic velocity addition (3D) ------------------------------------
 def add_velocity(v, u, c=DEFAULT_SPEED_OF_LIGHT):
-    """Relativistically add velocity ``u`` (measured in the frame moving at
-    ``v``) to frame velocity ``v``, returning the resulting lab-frame velocity.
+    """Relativistically add velocity ``u`` (in the frame moving at ``v``) to
+    frame velocity ``v``, returning the lab-frame velocity.
 
-    Uses the parallel/perpendicular decomposition (equivalent to
-    OpenRelativity's rotate-to-axis approach)::
+    Parallel/perpendicular decomposition (prototype, stable)::
 
         w = (v + u_parallel + u_perp / gamma_v) / (1 + (v . u) / c**2)
 
@@ -64,7 +72,7 @@ def add_velocity(v, u, c=DEFAULT_SPEED_OF_LIGHT):
     u_par = scale(v_hat, u_par_mag)
     u_perp = sub(u, u_par)
 
-    inv_gamma = inverse_gamma_from_beta(v_mag / c)  # sqrt(1 - (v/c)^2)
+    inv_gamma = inverse_gamma_from_beta(v_mag / c)  # sqrt(1 - (v/c)^2), clamped
     numerator = add(add(v, u_par), scale(u_perp, inv_gamma))
     denominator = 1.0 + dot(v, u) / (c * c)
     return scale(numerator, 1.0 / denominator)
@@ -72,23 +80,22 @@ def add_velocity(v, u, c=DEFAULT_SPEED_OF_LIGHT):
 
 # --- apparent position via light-travel-time (aberration / Terrell) ---------
 def apparent_time_offset(rel_position, velocity, c=DEFAULT_SPEED_OF_LIGHT):
-    """Solve for the (retarded) light-travel-time offset ``t``.
+    """Solve for the (retarded) light-travel-time offset ``t`` (``t <= 0``).
 
-    Given a point currently at ``rel_position`` relative to the observer, moving
-    at constant ``velocity``, find ``t`` such that light emitted at time ``t``
-    (``t <= 0``, in the past) reaches the observer now. Solves::
+    Finds when the light now reaching the observer left a point currently at
+    ``rel_position`` moving at constant ``velocity``::
 
         (c**2 - |v|**2) t**2 - 2 (r . v) t - |r|**2 = 0
 
-    and returns the retarded root (OpenRelativity's ``tisw``). For a static point
-    this is ``-|r| / c``.
+    Returns the retarded root (OpenRelativity's ``tisw``); for a static point this
+    is ``-|r| / c``.
     """
     a = c * c - dot(velocity, velocity)
     b = -2.0 * dot(rel_position, velocity)
     k = -dot(rel_position, rel_position)
 
     if abs(a) < _EPS:
-        # Speed == c: linear equation b*t + k = 0.
+        # |v| == c: degenerate to a linear equation.
         if abs(b) < _EPS:
             return 0.0
         return -k / b
@@ -100,12 +107,9 @@ def apparent_time_offset(rel_position, velocity, c=DEFAULT_SPEED_OF_LIGHT):
 
 
 def apparent_position(rel_position, velocity, c=DEFAULT_SPEED_OF_LIGHT):
-    """Return ``(apparent_rel_position, t)``.
-
-    The apparent position is where the observer *sees* the moving point, i.e.
-    its location at the retarded time: ``r + v * t``. ``t`` is the offset from
-    :func:`apparent_time_offset`. For a static point the apparent position
-    equals ``rel_position``.
+    """Return ``(apparent_rel_position, t)`` - where the observer *sees* a moving
+    point (its location at the retarded time ``r + v * t``). For a static point
+    the apparent position equals ``rel_position``.
     """
     t = apparent_time_offset(rel_position, velocity, c)
     return add(rel_position, scale(velocity, t)), t
