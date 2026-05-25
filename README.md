@@ -18,11 +18,15 @@ for the concept-by-concept mapping.
 > **Status: Phase 1 — in progress.**
 > The plugin loads in Cinema 4D 2023+ and registers *Extensions* commands to set
 > up the relativity **controller**, an observer **camera**, and per-**object**
-> settings (plus an **About** dialog). All three carry organized User Data; the
+> settings, and to preview the **Doppler**, **searchlight**, and **Lorentz**
+> effects (plus a one-click **Create Test Scene** + **Apply All Previews**). The
 > pure-Python physics core (`openrelativity_c4d.core`) is implemented and
-> unit-tested. The effects those settings drive (deformation, materials, Octane)
-> are placeholders for later phases. See [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md)
-> to get started and [`docs/ROADMAP.md`](docs/ROADMAP.md) for the plan.
+> unit-tested. The previews are artistic approximations; Octane output is a later
+> phase.
+>
+> **New here?** Follow [`docs/QUICKSTART.md`](docs/QUICKSTART.md) (5 minutes).
+> Full reference: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md);
+> plan: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ---
 
@@ -83,6 +87,10 @@ Implemented now (Phase 1):
   object, scaled along its velocity axis, and hides the original (restored by
   *Remove Lorentz Preview Copies*). Axis-aligned length contraction only — no
   Terrell rotation yet. See [`docs/LORENTZ_PREVIEW.md`](docs/LORENTZ_PREVIEW.md).
+- **Test scene & one-click preview** — *Create Test Scene* builds a controller,
+  camera, light, and four moving test objects (approaching / receding / lateral /
+  static; safe to run repeatedly); *Apply All Previews* runs the material and
+  Lorentz previews together. See [`docs/QUICKSTART.md`](docs/QUICKSTART.md).
 - **Octane adapter (optional, isolated)** — soft-detects Octane; the plugin
   imports and runs **without Octane installed**. Mapping is stubbed.
 

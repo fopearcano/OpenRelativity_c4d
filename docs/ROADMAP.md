@@ -76,12 +76,17 @@ Done:
   `core.transforms.dominant_axis`; originals are optionally hidden and restored.
   Axis-aligned approximation only (no Terrell rotation). See
   `docs/LORENTZ_PREVIEW.md`.
+- ✅ **Test scene & one-click preview** — *Create Test Scene* (controller +
+  camera + light + approaching/receding/lateral/static objects; re-runnable with
+  uniquely-named sets) and *Apply All Previews* (material + Lorentz together).
+  See `docs/QUICKSTART.md`.
 - ✅ **Octane adapter stubs** — `detection.is_octane_available()` + no-op
   facade; verified the plugin imports with Octane **not** installed.
 
 **Exit criteria (met):** plugin loads without Octane; core tests pass in plain
-Python; raising velocity visibly contracts and recolours a tagged object; the
-Octane adapter is a safe no-op.
+Python; *Create Test Scene* + *Apply All Previews* visibly contracts and
+recolours the moving objects in Standard/Physical; the Octane adapter is a safe
+no-op.
 
 Remaining (rolls into Phase 2):
 

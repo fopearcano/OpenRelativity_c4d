@@ -7,6 +7,10 @@
 * *Apply Doppler Material Preview* / *Apply Searchlight Preview* /
   *Apply Relativity Material Preview* / *Clear Material Preview* - the
   approximate, non-destructive material previews (see preview_material).
+* *Create / Remove Lorentz Preview Copies* - non-destructive contracted
+  duplicates (see lorentz_preview).
+* *Create Test Scene* / *Apply All Previews* - one-click demo + combined apply
+  (see test_scene).
 """
 
 import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
@@ -19,6 +23,7 @@ from . import (
     object_tools,
     preview_material,
     scene_controller,
+    test_scene,
 )
 
 log = get_logger("commands")
@@ -459,6 +464,70 @@ class RemoveLorentzPreviewCommand(c4d.plugins.CommandData):
                     removed
                 )
             )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class CreateTestSceneCommand(c4d.plugins.CommandData):
+    """Build a ready-to-preview demo scene (controller, camera, test objects)."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        result = test_scene.create_test_scene(doc)
+        if result is None:
+            c4d.gui.MessageDialog("Failed to create the test scene.")
+            return False
+
+        group, _suffix = result
+        c4d.gui.MessageDialog(
+            "Created test scene '{0}': a Relativity Controller, a relativistic "
+            "camera, four test objects (approaching / receding / lateral / "
+            "static) and a light.\n\n"
+            "Next: run 'Apply All Previews', then render with Standard or "
+            "Physical. See docs/QUICKSTART.md.".format(group.GetName())
+        )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class ApplyAllPreviewsCommand(c4d.plugins.CommandData):
+    """Apply the material preview (Doppler + searchlight) and Lorentz copies."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        # Materials first, so the Lorentz clones inherit the preview material.
+        mat_count, mat_status = preview_material.apply_preview(
+            doc, do_doppler=True, do_searchlight=True)
+        lorentz_count, lorentz_status = lorentz_preview.create_preview(doc)
+
+        if mat_status == "disabled":
+            c4d.gui.MessageDialog(
+                "The Relativity Controller is disabled (Enabled = off).\n"
+                "Nothing was applied."
+            )
+            return True
+        if mat_status == "no_objects" and lorentz_status == "no_objects":
+            c4d.gui.MessageDialog(
+                "No relativistic objects found.\n"
+                "Run 'Create Test Scene' or 'Setup Selected Relativistic "
+                "Objects' first."
+            )
+            return True
+
+        c4d.gui.MessageDialog(
+            "Applied the material preview to {0} object(s) and created {1} "
+            "Lorentz preview copy(ies).\n\n"
+            "These are artistic approximations (not spectral/radiometric). "
+            "Render with Standard or Physical.".format(mat_count, lorentz_count)
+        )
         return True
 
     def GetState(self, doc):

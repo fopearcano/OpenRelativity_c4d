@@ -40,6 +40,8 @@ COMMAND_APPLY_SEARCHLIGHT = 1000013 # PLACEHOLDER (out of test range!) - "Apply 
 COMMAND_APPLY_RELATIVITY_PREVIEW = 1000014  # PLACEHOLDER (out of test range!) - "Apply Relativity Material Preview"
 COMMAND_CREATE_LORENTZ = 1000015    # PLACEHOLDER (out of test range!) - "Create Lorentz Preview Copies"
 COMMAND_REMOVE_LORENTZ = 1000016    # PLACEHOLDER (out of test range!) - "Remove Lorentz Preview Copies"
+COMMAND_CREATE_TEST_SCENE = 1000017 # PLACEHOLDER (out of test range!) - "Create Test Scene"
+COMMAND_APPLY_ALL = 1000018         # PLACEHOLDER (out of test range!) - "Apply All Previews"
 
 # --- Dialog layout IDs ------------------------------------------------------
 DIALOG_ABOUT = 1000002  # PLACEHOLDER - replace with a registered Plugin Cafe ID

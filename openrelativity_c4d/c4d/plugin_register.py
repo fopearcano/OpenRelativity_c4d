@@ -204,4 +204,37 @@ def register_all():
                   ids.COMMAND_REMOVE_LORENTZ)
         ok = False
 
+    # --- Create Test Scene command -----------------------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_CREATE_TEST_SCENE,
+        str="{0}: Create Test Scene".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Build a demo scene: controller, camera, test objects and a light.",
+        dat=commands.CreateTestSceneCommand(),
+    )
+    if registered:
+        log.info("Registered 'Create Test Scene' (id=%s).",
+                 ids.COMMAND_CREATE_TEST_SCENE)
+    else:
+        log.error("Failed to register 'Create Test Scene' (id=%s).",
+                  ids.COMMAND_CREATE_TEST_SCENE)
+        ok = False
+
+    # --- Apply All Previews command ----------------------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_APPLY_ALL,
+        str="{0}: Apply All Previews".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Apply the material preview and create Lorentz preview copies.",
+        dat=commands.ApplyAllPreviewsCommand(),
+    )
+    if registered:
+        log.info("Registered 'Apply All Previews' (id=%s).", ids.COMMAND_APPLY_ALL)
+    else:
+        log.error("Failed to register 'Apply All Previews' (id=%s).",
+                  ids.COMMAND_APPLY_ALL)
+        ok = False
+
     return ok

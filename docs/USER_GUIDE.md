@@ -3,11 +3,15 @@
 A short, practical guide to using the plugin. For the design and scope, see
 [`PROJECT_CHARTER.md`](PROJECT_CHARTER.md) and [`ROADMAP.md`](ROADMAP.md).
 
-> **Phase 1 status.** Today the plugin lets you create and configure a
-> **Relativity Controller** that stores all the relativistic settings for a
-> scene. The visual effects those settings will drive (Lorentz deformation,
-> Doppler recolor, searchlight beaming, Octane output) arrive in later phases —
-> this step establishes the data model and the artist workflow.
+> **In a hurry?** [`QUICKSTART.md`](QUICKSTART.md) gets you from install to a
+> rendered relativistic preview in about 5 minutes via *Create Test Scene* +
+> *Apply All Previews*. This guide is the full reference.
+
+> **Phase 1 status.** You can set up a **Relativity Controller**, a relativistic
+> **camera**, and per-**object** settings, then preview the **Doppler**,
+> **searchlight**, and **Lorentz** effects in the Standard/Physical renderer.
+> The previews are artistic approximations; Octane output and true apparent
+> geometry (Terrell rotation) are later phases.
 
 ## 1. Install the plugin
 
