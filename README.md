@@ -70,13 +70,19 @@ Implemented now (Phase 1):
   adds per-object User Data (object beta, velocity X/Y/Z, preview toggles, bake /
   Octane flags) to the selection (skipping the controller and cameras), and
   *Select Relativistic Objects* re-selects them all.
+- **Doppler material preview (first visible effect)** — *Extensions > Apply
+  Doppler Material Preview* tints each object blue/red by an approximate
+  relativistic Doppler shift via a generated Standard material (Standard/Physical
+  compatible, non-destructive, Octane not required); *Clear Doppler Material
+  Preview* removes it. Artistic approximation, not spectral — see
+  [`docs/DOPPLER_PREVIEW.md`](docs/DOPPLER_PREVIEW.md).
 - **Octane adapter (optional, isolated)** — soft-detects Octane; the plugin
   imports and runs **without Octane installed**. Mapping is stubbed.
 
 Planned (later phases — see [`docs/ROADMAP.md`](docs/ROADMAP.md)):
 
 - **Lorentz deformation / bake utility** — moves real mesh points.
-- **Approximate Doppler / searchlight material adjustment** — per-object color & luminance.
+- **Searchlight/beaming material adjustment** — per-object luminance.
 - **Real Octane material/camera/AOV mapping.**
 
 ## What is explicitly out of scope (Phase 1)

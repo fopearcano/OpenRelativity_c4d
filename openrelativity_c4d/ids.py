@@ -29,8 +29,13 @@ COMMAND_CREATE_CONTROLLER = 1000007 # PLACEHOLDER - "Create Relativity Controlle
 COMMAND_SETUP_CAMERA = 1000008      # PLACEHOLDER - "Setup Relativistic Camera"
 COMMAND_SETUP_OBJECTS = 1000009     # PLACEHOLDER - "Setup Selected Relativistic Objects"
 COMMAND_SELECT_OBJECTS = 1000010    # PLACEHOLDER - "Select Relativistic Objects"
-# NOTE: 1000001-1000010 (Maxon's test range) is now fully used. Any further
-# elements need real Plugin Cafe IDs even for local development.
+
+# !!! The two IDs below are PAST Maxon's 1000001-1000010 test range. They may
+# collide with REAL registered plugins even during local testing. They are only
+# acceptable as a temporary stop-gap and MUST be replaced with registered Plugin
+# Cafe IDs before the plugin is run alongside third-party plugins or shipped.
+COMMAND_APPLY_DOPPLER = 1000011     # PLACEHOLDER (out of test range!) - "Apply Doppler Material Preview"
+COMMAND_CLEAR_DOPPLER = 1000012     # PLACEHOLDER (out of test range!) - "Clear Doppler Material Preview"
 
 # --- Dialog layout IDs ------------------------------------------------------
 DIALOG_ABOUT = 1000002  # PLACEHOLDER - replace with a registered Plugin Cafe ID

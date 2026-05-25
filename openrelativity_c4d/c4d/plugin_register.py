@@ -102,4 +102,38 @@ def register_all():
                   ids.COMMAND_SELECT_OBJECTS)
         ok = False
 
+    # --- Apply Doppler Material Preview command ----------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_APPLY_DOPPLER,
+        str="{0}: Apply Doppler Material Preview".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Apply the approximate Doppler colour preview to relativistic objects.",
+        dat=commands.ApplyDopplerPreviewCommand(),
+    )
+    if registered:
+        log.info("Registered 'Apply Doppler Material Preview' (id=%s).",
+                 ids.COMMAND_APPLY_DOPPLER)
+    else:
+        log.error("Failed to register 'Apply Doppler Material Preview' (id=%s).",
+                  ids.COMMAND_APPLY_DOPPLER)
+        ok = False
+
+    # --- Clear Doppler Material Preview command ----------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_CLEAR_DOPPLER,
+        str="{0}: Clear Doppler Material Preview".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Remove the ORC-generated Doppler preview materials and tags.",
+        dat=commands.ClearDopplerPreviewCommand(),
+    )
+    if registered:
+        log.info("Registered 'Clear Doppler Material Preview' (id=%s).",
+                 ids.COMMAND_CLEAR_DOPPLER)
+    else:
+        log.error("Failed to register 'Clear Doppler Material Preview' (id=%s).",
+                  ids.COMMAND_CLEAR_DOPPLER)
+        ok = False
+
     return ok

@@ -60,18 +60,23 @@ Done:
   *Select Relativistic Objects* re-selects them. `object_tools` provides
   `is_orc_object` / `add_orc_object_data` / `read_orc_object_settings` /
   `collect_orc_objects`. Metadata only - no geometry/material change yet.
+- ✅ **Doppler material preview (first visible effect)** — *Apply / Clear Doppler
+  Material Preview* commands read the controller/camera/object settings, compute
+  beta + `cos_theta` (new `core.transforms.cos_theta_towards_observer`) and the
+  Doppler factor, and tint each object via a generated Standard material
+  (`ORC_Doppler_<name>`), non-destructively (layered Texture tag). Standard/
+  Physical compatible; Octane not required. See `docs/DOPPLER_PREVIEW.md`.
 - ✅ **Octane adapter stubs** — `detection.is_octane_available()` + no-op
   facade; verified the plugin imports with Octane **not** installed.
 
 Remaining:
 
-- 🔜 **Distribute state to effects** (deformer + materials read `c`, beta,
-  strengths from the controller; camera supplies `beta`/direction; objects supply
-  per-object velocity/flags).
-- 🔜 Description resources under `c4d/descriptions/` if/when these move to tags.
+- 🔜 **Searchlight/beaming material adjustment** — per-object luminance from
+  `core.searchlight`, alongside the Doppler colour.
+- 🔜 **Combine the camera's velocity** into the object↔observer relative beta
+  (currently beta is object/global only).
 - 🔜 **Lorentz Deformer / bake utility** — geometric transform on real points.
-- 🔜 **Approximate Doppler/searchlight material adjustment** — per-object color
-  & luminance on standard C4D materials.
+- 🔜 Description resources under `c4d/descriptions/` if/when these move to tags.
 
 **Exit criteria:** plugin loads without Octane; core tests pass in plain Python
 (done); lowering `c` (or raising velocity) visibly contracts and recolors a

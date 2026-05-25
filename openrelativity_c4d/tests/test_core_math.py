@@ -252,5 +252,43 @@ class TestTransforms(unittest.TestCase):
         self.assertAlmostEqual(transforms.length(pos), 2.0 * abs(t))
 
 
+class TestCosThetaTowardsObserver(unittest.TestCase):
+    def test_toward_observer_is_plus_one(self):
+        # velocity and line-of-sight point the same way -> approaching.
+        self.assertAlmostEqual(
+            transforms.cos_theta_towards_observer((0, 0, 1), (0, 0, 5)), 1.0
+        )
+
+    def test_away_is_minus_one(self):
+        self.assertAlmostEqual(
+            transforms.cos_theta_towards_observer((0, 0, -1), (0, 0, 5)), -1.0
+        )
+
+    def test_transverse_is_zero(self):
+        self.assertAlmostEqual(
+            transforms.cos_theta_towards_observer((1, 0, 0), (0, 0, 5)), 0.0
+        )
+
+    def test_zero_velocity_is_zero(self):
+        self.assertEqual(
+            transforms.cos_theta_towards_observer((0, 0, 0), (0, 0, 5)), 0.0
+        )
+
+    def test_zero_line_of_sight_is_zero(self):
+        self.assertEqual(
+            transforms.cos_theta_towards_observer((0, 0, 1), (0, 0, 0)), 0.0
+        )
+
+    def test_result_within_range(self):
+        val = transforms.cos_theta_towards_observer((1, 2, 3), (-3, 1, 2))
+        self.assertGreaterEqual(val, -1.0)
+        self.assertLessEqual(val, 1.0)
+
+    def test_feeds_doppler_consistently(self):
+        # Approaching object -> blueshift (factor < 1).
+        cos_t = transforms.cos_theta_towards_observer((0, 0, 1), (0, 0, 10))
+        self.assertTrue(doppler.is_blueshift(doppler.doppler_factor(0.6, cos_t)))
+
+
 if __name__ == "__main__":
     unittest.main()

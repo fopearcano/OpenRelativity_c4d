@@ -113,3 +113,29 @@ def apparent_position(rel_position, velocity, c=DEFAULT_SPEED_OF_LIGHT):
     """
     t = apparent_time_offset(rel_position, velocity, c)
     return add(rel_position, scale(velocity, t)), t
+
+
+# --- direction toward the observer (the Doppler cos_theta) ------------------
+def cos_theta_towards_observer(velocity, line_of_sight):
+    """Cosine of the angle between the motion and the line of sight to the observer.
+
+    ``line_of_sight`` points from the object **toward** the observer. Returns the
+    ``cos_theta`` convention used by
+    :func:`openrelativity_c4d.core.doppler.doppler_factor`:
+
+    * ``+1`` - moving directly toward the observer (approaching),
+    * ``-1`` - moving directly away (receding),
+    * ``0``  - transverse, or undefined because either vector is ~zero.
+
+    The result is clamped to ``[-1, 1]`` (guards against floating-point drift).
+    """
+    v = normalize(velocity)
+    los = normalize(line_of_sight)
+    if v == (0.0, 0.0, 0.0) or los == (0.0, 0.0, 0.0):
+        return 0.0
+    d = dot(v, los)
+    if d < -1.0:
+        return -1.0
+    if d > 1.0:
+        return 1.0
+    return d

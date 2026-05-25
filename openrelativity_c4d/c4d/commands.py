@@ -11,7 +11,7 @@ import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
 
 from .. import constants, ids
 from ..logging_utils import get_logger
-from . import camera_tools, object_tools, scene_controller
+from . import camera_tools, doppler_material, object_tools, scene_controller
 
 log = get_logger("commands")
 
@@ -62,6 +62,16 @@ def _object_status():
         return "unknown"
 
 
+def _doppler_status():
+    """Return the count of active Doppler preview materials."""
+    try:
+        doc = c4d.documents.GetActiveDocument()
+        return "{0} preview material(s)".format(
+            doppler_material.count_preview_materials(doc))
+    except Exception:  # noqa: BLE001
+        return "unknown"
+
+
 def about_info_lines():
     """Build the list of text lines shown in the About dialog."""
     return [
@@ -74,6 +84,7 @@ def about_info_lines():
         "Controller:     {0}".format(_controller_status()),
         "Camera:         {0}".format(_camera_status()),
         "Objects:        {0}".format(_object_status()),
+        "Doppler:        {0}".format(_doppler_status()),
         "Phase:          {0}".format(constants.DEVELOPMENT_PHASE),
         "",
         "Status:",
@@ -286,6 +297,59 @@ class SelectObjectsCommand(c4d.plugins.CommandData):
         c4d.EventAdd()
 
         log.info("Selected %d relativistic object(s).", len(objects))
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class ApplyDopplerPreviewCommand(c4d.plugins.CommandData):
+    """Apply the approximate Doppler colour preview to relativistic objects."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        count, status = doppler_material.apply_preview(doc)
+        if status == "disabled":
+            c4d.gui.MessageDialog(
+                "The Relativity Controller is disabled (Enabled = off).\n"
+                "Nothing was applied."
+            )
+        elif status == "no_objects":
+            c4d.gui.MessageDialog(
+                "No relativistic objects found.\n"
+                "Run 'Setup Selected Relativistic Objects' first."
+            )
+        else:
+            c4d.gui.MessageDialog(
+                "Applied the Doppler material preview to {0} object(s).\n"
+                "This is an artistic approximation (see docs/DOPPLER_PREVIEW.md), "
+                "not spectral rendering.".format(count)
+            )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class ClearDopplerPreviewCommand(c4d.plugins.CommandData):
+    """Remove the ORC-generated Doppler preview materials and tags."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        tags, materials = doppler_material.clear_preview(doc)
+        if tags == 0 and materials == 0:
+            c4d.gui.MessageDialog("No Doppler preview to clear.")
+        else:
+            c4d.gui.MessageDialog(
+                "Cleared the Doppler preview: removed {0} tag(s) and "
+                "{1} material(s). Original materials were left untouched.".format(
+                    tags, materials
+                )
+            )
         return True
 
     def GetState(self, doc):

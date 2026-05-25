@@ -148,14 +148,23 @@ Select an object and open the **Attribute Manager** to edit its **User Data**:
 | **Bake Eligible** | Bool | Off | Mark this object to be included when baking effects for rendering. |
 | **Octane Material Sync Enabled** | Bool | Off | *Stub* - will mirror the Doppler/searchlight result onto the object's Octane material (Phase 3). Octane is **not** required. |
 
-## 6. What the fields do *not* do yet
+## 6. Preview the Doppler effect
 
-In Phase 1 the controller, camera, and objects **store** these values and expose
-clean read/write helpers; nothing yet reads them to change your scene. The
-following are intentionally **not implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
+The first **visible** effect. After setting up a controller, camera, and some
+objects with a beta/velocity, run **Extensions > “OpenRelativity C4D: Apply
+Doppler Material Preview”** to tint each object blue (approaching) or red
+(receding) with a generated Standard material, then render with Standard or
+Physical. **Clear Doppler Material Preview** removes it again. This is an
+artistic approximation, not spectral rendering - full details, behaviour, and
+limitations are in [`DOPPLER_PREVIEW.md`](DOPPLER_PREVIEW.md).
+
+## 7. What the fields do *not* do yet
+
+The **Doppler material preview** above is implemented. The following are still
+intentionally **not implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
 
 - Lorentz **deformation** of geometry.
-- Doppler / searchlight **material** changes.
+- **Searchlight/beaming** material changes.
 - **Octane** output (the adapter is a safe no-op until Phase 3).
 - **Bake** workflow.
 
@@ -164,7 +173,7 @@ Placeholder/stub fields (no effect yet): the camera's *Aberration*, *Octane
 Camera Sync*, and *OSL*; and each object's *Bake Eligible* and *Octane Material
 Sync*. No OSL is generated and no Octane material/tag is touched.
 
-## 7. For developers
+## 8. For developers
 
 Read and write values by **field name** (no hard-coded IDs). Controller, camera,
 and objects share the same accessor style:
