@@ -21,6 +21,15 @@ This document describes *how* the prototype is structured. For *why*, see
    effects to **actual material parameters**. What you see is what will render.
 5. **No required third-party dependencies.** Standard library + `c4d` only.
 
+> **Logical layers → packages.** The names used below map to the implemented
+> package as follows: the `relativity_core` layer is `openrelativity_c4d.core`;
+> the `c4d_plugin` layer is `openrelativity_c4d.c4d`; the `adapters/octane` layer
+> is `openrelativity_c4d.octane`. The package root (`openrelativity_c4d/`) also
+> holds `constants`, `ids`, `logging_utils`, and `bootstrap`; the Cinema 4D entry
+> point is the top-level `openrelativity_c4d.pyp`. (`import c4d` inside the
+> `openrelativity_c4d.c4d` sub-package resolves to Cinema 4D's module, not the
+> sub-package — Python 3 absolute import.)
+
 ## 2. Layered structure
 
 ```
@@ -57,19 +66,21 @@ This document describes *how* the prototype is structured. For *why*, see
 | `adapters/octane` | `c4d`, Octane modules (soft), `relativity_core` | — |
 | `tests` | `relativity_core`, stdlib | `c4d` (tests must run without Cinema 4D) |
 
-## 3. `relativity_core` — the portable physics layer
+## 3. `relativity_core` (`openrelativity_c4d.core`) — the portable physics layer
 
 A small set of dependency-free modules. All functions take and return plain
 numbers / tuples / lists so the API is trivially portable to C++.
 
-| Module | Responsibility | Representative concepts |
+| Module | Responsibility | Representative API |
 |---|---|---|
-| `constants` | Shared constants & defaults | default `c`, small-epsilon guards |
-| `lorentz` | Time dilation & length contraction | `gamma(beta)`, `inv_gamma(beta)`, `contract_length(L0, beta)` |
-| `velocity` | Relativistic velocity addition | `add_velocity(v, u, c)` (parallel + perpendicular split) |
-| `doppler` | Doppler & beaming factors | `doppler_shift(beta_rel, cos_theta)`, `searchlight_intensity(shift)` |
-| `spectrum` | Color ↔ spectrum helpers | `rgb_to_xyz`, `xyz_to_rgb`, approximate wavelength-shift recolor |
-| `aberration` | Apparent position via light travel time | retarded-time quadratic solve → apparent offset |
+| `relativity_math` | Lorentz factor, length contraction, time dilation, collinear velocity addition; default `c` & epsilon guards | `gamma_from_beta`, `inverse_gamma_from_beta`, `contract_length`, `dilate_time`, `add_velocities_collinear` |
+| `doppler` | Relativistic Doppler shift factor | `doppler_shift(beta_rel, cos_theta)`, `is_blueshift`, `is_redshift` |
+| `searchlight` | Beaming / searchlight intensity | `searchlight_intensity(shift)` |
+| `transforms` | Vector helpers, 3D velocity addition, apparent position | `add_velocity(v, u, c)`, `apparent_time_offset`, `apparent_position` |
+
+> A `spectrum` module (RGB↔XYZ + approximate wavelength-shift recolor) is planned
+> for a later phase; in Phase 1 the Doppler/searchlight results are scalar
+> factors. Tests for these modules live in `openrelativity_c4d/tests`.
 
 ### 3.1 Physical relationships (reference, as realized in upstream)
 
@@ -112,7 +123,8 @@ Cinema 4D does not have Unity's `MonoBehaviour`. The natural C4D types are:
 | **Doppler material adjustment** | logic invoked from the tags/controller | Writes standard material color/luminance; mirrored to Octane via the adapter. |
 
 Parameters and labels are described with C4D **resource files** under
-`src/c4d_plugin/res/` (`.res` descriptions + localized `.str` strings).
+`openrelativity_c4d/c4d/descriptions/` (`.res` descriptions + localized `.str`
+strings).
 
 ### 4.2 Why geometry is deformed (not shaded)
 
@@ -210,29 +222,43 @@ across its public boundary and avoids any dependency that has no C++ analogue.
 ## 9. Directory structure (detailed)
 
 ```
-src/
-  relativity_core/        # pure Python; no `import c4d`; future C++ target
-    constants            # default c, epsilons
-    lorentz              # gamma, inverse gamma, length contraction
-    velocity             # relativistic velocity addition
-    doppler              # Doppler factor, searchlight/beaming factor
-    spectrum             # RGB<->XYZ, approximate wavelength-shift recolor
-    aberration           # retarded-time apparent-position solve
+openrelativity_c4d.pyp        # Cinema 4D entry point; calls bootstrap.register()
+openrelativity_c4d/           # importable package (safe to import outside C4D)
+  __init__.py                 # metadata + is_c4d_available(); no `import c4d`
+  constants.py                # version / target / status metadata
+  ids.py                      # PLACEHOLDER plugin IDs (replace before release)
+  logging_utils.py            # stdlib-only logging helpers
+  bootstrap.py                # register() — lazy c4d import, guarded
 
-  c4d_plugin/             # imports c4d; thin glue
-    scene_controller     # global c / observer velocity / time  (SceneHook+Command)
-    camera_tag           # observer frame (TagData on camera)
-    object_tag           # per-object velocity & flags (TagData)
-    lorentz_deformer     # geometry transform (ObjectData deformer + bake command)
-    doppler_material     # per-object color/luminance adjustment
-    res/                 # .res descriptions + localized strings
+  core/                       # pure Python; no `import c4d`; future C++ target
+    relativity_math.py        # gamma, inverse gamma, contraction, dilation, vel-add
+    doppler.py                # relativistic Doppler shift factor
+    searchlight.py            # beaming / searchlight intensity factor
+    transforms.py             # vectors, 3D velocity add, apparent position
 
-  adapters/
-    octane/              # optional, soft-imported; stubs in Phase 1
+  c4d/                        # imports c4d; thin glue
+    plugin_register.py        # registers plugin elements (About now; more later)
+    commands.py               # About command + dialog (functional)
+    scene_controller.py       # placeholder — global c / observer velocity / time
+    camera_tools.py           # placeholder — observer frame (TagData)
+    object_tools.py           # placeholder — per-object velocity & flags (TagData)
+    descriptions/             # .res descriptions + localized strings (later)
 
-tests/                    # pure-Python unit tests for relativity_core
-examples/                 # sample scenes & usage notes (later phases)
+  octane/                     # optional, soft-imported; stubs in Phase 1
+    detection.py              # never-raising Octane detection
+    adapter.py                # stable facade used by the rest of the plugin
+    camera_adapter.py         # placeholder (Phase 3)
+    material_adapter.py       # placeholder (Phase 3)
+    aov_adapter.py            # placeholder (Phase 3)
+
+  tests/
+    test_core_math.py         # pure-Python unit tests for core/ (no Cinema 4D)
+
+docs/                          # charter, architecture, roadmap, upstream reference
+tools/
+  run_core_tests.py            # run the core tests without Cinema 4D
 ```
 
-In the current commit these directories are **scaffolds**: each holds a short
-`README.md` describing its intent and **no plugin logic**.
+In Phase 1 the `core/` modules, the About `command`, the Octane `detection`, and
+the package plumbing are implemented; `scene_controller`, `camera_tools`,
+`object_tools`, the Octane mapping adapters, and `descriptions/` are placeholders.

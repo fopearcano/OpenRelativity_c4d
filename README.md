@@ -15,9 +15,12 @@ physically-based renderer (Octane), rather than a real-time game engine. See
 [`docs/ORIGINAL_OPENRELATIVITY_REFERENCE.md`](docs/ORIGINAL_OPENRELATIVITY_REFERENCE.md)
 for the concept-by-concept mapping.
 
-> **Status: Phase 0 — documentation & structure only.**
-> This commit contains documentation and a proposed project layout. There is
-> **no plugin code yet**. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+> **Status: Phase 1 — plugin skeleton.**
+> The plugin loads in Cinema 4D 2023+ and registers an *Extensions >
+> OpenRelativity C4D: About* command. The pure-Python physics core
+> (`openrelativity_c4d.core`) is implemented and unit-tested. The relativistic
+> Scene Controller, Camera/Object tags, deformers, and Octane mapping are
+> placeholders for later phases. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ---
 
@@ -39,29 +42,30 @@ and a thin **C4D integration layer**, and we realize the visuals as real
 geometry changes plus material-parameter approximations. Full details in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## What this prototype will provide
+## Features
 
-- **Relativity Scene Controller** — owns the global relativistic state
-  (speed of light `c`, the observer's velocity, simulation time / time-dilation
-  mode) and distributes it to the rest of the scene.
-- **Relativistic Camera Tag** — the observer's frame: velocity (with
-  relativistic velocity addition), and the camera parameters the math needs.
-- **Relativistic Object Tag** — per-object world velocity and the flags that
-  drive its deformation, color adjustment, and causal visibility.
-- **`relativity_core`** — a dependency-free Python math library: Lorentz factor,
-  length contraction, velocity addition, relativistic Doppler & searchlight
-  factors, RGB↔spectrum helpers, and the apparent-position (retarded-time)
-  solve. **Never imports `c4d`.**
-- **Lorentz deformation / bake utility** — moves real mesh points to show
-  length contraction and apparent distortion (since we can't bind a live
-  viewport vertex shader the way Unity does).
-- **Approximate Doppler / searchlight material adjustment** — per-object color
-  and luminance shifts on standard C4D materials.
-- **Octane-aware adapter (optional, isolated)** — soft-detects Octane and, when
-  present, mirrors the color/intensity results onto Octane material nodes. The
-  core plugin imports and runs **without Octane installed**.
-- **Docs & test scaffolding** — unit tests for `relativity_core` that run with
-  plain Python, no Cinema 4D required.
+Implemented now (Phase 1):
+
+- **`openrelativity_c4d.core`** — a dependency-free Python math library: Lorentz
+  factor, length contraction, time dilation, relativistic velocity addition,
+  relativistic Doppler & searchlight factors, and the apparent-position
+  (retarded-time) solve. **Never imports `c4d`**; covered by unit tests that run
+  in plain Python.
+- **About command** — registers under *Extensions* and opens a minimal dialog
+  showing the plugin version, target/running Cinema 4D version, Octane
+  detection, and status.
+- **Octane adapter (optional, isolated)** — soft-detects Octane; the plugin
+  imports and runs **without Octane installed**. Mapping is stubbed.
+
+Planned (later phases — see [`docs/ROADMAP.md`](docs/ROADMAP.md)):
+
+- **Relativity Scene Controller** — global `c`, observer velocity, simulation
+  time / time dilation.
+- **Relativistic Camera Tag** — observer frame & relativistic velocity addition.
+- **Relativistic Object Tag** — per-object velocity, causal visibility, effect flags.
+- **Lorentz deformation / bake utility** — moves real mesh points.
+- **Approximate Doppler / searchlight material adjustment** — per-object color & luminance.
+- **Real Octane material/camera/AOV mapping.**
 
 ## What is explicitly out of scope (Phase 1)
 
@@ -74,35 +78,96 @@ geometry changes plus material-parameter approximations. Full details in
 See [`docs/PROJECT_CHARTER.md`](docs/PROJECT_CHARTER.md) for the full
 in-scope / out-of-scope lists.
 
-## Proposed repository layout
+## Repository layout
 
 ```
 OpenRelativity_c4d/
-├── README.md
-├── MITLicense.md                  # upstream MIT license (attribution)
-├── docs/
-│   ├── PROJECT_CHARTER.md         # why, goals, scope
-│   ├── ARCHITECTURE.md            # layering, data flow, C4D plugin design, C++ path
-│   ├── ROADMAP.md                 # phased delivery plan
-│   └── ORIGINAL_OPENRELATIVITY_REFERENCE.md   # upstream analysis + concept mapping
-├── src/
-│   ├── relativity_core/           # PURE PYTHON physics/math — no `import c4d`
-│   ├── c4d_plugin/                # C4D-facing plugins (Scene Controller, Tags, Deformer)
-│   │   └── res/                   # C4D resource/description files
-│   └── adapters/
-│       └── octane/                # optional, soft-imported Octane adapter (stubs)
-├── tests/                         # pure-Python unit tests for relativity_core
-└── examples/                      # sample scenes & usage notes (later phases)
+├── openrelativity_c4d.pyp          # Cinema 4D plugin entry point (loads the package)
+├── openrelativity_c4d/             # the importable plugin package
+│   ├── __init__.py                 # safe to import outside C4D (no `import c4d`)
+│   ├── constants.py                # version, target, status metadata
+│   ├── ids.py                      # PLACEHOLDER plugin IDs (replace before release)
+│   ├── logging_utils.py            # stdlib-only logging helpers
+│   ├── bootstrap.py                # register() entry called by the .pyp
+│   ├── core/                       # PURE PYTHON physics/math — never imports c4d
+│   │   ├── relativity_math.py      # gamma, contraction, time dilation, velocity add
+│   │   ├── doppler.py              # relativistic Doppler shift factor
+│   │   ├── searchlight.py          # beaming / searchlight intensity factor
+│   │   └── transforms.py           # vectors, 3D velocity add, apparent position
+│   ├── c4d/                        # Cinema 4D integration (imports c4d)
+│   │   ├── plugin_register.py      # registers plugin elements
+│   │   ├── commands.py             # About command + dialog (functional)
+│   │   ├── scene_controller.py     # placeholder (later phase)
+│   │   ├── camera_tools.py         # placeholder (later phase)
+│   │   ├── object_tools.py         # placeholder (later phase)
+│   │   └── descriptions/           # C4D resource files (later phases)
+│   ├── octane/                     # optional, isolated Octane adapter (stubs)
+│   │   ├── detection.py            # soft Octane detection (never raises)
+│   │   ├── adapter.py              # stable facade used by the rest of the plugin
+│   │   ├── camera_adapter.py       # placeholder (Phase 3)
+│   │   ├── material_adapter.py     # placeholder (Phase 3)
+│   │   └── aov_adapter.py          # placeholder (Phase 3)
+│   └── tests/
+│       └── test_core_math.py       # unit tests for core/ (no Cinema 4D)
+├── docs/                           # charter, architecture, roadmap, upstream reference
+├── tools/
+│   └── run_core_tests.py           # run the core tests without Cinema 4D
+└── MITLicense.md                   # upstream MIT license (attribution)
 ```
 
-The directory tree in this commit is a scaffold: each folder contains a short
-`README.md` describing its intent, and **no plugin logic yet**.
+> `import c4d` inside `openrelativity_c4d/c4d/*` resolves to **Cinema 4D's**
+> top-level module (Python 3 absolute import), not to the `openrelativity_c4d.c4d`
+> sub-package.
 
-## Requirements (target)
+## Requirements
 
 - **Cinema 4D 2023 or newer**, using its bundled Python 3 runtime.
-- **No external Python packages** for the core (standard library + the `c4d`
-  module only). Octane support is optional and isolated.
+- **No external Python packages** (standard library + the `c4d` module only).
+  Octane support is optional and isolated.
+
+## Installation
+
+1. **Locate your Cinema 4D user plugins folder.** In Cinema 4D, open
+   *Edit > Preferences* and click **Open Preferences Folder…**; the `plugins`
+   sub-folder there is your user plugins folder. (You can also point Cinema 4D at
+   a custom plugins folder via the *Plugins* preferences.)
+2. **Copy the plugin in.** Create a folder such as `OpenRelativity_c4d` inside
+   that `plugins` folder and copy **both**:
+   - `openrelativity_c4d.pyp`
+   - the `openrelativity_c4d/` package folder
+
+   into it, keeping them side by side:
+
+   ```
+   <C4D user folder>/plugins/OpenRelativity_c4d/
+   ├── openrelativity_c4d.pyp
+   └── openrelativity_c4d/   (the package)
+   ```
+
+   (Copying the whole repository works too; Cinema 4D only executes the `.pyp`.)
+3. **Restart Cinema 4D.**
+4. **Open the** *Extensions* **menu** and choose **“OpenRelativity C4D: About”**.
+   A dialog reports the plugin version, the target and running Cinema 4D
+   versions, whether Octane was detected, and the current status. If you don't
+   see it, open the *Extensions > Console* and check for `[OpenRelativity C4D]`
+   log lines.
+
+> The bundled plugin IDs in `openrelativity_c4d/ids.py` are **development
+> placeholders**. Obtain unique IDs from the Maxon Plugin Café and replace them
+> before distributing the plugin.
+
+## Development & tests
+
+The physics core runs without Cinema 4D. From the repository root:
+
+```
+python -m unittest                       # discover & run all core tests
+# or
+python tools/run_core_tests.py           # same, with verbose output
+```
+
+The core (`openrelativity_c4d/core/`) must never `import c4d`; a unit test
+enforces this so the math stays portable (and migratable to C++ later).
 
 ## Attribution & license
 
