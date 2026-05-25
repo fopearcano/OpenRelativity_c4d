@@ -95,6 +95,7 @@ EXPECTED_DOCS = [
     "docs/ICONS.md",
     "docs/COMMAND_REFERENCE.md",
     "docs/TROUBLESHOOTING.md",
+    "docs/UI_REGRESSION_REPORT.md",
 ]
 
 # Directories that must never import Cinema 4D's `c4d` module.
