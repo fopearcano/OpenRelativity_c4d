@@ -34,6 +34,7 @@ EXPECTED_FILES = [
     "openrelativity_c4d/core/doppler.py",
     "openrelativity_c4d/core/searchlight.py",
     "openrelativity_c4d/core/transforms.py",
+    "openrelativity_c4d/core/history.py",
     "openrelativity_c4d/c4d/__init__.py",
     "openrelativity_c4d/c4d/field_specs.py",
     "openrelativity_c4d/c4d/plugin_register.py",
@@ -84,6 +85,7 @@ EXPECTED_DOCS = [
     "docs/LICENSE_DECISION_NEEDED.md",
     "docs/V0_1_RELEASE_NOTES.md",
     "docs/C4D_PLUGIN_TYPE_MIGRATION.md",
+    "docs/TIME_DELAY_LIGHT_CONE_DESIGN.md",
 ]
 
 # Directories that must never import Cinema 4D's `c4d` module.

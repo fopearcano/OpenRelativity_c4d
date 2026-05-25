@@ -77,6 +77,9 @@ Prepare the path to the Cinema 4D C++ SDK (see
 
 ## Cross-cutting / smaller
 - Wire `tools/verify_repo.py` into CI / a pre-commit hook.
+- **Time-delay / light-cone** (Phase 2): implement the retarded-time solver +
+  C4D history sampler/baker on top of `core.history`. Design:
+  [`docs/TIME_DELAY_LIGHT_CONE_DESIGN.md`](docs/TIME_DELAY_LIGHT_CONE_DESIGN.md).
 - Time-dilation across the animation timeline; causal appear/disappear gating.
 - Mesh subdivision utility (smooth contraction on coarse meshes).
 - Example scenes under `examples/`.

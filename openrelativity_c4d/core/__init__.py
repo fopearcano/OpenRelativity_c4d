@@ -6,6 +6,6 @@ C++ later. This sub-package can be imported and unit-tested with a plain Python
 interpreter.
 """
 
-from . import doppler, relativity_math, searchlight, transforms
+from . import doppler, history, relativity_math, searchlight, transforms
 
-__all__ = ["relativity_math", "doppler", "searchlight", "transforms"]
+__all__ = ["relativity_math", "doppler", "searchlight", "transforms", "history"]

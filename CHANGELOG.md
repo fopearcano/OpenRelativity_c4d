@@ -18,6 +18,9 @@ and C++ work. Inspired by MIT's Unity OpenRelativity but **not a port**.
 - `core.searchlight`: `searchlight_intensity_multiplier`.
 - `core.transforms`: vector helpers, `add_velocity`, `apparent_position`
   (retarded-time), `cos_theta_towards_observer`, `dominant_axis`.
+- `core.history`: data structures for the future time-delay / light-cone system
+  (`TransformSample`, `lerp_sample`, `ObjectHistory`, `HistoryCache`) - storage /
+  query only, **no physics yet**. Designed in `docs/TIME_DELAY_LIGHT_CONE_DESIGN.md`.
 - Unit tests (run without Cinema 4D), incl. guards that the core imports no `c4d`.
 
 ### Added - Cinema 4D integration
@@ -48,7 +51,8 @@ and C++ work. Inspired by MIT's Unity OpenRelativity but **not a port**.
   ORIGINAL_OPENRELATIVITY_REFERENCE, USER_GUIDE, QUICKSTART, INSTALLATION,
   DEVELOPER_NOTES, DOPPLER_PREVIEW, SEARCHLIGHT_PREVIEW, LORENTZ_PREVIEW,
   OCTANE_INTEGRATION, AOV_PIPELINE, OSL_CAMERA_EXPERIMENTS, METADATA_SCHEMA,
-  TEST_PLAN_C4D, TEST_PLAN_OCTANE, KNOWN_LIMITATIONS.
+  TEST_PLAN_C4D, TEST_PLAN_OCTANE, KNOWN_LIMITATIONS, C4D_PLUGIN_TYPE_MIGRATION,
+  TIME_DELAY_LIGHT_CONE_DESIGN (future time-delay/light-cone system design).
 
 ### Changed - audit & refactor pass
 - Extracted the duplicated object-tree walk into `c4d.scene_utils.iter_objects`
@@ -62,7 +66,9 @@ and C++ work. Inspired by MIT's Unity OpenRelativity but **not a port**.
 ### Known limitations
 Approximate, not physics-grade: RGB (not spectral) Doppler; artistic searchlight;
 axis-aligned Lorentz (no Terrell rotation); no light-travel-time sampling in the
-previews; per-object/pivot-based; Octane native materials/AOVs not implemented;
+previews yet (design + core data structures only - see
+`docs/TIME_DELAY_LIGHT_CONE_DESIGN.md`); per-object/pivot-based; Octane native
+materials/AOVs not implemented;
 OSL camera experimental. Full list: [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md).
 
 ### Notes

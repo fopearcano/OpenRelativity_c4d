@@ -112,6 +112,13 @@ Remaining (rolls into Phase 2):
 
 **Goal:** make it behave well across the timeline and look closer to upstream.
 
+- 🟡 **Time-delay / light-cone (retarded time)** — show each object where it *was*
+  when its light left it (apparent lag + Terrell rotation), not where it is now.
+  *Design done:* [`TIME_DELAY_LIGHT_CONE_DESIGN.md`](TIME_DELAY_LIGHT_CONE_DESIGN.md)
+  (history sampling, frame cache, observer-vs-scene time, sampling C4D curves,
+  baked preview transforms, vs. motion blur). *Started:* the pure-Python object
+  history data structures in `core.history` (no physics yet); the retarded-time
+  solver + C4D sampler/baker are the next step.
 - ⬜ **Time-dilation on the timeline** — observer vs. world clock; animated
   processes slowed per `gamma`.
 - ⬜ **Causal visibility gating** — an object isn't shown before its light could

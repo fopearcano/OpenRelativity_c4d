@@ -92,6 +92,7 @@ renderer). Two conventions hold throughout:
 | `doppler` | Doppler factor + art-directable recolor | `doppler_factor(beta, cos_theta)`, `approximate_rgb_doppler_shift(rgb, factor, strength)`, `is_blueshift`, `is_redshift` |
 | `searchlight` | Beaming / searchlight intensity (clamped) | `searchlight_intensity_multiplier(beta, cos_theta, strength)` |
 | `transforms` | Safe vector helpers, 3D velocity addition, apparent position | `safe_normalize`, `dot`/`add`/`sub`/`scale`/`length`, `add_velocity(v, u, c)`, `apparent_position` |
+| `history` | Object history samples for the future time-delay / light-cone system (data structures only, no physics yet) | `TransformSample`, `lerp_sample`, `ObjectHistory` (`add`/`sample_at`/`bracket`/`nearest`), `HistoryCache` — see [`TIME_DELAY_LIGHT_CONE_DESIGN.md`](TIME_DELAY_LIGHT_CONE_DESIGN.md) |
 
 > A `spectrum` module (RGB↔XYZ + wavelength-shift recolor) is planned for a later
 > phase; for now `approximate_rgb_doppler_shift` is a simple red/blue tint, not a
@@ -250,6 +251,7 @@ openrelativity_c4d/           # importable package (safe to import outside C4D)
     doppler.py                # relativistic Doppler shift factor
     searchlight.py            # beaming / searchlight intensity factor
     transforms.py             # vectors, 3D velocity add, apparent position
+    history.py                # object history samples (time-delay/light-cone; data only)
 
   c4d/                        # imports c4d; thin glue
     plugin_register.py        # registers plugin elements (About now; more later)

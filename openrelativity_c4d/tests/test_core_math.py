@@ -11,14 +11,15 @@ No Cinema 4D required.
 import math
 import unittest
 
-from openrelativity_c4d.core import doppler, relativity_math, searchlight, transforms
+from openrelativity_c4d.core import (doppler, history, relativity_math,
+                                     searchlight, transforms)
 
 
 class TestArchitectureRules(unittest.TestCase):
     """Guard the hard constraint that the core never imports Cinema 4D."""
 
     def test_core_modules_do_not_import_c4d(self):
-        for mod in (relativity_math, doppler, searchlight, transforms):
+        for mod in (relativity_math, doppler, searchlight, transforms, history):
             self.assertFalse(
                 hasattr(mod, "c4d"),
                 "{0} must not import the c4d module".format(mod.__name__),
