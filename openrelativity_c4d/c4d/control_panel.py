@@ -22,8 +22,7 @@ import c4d
 
 from .. import constants, ids
 from ..logging_utils import get_logger
-from ..octane import detection as octane_detection
-from . import camera_tools, icon_loader, object_tools, scene_controller
+from . import icon_loader, ui_status
 
 log = get_logger("control_panel")
 
@@ -45,6 +44,7 @@ class ControlPanelDialog(c4d.gui.GeDialog):
     _ID_STATUS_OBJECTS = 1013
     _ID_STATUS_OCTANE = 1014
     _ID_STATUS_LAST = 1015
+    _ID_STATUS_GENERATED = 1016
 
     _ID_REFRESH = 1020
     _ID_CLOSE = 1021
@@ -147,7 +147,7 @@ class ControlPanelDialog(c4d.gui.GeDialog):
         self.AddStaticText(self._ID_STATUS_CONTROLLER, c4d.BFH_SCALEFIT, name="...")
         self.AddStaticText(0, c4d.BFH_LEFT, name="Camera:")
         self.AddStaticText(self._ID_STATUS_CAMERA, c4d.BFH_SCALEFIT, name="...")
-        self.AddStaticText(0, c4d.BFH_LEFT, name="ORC objects:")
+        self.AddStaticText(0, c4d.BFH_LEFT, name="Objects:")
         self.AddStaticText(self._ID_STATUS_OBJECTS, c4d.BFH_SCALEFIT, name="...")
         self.AddStaticText(0, c4d.BFH_LEFT, name="Octane:")
         self.AddStaticText(self._ID_STATUS_OCTANE, c4d.BFH_SCALEFIT, name="...")
@@ -155,7 +155,9 @@ class ControlPanelDialog(c4d.gui.GeDialog):
 
         self.GroupBegin(0, c4d.BFH_SCALEFIT, 2, 0, "")
         self.GroupBorderSpace(6, 0, 6, 2)
-        self.AddStaticText(0, c4d.BFH_LEFT, name="Last action:")
+        self.AddStaticText(0, c4d.BFH_LEFT, name="Generated:")
+        self.AddStaticText(self._ID_STATUS_GENERATED, c4d.BFH_SCALEFIT, name="...")
+        self.AddStaticText(0, c4d.BFH_LEFT, name="Last:")
         self.AddStaticText(self._ID_STATUS_LAST, c4d.BFH_SCALEFIT, name="(none yet)")
         self.GroupEnd()
 
@@ -224,7 +226,7 @@ class ControlPanelDialog(c4d.gui.GeDialog):
 
     def build_footer(self):
         self.GroupBegin(0, c4d.BFH_SCALEFIT, 2, 0, "")
-        self.AddButton(self._ID_REFRESH, c4d.BFH_SCALEFIT, name="Refresh")
+        self.AddButton(self._ID_REFRESH, c4d.BFH_SCALEFIT, name="Refresh Status")
         self.AddButton(self._ID_CLOSE, c4d.BFH_SCALEFIT, name="Close")
         self.GroupEnd()
 
@@ -255,12 +257,16 @@ class ControlPanelDialog(c4d.gui.GeDialog):
         return True
 
     def refresh_status(self):
-        controller, camera, objects, octane = self._read_status()
-        self.SetString(self._ID_STATUS_CONTROLLER, controller)
-        self.SetString(self._ID_STATUS_CAMERA, camera)
-        self.SetString(self._ID_STATUS_OBJECTS, objects)
-        self.SetString(self._ID_STATUS_OCTANE, octane)
-        self.SetString(self._ID_STATUS_LAST, self._last_action)
+        status = ui_status.collect_status(self._active_doc(), self._last_action)
+        try:
+            self.SetString(self._ID_STATUS_CONTROLLER, status.controller_label())
+            self.SetString(self._ID_STATUS_CAMERA, status.camera_label())
+            self.SetString(self._ID_STATUS_OBJECTS, status.objects_label())
+            self.SetString(self._ID_STATUS_OCTANE, status.octane_label())
+            self.SetString(self._ID_STATUS_GENERATED, status.generated_label())
+            self.SetString(self._ID_STATUS_LAST, status.last_label())
+        except Exception:  # noqa: BLE001 - a status refresh must never crash the dialog
+            log.debug("Status refresh failed.", exc_info=True)
 
     def Command(self, cid, msg):
         if cid == self._ID_REFRESH:
@@ -278,47 +284,32 @@ class ControlPanelDialog(c4d.gui.GeDialog):
         entry = self._cmd_by_gadget.get(cid)
         if entry is not None:
             command_id, label = entry
-            c4d.CallCommand(command_id)  # runs the real command (unchanged behavior)
-            self._last_action = "Ran: {0}".format(label)
+            try:
+                c4d.CallCommand(command_id)  # runs the real command (unchanged behavior)
+                self._last_action = "Ran: {0}".format(label)
+            except Exception:  # noqa: BLE001 - keep the dialog alive on a failing command
+                log.exception("Control Panel command '%s' (id=%s) failed.",
+                              label, command_id)
+                self._last_action = "Error: '{0}' failed (see console)".format(label)
             self.refresh_status()
         return True
 
     # --- panel-local helpers ------------------------------------------------
-    def _read_status(self):
-        """Return ``(controller, camera, objects, octane)`` status strings.
-
-        Fully guarded; never raises and never requires Octane.
-        """
-        controller = camera = objects = octane = "unknown"
+    @staticmethod
+    def _active_doc():
         try:
-            doc = c4d.documents.GetActiveDocument()
-            controller = "found" if scene_controller.find_controller(doc) else "MISSING"
-            cam = camera_tools.find_relativistic_camera(doc)
-            camera = cam.GetName() if cam is not None else "MISSING"
-            objects = str(len(object_tools.collect_orc_objects(doc)))
+            return c4d.documents.GetActiveDocument()
         except Exception:  # noqa: BLE001
-            pass
-        try:
-            octane = ("detected" if octane_detection.detect_octane_available()
-                      else "not detected")
-        except Exception:  # noqa: BLE001
-            octane = "unknown"
-        return controller, camera, objects, octane
+            return None
 
     def _show_ui_diagnostics(self):
         """Read-only: show scene status and the icon load summary in a dialog."""
-        controller, camera, objects, octane = self._read_status()
-        lines = [
-            "OpenRelativity C4D - UI diagnostics",
-            "",
-            "Controller:  {0}".format(controller),
-            "Camera:      {0}".format(camera),
-            "ORC objects: {0}".format(objects),
-            "Octane:      {0}".format(octane),
-            "",
-            icon_loader.format_load_summary(),
-        ]
-        c4d.gui.MessageDialog("\n".join(lines))
+        status = ui_status.collect_status(self._active_doc(), self._last_action)
+        c4d.gui.MessageDialog(
+            "OpenRelativity C4D - UI diagnostics\n\n"
+            + status.format_summary()
+            + "\n\n"
+            + icon_loader.format_load_summary())
         self._last_action = "UI diagnostics"
         self.refresh_status()
 

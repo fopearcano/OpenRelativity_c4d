@@ -31,13 +31,22 @@ In the **Extensions** menu, commands use a consistent grouped label path -
 Octane, Export, Experimental, Help) - so they cluster together and are easy to
 scan. The full list is in [`COMMAND_REFERENCE.md`](COMMAND_REFERENCE.md).
 
-**Status** (always visible; updates after each action, or press **Refresh**):
+**Status** (always visible; updates when the panel opens and after every action,
+or press **Refresh Status**):
 
-- **Controller** - `found` / `MISSING`
-- **Camera** - the relativistic camera's name / `MISSING`
-- **ORC objects** - how many relativistic objects exist
-- **Octane** - `detected` / `not detected` / `unknown`
-- **Last action** - the most recent button you pressed
+- **Controller** - `OK` / `Missing`
+- **Camera** - `OK` / `Missing` (a relativistic camera exists or not)
+- **Objects** - `N`, the number of relativistic objects
+- **Generated** - `M mat / L Lorentz`: how many ORC preview materials and Lorentz
+  preview copies currently exist (watch these change as you Apply / Clear / Remove)
+- **Octane** - `Detected` / `Missing` / `Unknown`
+- **Last** - what the last button did, e.g. `Ran: Apply Doppler`. If a command
+  fails it shows `Error: '<name>' failed (see console)` and the full details are
+  written to the Cinema 4D console - the panel stays open.
+
+The status is refreshed on demand only (open / action / **Refresh Status**); there
+is no background polling. If you change the scene from elsewhere, press **Refresh
+Status** to update the read-out.
 
 **Tabs** keep the panel short - only one section's buttons show at a time:
 
@@ -54,8 +63,8 @@ scan. The full list is in [`COMMAND_REFERENCE.md`](COMMAND_REFERENCE.md).
 
 Each button shows a small section-coloured icon when available and **falls back to
 a plain text button if the icon is missing**. Every command button runs the
-matching Extensions-menu command (identical behavior); **Refresh** and **Close**
-sit in the footer. The panel is **non-modal** - keep it open while you work, and
+matching Extensions-menu command (identical behavior); **Refresh Status** and
+**Close** sit in the footer. The panel is **non-modal** - keep it open while you work, and
 the tabs keep it within a laptop screen. A typical first run: **Setup ▸ Create
 Test Scene** → **Preview ▸ Apply All Materials** → render (see
 [`QUICKSTART.md`](QUICKSTART.md)).

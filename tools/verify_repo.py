@@ -41,6 +41,7 @@ EXPECTED_FILES = [
     "openrelativity_c4d/c4d/commands.py",
     "openrelativity_c4d/c4d/control_panel.py",
     "openrelativity_c4d/c4d/icon_loader.py",
+    "openrelativity_c4d/c4d/ui_status.py",
     "openrelativity_c4d/c4d/scene_controller.py",
     "openrelativity_c4d/c4d/camera_tools.py",
     "openrelativity_c4d/c4d/object_tools.py",
