@@ -62,7 +62,10 @@ material/geometry previews) calls Cinema 4D's `c4d` module and **cannot be unit
 tested outside Cinema 4D**. Those parts are verified **manually inside Cinema 4D**
 (load the plugin, run the commands, render). Only the renderer-agnostic math and
 the import-safe helpers are automatically tested. When a change touches the
-`c4d/` layer, test it in Cinema 4D 2023+.
+`c4d/` layer, test it in Cinema 4D 2023+ following the formal manual test plans:
+[`TEST_PLAN_C4D.md`](TEST_PLAN_C4D.md) and [`TEST_PLAN_OCTANE.md`](TEST_PLAN_OCTANE.md).
+Expected approximations/limitations are listed in
+[`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md).
 
 ## 4. Octane is optional (adapter-level only, for now)
 
