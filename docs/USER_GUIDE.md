@@ -19,7 +19,35 @@ See the [README](../README.md#installation): copy `openrelativity_c4d.pyp` and
 the `openrelativity_c4d/` package into a folder inside your Cinema 4D user
 **plugins** folder, then restart Cinema 4D. Octane is **not** required.
 
-## 2. Create the Relativity Controller
+## 2. The Control Panel (recommended entry point)
+
+For everyday use, open the one-stop panel: **Extensions > “OpenRelativity C4D:
+Control Panel”**. It is a small, dockable window with a button for every command
+plus a live status read-out, so you rarely need the Extensions menu directly.
+
+**Status** (updates after each action; press **Refresh** anytime):
+
+- **Controller** - `found` / `MISSING`
+- **Camera** - the relativistic camera's name / `MISSING`
+- **ORC objects** - how many relativistic objects exist
+- **Octane** - `detected` / `not detected` / `unknown`
+
+**Buttons**, grouped to stay compact:
+
+- *Scene setup*: Create / Select Controller, Setup Relativistic Camera, Setup
+  Selected Objects, Create Test Scene.
+- *Material preview*: Apply Doppler Preview, Apply Searchlight Preview, Apply All
+  Material Previews.
+- *Lorentz geometry*: Create / Remove Lorentz Copies.
+- *Octane / export*: Octane Status, Show AOV Plan, Export Metadata JSON.
+- *Info*: About.
+
+Each button runs the matching command described in the rest of this guide. The
+panel is **non-modal** - keep it open while you work, and it stays narrow/short
+enough for laptop screens. A typical first run: *Create Test Scene* → *Apply All
+Material Previews* → render (see [`QUICKSTART.md`](QUICKSTART.md)).
+
+## 3. Create the Relativity Controller
 
 1. Open the **Extensions** menu.
 2. Choose **“OpenRelativity C4D: Create Relativity Controller”**.
@@ -32,7 +60,7 @@ the `openrelativity_c4d/` package into a folder inside your Cinema 4D user
 You can confirm a controller exists at any time via **Extensions > “OpenRelativity
 C4D: About”**, which shows `Controller: present` or `Controller: not in scene`.
 
-## 3. Adjust the settings
+## 4. Adjust the settings
 
 Select `ORC_Relativity_Controller` and open the **Attribute Manager**. Its
 **User Data** is organised into three sections:
@@ -67,7 +95,7 @@ Select `ORC_Relativity_Controller` and open the **Attribute Manager**. Its
 > and `beta` parameters of the math core
 > (`openrelativity_c4d.core`).
 
-## 4. Set up a Relativistic Camera
+## 5. Set up a Relativistic Camera
 
 The observer (the point of view that "sees" the relativistic effects) is a
 camera carrying its own User Data.
@@ -114,7 +142,7 @@ Select the camera and open the **Attribute Manager** to edit its **User Data**:
 
 The result is always clamped to ≤ `99.9%` of `c`.
 
-## 5. Set up relativistic objects
+## 6. Set up relativistic objects
 
 Any scene object can be marked as relativistic by giving it its own User Data.
 
@@ -153,7 +181,7 @@ Select an object and open the **Attribute Manager** to edit its **User Data**:
 | **Bake Eligible** | Bool | Off | Mark this object to be included when baking effects for rendering. |
 | **Octane Material Sync Enabled** | Bool | Off | *Stub* - will mirror the Doppler/searchlight result onto the object's Octane material (Phase 3). Octane is **not** required. |
 
-## 6. Preview the relativistic effects
+## 7. Preview the relativistic effects
 
 The first **visible** effects. After setting up a controller, camera, and some
 objects with a beta/velocity, use the *Extensions* menu:
@@ -180,7 +208,7 @@ rotation/apparent geometry). See [`DOPPLER_PREVIEW.md`](DOPPLER_PREVIEW.md),
 [`SEARCHLIGHT_PREVIEW.md`](SEARCHLIGHT_PREVIEW.md), and
 [`LORENTZ_PREVIEW.md`](LORENTZ_PREVIEW.md) for details and limitations.
 
-## 7. What the fields do *not* do yet
+## 8. What the fields do *not* do yet
 
 The **Doppler/searchlight material previews** and an **axis-aligned Lorentz
 geometry preview** are implemented. The following are still intentionally **not
@@ -210,7 +238,7 @@ velocities, betas, and computed Doppler/searchlight factors to a JSON file for
 compositing/debugging/reproducibility - schema in
 [`METADATA_SCHEMA.md`](METADATA_SCHEMA.md).
 
-## 8. For developers
+## 9. For developers
 
 Read and write values by **field name** (no hard-coded IDs). Controller, camera,
 and objects share the same accessor style:

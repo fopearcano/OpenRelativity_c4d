@@ -80,6 +80,10 @@ Done:
   camera + light + approaching/receding/lateral/static objects; re-runnable with
   uniquely-named sets) and *Apply All Previews* (material + Lorentz together).
   See `docs/QUICKSTART.md`.
+- ✅ **Control Panel** — `c4d/control_panel.py`: a compact, non-modal GeDialog
+  (`Control Panel` command) with grouped buttons for every command and a live
+  status read-out (controller/camera/objects/Octane); buttons call the registered
+  commands via `CallCommand`.
 - ✅ **Octane detection & status** — `detect_octane_available()` (ID-independent,
   never raises) + `get_octane_status_report(doc)`, surfaced by the *Octane Status*
   command; no-op adapter facade. Verified import/run with Octane **absent**

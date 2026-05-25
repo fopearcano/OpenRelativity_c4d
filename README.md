@@ -52,6 +52,10 @@ geometry changes plus material-parameter approximations. Full details in
 
 Implemented now (Phase 1):
 
+- **Control Panel** — *Extensions > Control Panel* is a compact, dockable window
+  with a button for every command and a live status read-out (controller /
+  camera / object count / Octane). The recommended way to drive the plugin. See
+  [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md).
 - **`openrelativity_c4d.core`** — a dependency-free Python math library: Lorentz
   factor, length contraction, time dilation, relativistic velocity addition,
   relativistic Doppler & searchlight factors, and the apparent-position

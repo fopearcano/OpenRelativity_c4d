@@ -47,6 +47,10 @@ COMMAND_APPLY_OCTANE_MATERIAL = 1000020  # PLACEHOLDER (out of test range!) - "A
 COMMAND_SHOW_AOV_PLAN = 1000021     # PLACEHOLDER (out of test range!) - "Show AOV Plan"
 COMMAND_EXPORT_OSL_CAMERA = 1000022  # PLACEHOLDER (out of test range!) - "Export Experimental OSL Camera"
 COMMAND_EXPORT_METADATA = 1000023   # PLACEHOLDER (out of test range!) - "Export Relativity Metadata JSON"
+COMMAND_CONTROL_PANEL = 1000024     # PLACEHOLDER (out of test range!) - "Control Panel"
+
+# --- Dialog layout IDs (additional) -----------------------------------------
+DIALOG_CONTROL_PANEL = 1000025      # PLACEHOLDER (out of test range!) - Control Panel async dialog
 
 # --- Dialog layout IDs ------------------------------------------------------
 DIALOG_ABOUT = 1000002  # PLACEHOLDER - replace with a registered Plugin Cafe ID

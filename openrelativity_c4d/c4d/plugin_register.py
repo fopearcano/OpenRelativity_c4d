@@ -1,16 +1,15 @@
 """Registration of Cinema 4D plugin elements.
 
 :func:`register_all` is called from :mod:`openrelativity_c4d.bootstrap` inside
-Cinema 4D. In this skeleton it registers only the *About* command; the
-commented-out blocks mark where the Scene Controller, tags and deformer will be
-registered in later phases.
+Cinema 4D and registers every command plugin (About, controller/camera/object
+setup, the previews, Octane utilities, metadata export, and the Control Panel).
 """
 
 import c4d  # Cinema 4D's module
 
 from .. import constants, ids
 from ..logging_utils import get_logger
-from . import commands
+from . import commands, control_panel
 
 log = get_logger("register")
 
@@ -318,6 +317,22 @@ def register_all():
     else:
         log.error("Failed to register 'Export Relativity Metadata JSON' (id=%s).",
                   ids.COMMAND_EXPORT_METADATA)
+        ok = False
+
+    # --- Control Panel command ---------------------------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_CONTROL_PANEL,
+        str="{0}: Control Panel".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Open the OpenRelativity control panel (buttons for every command).",
+        dat=control_panel.ControlPanelCommand(),
+    )
+    if registered:
+        log.info("Registered 'Control Panel' (id=%s).", ids.COMMAND_CONTROL_PANEL)
+    else:
+        log.error("Failed to register 'Control Panel' (id=%s).",
+                  ids.COMMAND_CONTROL_PANEL)
         ok = False
 
     return ok
