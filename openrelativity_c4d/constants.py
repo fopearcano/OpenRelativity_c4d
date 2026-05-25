@@ -25,3 +25,20 @@ STATUS_SUMMARY = (
 
 # Single-line tagline used in menus / about box.
 TAGLINE = "Relativistic visualization tools for Cinema 4D"
+
+
+def command_name(section, leaf):
+    """Build a grouped, consistent command/menu label.
+
+    Format: ``"OpenRelativity C4D / <section> / <leaf>"`` - every command shares
+    the ``PLUGIN_NAME`` prefix so they cluster together in the Extensions menu and
+    the Commander, and the ``/ <section> /`` path reads as a group.
+
+    Note: Cinema 4D does **not** turn the ``/`` into true nested submenus from a
+    command's name; this is a readable, prefix-grouped *label* only. Real nested
+    submenus would need a ``C4DPL_BUILDMENU`` hook (future work). To switch to the
+    plain-prefix convention instead, change only this function, e.g.::
+
+        return "{0}: {1} - {2}".format(PLUGIN_NAME, section, leaf)
+    """
+    return "{0} / {1} / {2}".format(PLUGIN_NAME, section, leaf)

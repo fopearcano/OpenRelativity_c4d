@@ -21,9 +21,15 @@ the `openrelativity_c4d/` package into a folder inside your Cinema 4D user
 
 ## 2. The Control Panel (recommended entry point)
 
-For everyday use, open the one-stop panel: **Extensions > “OpenRelativity C4D:
-Control Panel”**. It is a small, dockable window with a button for every command
-plus a live status read-out, so you rarely need the Extensions menu directly.
+For everyday use, open the one-stop panel: **Extensions > “OpenRelativity C4D /
+Help / Control Panel”**. It is a small, dockable window with a button for every
+command plus a live status read-out, so you rarely need the Extensions menu
+directly.
+
+In the **Extensions** menu, commands use a consistent grouped label path -
+**`OpenRelativity C4D / <Section> / <Command>`** (sections: Setup, Scene, Preview,
+Octane, Export, Experimental, Help) - so they cluster together and are easy to
+scan. The full list is in [`COMMAND_REFERENCE.md`](COMMAND_REFERENCE.md).
 
 **Status** (always visible; updates after each action, or press **Refresh**):
 
@@ -35,14 +41,14 @@ plus a live status read-out, so you rarely need the Extensions menu directly.
 
 **Tabs** keep the panel short - only one section's buttons show at a time:
 
-- **Setup** - Create / Select Controller, Setup Relativistic Camera, Setup
-  Selected Objects, Select Relativistic Objects, Create Test Scene.
-- **Preview** - Apply Doppler Preview, Apply Searchlight Preview, Apply All
-  Material Previews, Apply All (+ Lorentz), Clear Material Preview, Create Lorentz
-  Copies, Remove Lorentz Copies.
-- **Octane** - Octane Status, Apply Octane Material, Show AOV Plan, Export OSL
-  Camera. (These work with Octane absent - they report status or fall back safely.)
-- **Export** - Export Metadata JSON.
+- **Setup** - Create Controller, Setup Camera, Setup Selected Objects, Select
+  Objects, Create Test Scene.
+- **Preview** - Apply Doppler, Apply Searchlight, Apply All Materials, Apply All
+  (+ Lorentz), Clear Generated Materials, Create Lorentz Copies, Remove Lorentz
+  Copies.
+- **Octane** - Status, Apply Compatible Preview, Show AOV Plan, Export OSL Camera.
+  (These work with Octane absent - they report status or fall back safely.)
+- **Export** - Metadata JSON.
 - **Help** - About, Octane Diagnostics, **UI Diagnostics** (shows scene status +
   which command icons loaded), **Open Docs Folder**.
 
@@ -51,7 +57,7 @@ a plain text button if the icon is missing**. Every command button runs the
 matching Extensions-menu command (identical behavior); **Refresh** and **Close**
 sit in the footer. The panel is **non-modal** - keep it open while you work, and
 the tabs keep it within a laptop screen. A typical first run: **Setup ▸ Create
-Test Scene** → **Preview ▸ Apply All Material Previews** → render (see
+Test Scene** → **Preview ▸ Apply All Materials** → render (see
 [`QUICKSTART.md`](QUICKSTART.md)).
 
 ### Screenshots
@@ -64,7 +70,7 @@ status area with a scene loaded. Save them under `docs/images/` (e.g.
 ## 3. Create the Relativity Controller
 
 1. Open the **Extensions** menu.
-2. Choose **“OpenRelativity C4D: Create Relativity Controller”**.
+2. Choose **“OpenRelativity C4D / Setup / Create Controller”**.
 3. The plugin either:
    - creates a Null named **`ORC_Relativity_Controller`**, selects it, and
      confirms with a dialog; or
@@ -72,7 +78,7 @@ status area with a scene loaded. Save them under `docs/images/` (e.g.
      you so (only one controller per scene is intended).
 
 You can confirm a controller exists at any time via **Extensions > “OpenRelativity
-C4D: About”**, which shows `Controller: present` or `Controller: not in scene`.
+C4D / Help / About”**, which shows `Controller: present` or `Controller: not in scene`.
 
 ## 4. Adjust the settings
 
@@ -116,7 +122,7 @@ camera carrying its own User Data.
 
 1. *(Optional)* select a camera. If a camera is selected it is used; if none is
    selected, a new camera named **`ORC_Relativistic_Camera`** is created.
-2. Open **Extensions > “OpenRelativity C4D: Setup Relativistic Camera”**.
+2. Open **Extensions > “OpenRelativity C4D / Setup / Setup Camera”**.
 3. The plugin adds the camera's User Data (or just selects it, if it already has
    it). The **About** dialog's `Camera:` line then shows the camera's name.
 
@@ -161,12 +167,12 @@ The result is always clamped to ≤ `99.9%` of `c`.
 Any scene object can be marked as relativistic by giving it its own User Data.
 
 1. Select one or more objects.
-2. Open **Extensions > “OpenRelativity C4D: Setup Selected Relativistic
-   Objects”**. Each eligible object gets the User Data below. The Relativity
-   Controller and any cameras in the selection are **skipped**, and objects that
-   already have the data are left unchanged.
-3. To gather them again later, run **Extensions > “OpenRelativity C4D: Select
-   Relativistic Objects”**, which selects every object that has the data. The
+2. Open **Extensions > “OpenRelativity C4D / Setup / Setup Selected Objects”**.
+   Each eligible object gets the User Data below. The Relativity Controller and
+   any cameras in the selection are **skipped**, and objects that already have the
+   data are left unchanged.
+3. To gather them again later, run **Extensions > “OpenRelativity C4D / Setup /
+   Select Objects”**, which selects every object that has the data. The
    **About** dialog's `Objects:` line shows how many exist.
 
 Select an object and open the **Attribute Manager** to edit its **User Data**:
@@ -246,8 +252,8 @@ Placeholder/stub fields (no effect yet): the camera's *Aberration*, *Octane
 Camera Sync*, and *OSL*; and each object's *Bake Eligible* and *Octane Material
 Sync*. No OSL is generated and no Octane material/tag is touched.
 
-**Exporting metadata.** *Extensions > “OpenRelativity C4D: Export Relativity
-Metadata JSON”* writes the current frame's controller/camera/object settings,
+**Exporting metadata.** *Extensions > “OpenRelativity C4D / Export / Metadata
+JSON”* writes the current frame's controller/camera/object settings,
 velocities, betas, and computed Doppler/searchlight factors to a JSON file for
 compositing/debugging/reproducibility - schema in
 [`METADATA_SCHEMA.md`](METADATA_SCHEMA.md).

@@ -21,7 +21,7 @@ def register_all():
     # --- About command -----------------------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_ABOUT_COMMAND,
-        str="{0}: About".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Help", "About"),
         info=0,
         icon=icon_loader.safe_icon("icon_about"),
         help="Show information about {0}.".format(constants.PLUGIN_NAME),
@@ -36,7 +36,7 @@ def register_all():
     # --- Create Relativity Controller command ------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_CREATE_CONTROLLER_COMMAND,
-        str="{0}: Create Relativity Controller".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Setup", "Create Controller"),
         info=0,
         icon=icon_loader.safe_icon("icon_setup_controller"),
         help="Create the ORC_Relativity_Controller Null with relativity settings.",
@@ -53,7 +53,7 @@ def register_all():
     # --- Setup Relativistic Camera command ---------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_SETUP_CAMERA_COMMAND,
-        str="{0}: Setup Relativistic Camera".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Setup", "Setup Camera"),
         info=0,
         icon=icon_loader.safe_icon("icon_setup_camera"),
         help="Configure the selected camera (or create one) as a relativistic observer.",
@@ -70,7 +70,7 @@ def register_all():
     # --- Setup Selected Relativistic Objects command -----------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_SETUP_OBJECTS_COMMAND,
-        str="{0}: Setup Selected Relativistic Objects".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Setup", "Setup Selected Objects"),
         info=0,
         icon=icon_loader.safe_icon("icon_setup_objects"),
         help="Add relativistic User Data to the selected objects.",
@@ -87,7 +87,7 @@ def register_all():
     # --- Select Relativistic Objects command -------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_SELECT_OBJECTS_COMMAND,
-        str="{0}: Select Relativistic Objects".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Setup", "Select Objects"),
         info=0,
         icon=icon_loader.safe_icon("icon_setup_objects"),
         help="Select every object that has relativistic User Data.",
@@ -104,7 +104,7 @@ def register_all():
     # --- Apply Doppler Material Preview command ----------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_APPLY_DOPPLER_PREVIEW_COMMAND,
-        str="{0}: Apply Doppler Material Preview".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Preview", "Apply Doppler"),
         info=0,
         icon=icon_loader.safe_icon("icon_doppler_preview"),
         help="Apply the approximate Doppler colour preview to relativistic objects.",
@@ -121,7 +121,7 @@ def register_all():
     # --- Apply Searchlight Preview command ---------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_APPLY_SEARCHLIGHT_PREVIEW_COMMAND,
-        str="{0}: Apply Searchlight Preview".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Preview", "Apply Searchlight"),
         info=0,
         icon=icon_loader.safe_icon("icon_searchlight_preview"),
         help="Apply the approximate searchlight (beaming) brightness preview.",
@@ -138,7 +138,7 @@ def register_all():
     # --- Apply Relativity Material Preview (combined) command --------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_APPLY_RELATIVITY_PREVIEW_COMMAND,
-        str="{0}: Apply Relativity Material Preview".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Preview", "Apply All Materials"),
         info=0,
         icon=icon_loader.safe_icon("icon_all_previews"),
         help="Apply both the Doppler tint and the searchlight brightness.",
@@ -155,10 +155,11 @@ def register_all():
     # --- Clear Material Preview command ------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_CLEAR_PREVIEW_COMMAND,
-        str="{0}: Clear Material Preview".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Preview", "Clear Generated Preview Materials"),
         info=0,
         icon=icon_loader.safe_icon("icon_lorentz_remove"),
-        help="Remove all ORC-generated preview materials and tags.",
+        help="Delete the ORC-generated preview materials and tags. Your original "
+             "materials are left untouched.",
         dat=commands.ClearMaterialPreviewCommand(),
     )
     if registered:
@@ -172,7 +173,7 @@ def register_all():
     # --- Create Lorentz Preview Copies command -----------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_CREATE_LORENTZ_PREVIEWS_COMMAND,
-        str="{0}: Create Lorentz Preview Copies".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Preview", "Create Lorentz Copies"),
         info=0,
         icon=icon_loader.safe_icon("icon_lorentz_create"),
         help="Create non-destructive contracted duplicates for Lorentz preview.",
@@ -189,10 +190,11 @@ def register_all():
     # --- Remove Lorentz Preview Copies command -----------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_REMOVE_LORENTZ_PREVIEWS_COMMAND,
-        str="{0}: Remove Lorentz Preview Copies".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Preview", "Remove Lorentz Copies"),
         info=0,
         icon=icon_loader.safe_icon("icon_lorentz_remove"),
-        help="Remove the Lorentz preview copies and restore the originals.",
+        help="Delete the ORC Lorentz preview copies and restore the original "
+             "objects' visibility. Originals are not modified.",
         dat=commands.RemoveLorentzPreviewCommand(),
     )
     if registered:
@@ -206,7 +208,7 @@ def register_all():
     # --- Create Test Scene command -----------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_CREATE_TEST_SCENE_COMMAND,
-        str="{0}: Create Test Scene".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Scene", "Create Test Scene"),
         info=0,
         icon=icon_loader.safe_icon("icon_create_test_scene"),
         help="Build a demo scene: controller, camera, test objects and a light.",
@@ -223,7 +225,7 @@ def register_all():
     # --- Apply All Previews command ----------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_APPLY_ALL_PREVIEWS_COMMAND,
-        str="{0}: Apply All Previews".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Preview", "Apply All"),
         info=0,
         icon=icon_loader.safe_icon("icon_all_previews"),
         help="Apply the material preview and create Lorentz preview copies.",
@@ -239,7 +241,7 @@ def register_all():
     # --- Octane Status command ---------------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_OCTANE_STATUS_COMMAND,
-        str="{0}: Octane Status".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Octane", "Status"),
         info=0,
         icon=icon_loader.safe_icon("icon_octane_status"),
         help="Report Octane availability and status (no Octane changes).",
@@ -255,7 +257,7 @@ def register_all():
     # --- Octane Diagnostics command ----------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_OCTANE_DIAGNOSTICS_COMMAND,
-        str="{0}: Octane Diagnostics".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Octane", "Diagnostics"),
         info=0,
         icon=icon_loader.safe_icon("icon_diagnostics"),
         help="Report detected Octane IDs/classes/material parameters (read-only).",
@@ -272,7 +274,7 @@ def register_all():
     # --- Apply Octane-Compatible Material Preview command ------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_APPLY_OCTANE_MATERIAL_COMMAND,
-        str="{0}: Apply Octane-Compatible Material Preview".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Octane", "Apply Compatible Preview"),
         info=0,
         icon=icon_loader.safe_icon("icon_octane_status"),
         help="Apply the preview via Octane if supported, else a Standard fallback.",
@@ -289,7 +291,7 @@ def register_all():
     # --- Show AOV Plan command ---------------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_SHOW_AOV_PLAN_COMMAND,
-        str="{0}: Show AOV Plan".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Octane", "Show AOV Plan"),
         info=0,
         icon=icon_loader.safe_icon("icon_aov_plan"),
         help="Show the desired Relativity AOVs and Octane AOV support status.",
@@ -305,7 +307,7 @@ def register_all():
     # --- Export Experimental OSL Camera command ----------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_EXPORT_OSL_CAMERA_COMMAND,
-        str="{0}: Export Experimental OSL Camera".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Experimental", "Export OSL Camera"),
         info=0,
         icon=icon_loader.safe_icon("icon_export_osl"),
         help="Write the experimental (placeholder) OSL camera shader to a file.",
@@ -322,7 +324,7 @@ def register_all():
     # --- Export Relativity Metadata JSON command ---------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_EXPORT_METADATA_COMMAND,
-        str="{0}: Export Relativity Metadata JSON".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Export", "Metadata JSON"),
         info=0,
         icon=icon_loader.safe_icon("icon_export_metadata"),
         help="Export controller/camera/object relativity metadata to JSON.",
@@ -339,7 +341,7 @@ def register_all():
     # --- Control Panel command ---------------------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
         id=ids.ID_ORC_CONTROL_PANEL_COMMAND,
-        str="{0}: Control Panel".format(constants.PLUGIN_NAME),
+        str=constants.command_name("Help", "Control Panel"),
         info=0,
         icon=icon_loader.safe_icon("icon_control_panel"),
         help="Open the OpenRelativity control panel (buttons for every command).",

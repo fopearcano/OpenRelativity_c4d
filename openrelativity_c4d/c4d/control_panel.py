@@ -162,13 +162,13 @@ class ControlPanelDialog(c4d.gui.GeDialog):
     # --- tabs ---------------------------------------------------------------
     def build_setup_tab(self):
         self._begin_tab(self._ID_TAB_SETUP, "Setup")
-        self._add_command("Create / Select Controller",
+        self._add_command("Create Controller",
                           ids.ID_ORC_CREATE_CONTROLLER_COMMAND, "icon_setup_controller")
-        self._add_command("Setup Relativistic Camera",
+        self._add_command("Setup Camera",
                           ids.ID_ORC_SETUP_CAMERA_COMMAND, "icon_setup_camera")
         self._add_command("Setup Selected Objects",
                           ids.ID_ORC_SETUP_OBJECTS_COMMAND, "icon_setup_objects")
-        self._add_command("Select Relativistic Objects",
+        self._add_command("Select Objects",
                           ids.ID_ORC_SELECT_OBJECTS_COMMAND, "icon_setup_objects")
         self._add_command("Create Test Scene",
                           ids.ID_ORC_CREATE_TEST_SCENE_COMMAND, "icon_create_test_scene")
@@ -176,15 +176,15 @@ class ControlPanelDialog(c4d.gui.GeDialog):
 
     def build_preview_tab(self):
         self._begin_tab(self._ID_TAB_PREVIEW, "Preview")
-        self._add_command("Apply Doppler Preview",
+        self._add_command("Apply Doppler",
                           ids.ID_ORC_APPLY_DOPPLER_PREVIEW_COMMAND, "icon_doppler_preview")
-        self._add_command("Apply Searchlight Preview",
+        self._add_command("Apply Searchlight",
                           ids.ID_ORC_APPLY_SEARCHLIGHT_PREVIEW_COMMAND, "icon_searchlight_preview")
-        self._add_command("Apply All Material Previews",
+        self._add_command("Apply All Materials",
                           ids.ID_ORC_APPLY_RELATIVITY_PREVIEW_COMMAND, "icon_all_previews")
         self._add_command("Apply All (+ Lorentz)",
                           ids.ID_ORC_APPLY_ALL_PREVIEWS_COMMAND, "icon_all_previews")
-        self._add_command("Clear Material Preview",
+        self._add_command("Clear Generated Materials",
                           ids.ID_ORC_CLEAR_PREVIEW_COMMAND, "icon_lorentz_remove")
         self._add_command("Create Lorentz Copies",
                           ids.ID_ORC_CREATE_LORENTZ_PREVIEWS_COMMAND, "icon_lorentz_create")
@@ -194,9 +194,9 @@ class ControlPanelDialog(c4d.gui.GeDialog):
 
     def build_octane_tab(self):
         self._begin_tab(self._ID_TAB_OCTANE, "Octane")
-        self._add_command("Octane Status",
+        self._add_command("Status",
                           ids.ID_ORC_OCTANE_STATUS_COMMAND, "icon_octane_status")
-        self._add_command("Apply Octane Material",
+        self._add_command("Apply Compatible Preview",
                           ids.ID_ORC_APPLY_OCTANE_MATERIAL_COMMAND, "icon_octane_status")
         self._add_command("Show AOV Plan",
                           ids.ID_ORC_SHOW_AOV_PLAN_COMMAND, "icon_aov_plan")
@@ -206,7 +206,7 @@ class ControlPanelDialog(c4d.gui.GeDialog):
 
     def build_export_tab(self):
         self._begin_tab(self._ID_TAB_EXPORT, "Export")
-        self._add_command("Export Metadata JSON",
+        self._add_command("Metadata JSON",
                           ids.ID_ORC_EXPORT_METADATA_COMMAND, "icon_export_metadata")
         self.AddStaticText(0, c4d.BFH_LEFT, name="")
         self.AddStaticText(0, c4d.BFH_SCALEFIT,
