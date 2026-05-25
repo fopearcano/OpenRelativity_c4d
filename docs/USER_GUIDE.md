@@ -62,7 +62,54 @@ Select `ORC_Relativity_Controller` and open the **Attribute Manager**. Its
 > and `beta` parameters of the math core
 > (`openrelativity_c4d.core`).
 
-## 4. What the fields do *not* do yet
+## 4. Set up a Relativistic Camera
+
+The observer (the point of view that "sees" the relativistic effects) is a
+camera carrying its own User Data.
+
+1. *(Optional)* select a camera. If a camera is selected it is used; if none is
+   selected, a new camera named **`ORC_Relativistic_Camera`** is created.
+2. Open **Extensions > “OpenRelativity C4D: Setup Relativistic Camera”**.
+3. The plugin adds the camera's User Data (or just selects it, if it already has
+   it). The **About** dialog's `Camera:` line then shows the camera's name.
+
+Select the camera and open the **Attribute Manager** to edit its **User Data**:
+
+### Relativistic Camera
+
+| Field | Type | Default | Meaning |
+|---|---|---|---|
+| **ORC Enabled** | Bool | On | Whether this camera participates in relativity. |
+| **Observer Beta** | Percent | `0%` | The observer's speed as a fraction of `c`, set directly. `0%` means "derive from Observer Velocity instead". |
+| **Observer Velocity** | Vector | `(0, 0, 0)` | Observer velocity in scene units/second. Its magnitude ÷ `c` gives beta when *Observer Beta* is `0`; its direction is used for direction-dependent effects later. |
+| **Use Controller Global Beta** | Bool | On | When on **and** the Scene Controller's *Global Beta Override* is > 0, that global value is used instead of this camera's own beta. |
+
+### Preview
+
+| Field | Type | Default | Meaning |
+|---|---|---|---|
+| **Doppler Preview Enabled** | Bool | On | Show the Doppler color shift for this observer (when previews exist). |
+| **Searchlight Preview Enabled** | Bool | On | Show the searchlight/beaming intensity. |
+| **Aberration Preview Enabled** | Bool | Off | *Placeholder* - apparent-position aberration is not implemented yet. |
+
+### Integration (Experimental)
+
+| Field | Type | Default | Meaning |
+|---|---|---|---|
+| **Octane Camera Sync Enabled** | Bool | Off | *Stub* - will mirror the observer onto an Octane camera (Phase 3). Octane is **not** required. |
+| **OSL Camera Experimental Enabled** | Bool | Off | *Placeholder* - no OSL shader is generated yet. |
+
+**How the effective beta is chosen** (`compute_observer_beta`):
+
+1. Controller's *Global Beta Override* — if *Use Controller Global Beta* is on
+   and that override is > 0.
+2. Else the camera's own *Observer Beta* — if > 0.
+3. Else `|Observer Velocity| ÷ c`, where `c` is the controller's *Artificial
+   Speed of Light* (or the core default if there is no controller).
+
+The result is always clamped to ≤ `99.9%` of `c`.
+
+## 5. What the fields do *not* do yet
 
 In Phase 1 the controller **stores** these values and exposes clean read/write
 helpers for the rest of the plugin. The following are intentionally **not
@@ -74,22 +121,29 @@ implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
 - **Bake** workflow.
 
 Changing the values now is safe and will be honored once those features land.
+The camera's *Aberration*, *Octane Camera Sync*, and *OSL* fields are likewise
+placeholders/stubs (no OSL is generated and no Octane tag is touched).
 
-## 5. For developers
+## 6. For developers
 
-Read and write controller values by **field name** (no hard-coded IDs):
+Read and write values by **field name** (no hard-coded IDs). Controller and
+camera share the same accessor style:
 
 ```python
-from openrelativity_c4d.c4d import scene_controller
+from openrelativity_c4d.c4d import scene_controller, camera_tools
 
 doc = c4d.documents.GetActiveDocument()
-controller = scene_controller.find_controller(doc)
 
+controller = scene_controller.find_controller(doc)
 c_value = scene_controller.get_value(controller, scene_controller.FIELD_SPEED_OF_LIGHT)
 scene_controller.set_value(controller, scene_controller.FIELD_DOPPLER_STRENGTH, 0.5)
 
-state = scene_controller.read_state(controller)  # dict of every field
+camera = camera_tools.find_relativistic_camera(doc)
+beta = camera_tools.compute_observer_beta(camera, controller)  # effective v/c
+state = camera_tools.read_state(camera)  # dict of every camera field
 ```
 
-Field-name constants, defaults, and the creation logic all live in
-`openrelativity_c4d/c4d/scene_controller.py`.
+Field-name constants, defaults, and creation logic live in
+`openrelativity_c4d/c4d/scene_controller.py` and
+`openrelativity_c4d/c4d/camera_tools.py`; the shared User Data plumbing is in
+`openrelativity_c4d/c4d/userdata.py`.

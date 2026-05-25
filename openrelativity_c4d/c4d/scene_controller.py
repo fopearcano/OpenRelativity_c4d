@@ -14,9 +14,9 @@ This module owns:
 * clean read/write helpers (:func:`get_value` / :func:`set_value` /
   :func:`read_state`).
 
-User Data is addressed **by field name** (via :func:`GetUserDataContainer`), not
-by hard-coded sub-ids, so the accessors keep working even if the layout/order
-changes later.
+The low-level User Data plumbing lives in :mod:`openrelativity_c4d.c4d.userdata`
+(shared with the camera and future tags). Fields are addressed **by name**, so
+the accessors keep working even if the layout/order changes later.
 
 ``import c4d`` here resolves to Cinema 4D's module (absolute import), not the
 ``openrelativity_c4d.c4d`` sub-package.
@@ -25,6 +25,7 @@ changes later.
 import c4d
 
 from ..logging_utils import get_logger
+from . import userdata
 
 log = get_logger("scene_controller")
 
@@ -60,85 +61,28 @@ DEFAULTS = {
 }
 
 
-# --- User Data construction helpers -----------------------------------------
-def _add_group(obj, name):
-    bc = c4d.GetCustomDatatypeDefault(c4d.DTYPE_GROUP)
-    bc[c4d.DESC_NAME] = name
-    bc[c4d.DESC_SHORT_NAME] = name
-    bc[c4d.DESC_TITLEBAR] = True
-    return obj.AddUserData(bc)
-
-
-def _add_bool(obj, name, default, group):
-    bc = c4d.GetCustomDatatypeDefault(c4d.DTYPE_BOOL)
-    bc[c4d.DESC_NAME] = name
-    bc[c4d.DESC_SHORT_NAME] = name
-    bc[c4d.DESC_DEFAULT] = bool(default)
-    if group is not None:
-        bc[c4d.DESC_PARENTGROUP] = group
-    descid = obj.AddUserData(bc)
-    obj[descid] = bool(default)
-    return descid
-
-
-def _add_real(obj, name, default, group,
-              min_val=None, max_val=None, step=None, unit=None):
-    bc = c4d.GetCustomDatatypeDefault(c4d.DTYPE_REAL)
-    bc[c4d.DESC_NAME] = name
-    bc[c4d.DESC_SHORT_NAME] = name
-    bc[c4d.DESC_DEFAULT] = float(default)
-    if min_val is not None:
-        bc[c4d.DESC_MIN] = float(min_val)
-    if max_val is not None:
-        bc[c4d.DESC_MAX] = float(max_val)
-    if step is not None:
-        bc[c4d.DESC_STEP] = float(step)
-    if unit is not None:
-        bc[c4d.DESC_UNIT] = unit
-    if group is not None:
-        bc[c4d.DESC_PARENTGROUP] = group
-    descid = obj.AddUserData(bc)
-    obj[descid] = float(default)
-    return descid
-
-
-def _add_cycle(obj, name, items, default, group):
-    bc = c4d.GetCustomDatatypeDefault(c4d.DTYPE_LONG)
-    bc[c4d.DESC_NAME] = name
-    bc[c4d.DESC_SHORT_NAME] = name
-    bc[c4d.DESC_CUSTOMGUI] = c4d.CUSTOMGUI_CYCLE
-    cycle = c4d.BaseContainer()
-    for index, label in enumerate(items):
-        cycle.SetString(index, label)
-    bc.SetContainer(c4d.DESC_CYCLE, cycle)
-    bc[c4d.DESC_DEFAULT] = int(default)
-    if group is not None:
-        bc[c4d.DESC_PARENTGROUP] = group
-    descid = obj.AddUserData(bc)
-    obj[descid] = int(default)
-    return descid
-
-
 def _build_user_data(null):
     """Attach the organized User Data fields with safe defaults."""
-    g_main = _add_group(null, "Relativity")
-    _add_bool(null, FIELD_ENABLED, DEFAULTS[FIELD_ENABLED], g_main)
-    _add_real(null, FIELD_SPEED_OF_LIGHT, DEFAULTS[FIELD_SPEED_OF_LIGHT], g_main,
-              min_val=0.001, step=1.0)
-    _add_real(null, FIELD_BETA_OVERRIDE, DEFAULTS[FIELD_BETA_OVERRIDE], g_main,
-              min_val=0.0, max_val=0.999, step=0.001, unit=c4d.DESC_UNIT_PERCENT)
+    g_main = userdata.add_group(null, "Relativity")
+    userdata.add_bool(null, FIELD_ENABLED, DEFAULTS[FIELD_ENABLED], g_main)
+    userdata.add_real(null, FIELD_SPEED_OF_LIGHT, DEFAULTS[FIELD_SPEED_OF_LIGHT],
+                      g_main, min_val=0.001, step=1.0)
+    userdata.add_real(null, FIELD_BETA_OVERRIDE, DEFAULTS[FIELD_BETA_OVERRIDE],
+                      g_main, min_val=0.0, max_val=0.999, step=0.001,
+                      unit=c4d.DESC_UNIT_PERCENT)
 
-    g_fx = _add_group(null, "Visual Effects")
+    g_fx = userdata.add_group(null, "Visual Effects")
     for field in (FIELD_DOPPLER_STRENGTH, FIELD_SEARCHLIGHT_STRENGTH,
                   FIELD_LORENTZ_STRENGTH):
-        _add_real(null, field, DEFAULTS[field], g_fx,
-                  min_val=0.0, max_val=1.0, step=0.01, unit=c4d.DESC_UNIT_PERCENT)
-    _add_cycle(null, FIELD_PREVIEW_MODE, PREVIEW_MODES,
-               DEFAULTS[FIELD_PREVIEW_MODE], g_fx)
+        userdata.add_real(null, field, DEFAULTS[field], g_fx,
+                          min_val=0.0, max_val=1.0, step=0.01,
+                          unit=c4d.DESC_UNIT_PERCENT)
+    userdata.add_cycle(null, FIELD_PREVIEW_MODE, PREVIEW_MODES,
+                       DEFAULTS[FIELD_PREVIEW_MODE], g_fx)
 
-    g_int = _add_group(null, "Integration")
-    _add_bool(null, FIELD_OCTANE_ENABLED, DEFAULTS[FIELD_OCTANE_ENABLED], g_int)
-    _add_bool(null, FIELD_BAKE_ENABLED, DEFAULTS[FIELD_BAKE_ENABLED], g_int)
+    g_int = userdata.add_group(null, "Integration")
+    userdata.add_bool(null, FIELD_OCTANE_ENABLED, DEFAULTS[FIELD_OCTANE_ENABLED], g_int)
+    userdata.add_bool(null, FIELD_BAKE_ENABLED, DEFAULTS[FIELD_BAKE_ENABLED], g_int)
 
 
 # --- Lookup / creation -------------------------------------------------------
@@ -195,34 +139,21 @@ def find_or_create(doc):
     return create_controller(doc), True
 
 
-# --- Read / write helpers ----------------------------------------------------
-def _descid_for_field(controller, field_name):
-    """Return the ``DescID`` of a User Data field by its display name, or ``None``."""
-    for descid, bc in controller.GetUserDataContainer():
-        if bc[c4d.DESC_NAME] == field_name:
-            return descid
-    return None
-
-
+# --- Read / write helpers (delegate to the shared, name-based accessors) -----
 def get_value(controller, field_name, default=None):
     """Read a controller field by name. Returns ``default`` if missing."""
     if controller is None:
         return default
-    descid = _descid_for_field(controller, field_name)
-    if descid is None:
-        return default
-    return controller[descid]
+    return userdata.get_value(controller, field_name, default)
 
 
 def set_value(controller, field_name, value):
     """Write a controller field by name. Returns ``True`` on success."""
     if controller is None:
         return False
-    descid = _descid_for_field(controller, field_name)
-    if descid is None:
+    if not userdata.set_value(controller, field_name, value):
         log.warning("Controller has no field %r.", field_name)
         return False
-    controller[descid] = value
     return True
 
 

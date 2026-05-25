@@ -26,6 +26,7 @@ scenes that reference the wrong ID.
 # --- Commands (active) ------------------------------------------------------
 COMMAND_ABOUT = 1000001             # PLACEHOLDER - replace with a registered ID
 COMMAND_CREATE_CONTROLLER = 1000007 # PLACEHOLDER - "Create Relativity Controller"
+COMMAND_SETUP_CAMERA = 1000008      # PLACEHOLDER - "Setup Relativistic Camera"
 
 # --- Dialog layout IDs ------------------------------------------------------
 DIALOG_ABOUT = 1000002  # PLACEHOLDER - replace with a registered Plugin Cafe ID

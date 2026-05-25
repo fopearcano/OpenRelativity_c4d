@@ -11,7 +11,7 @@ import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
 
 from .. import constants, ids
 from ..logging_utils import get_logger
-from . import scene_controller
+from . import camera_tools, scene_controller
 
 log = get_logger("commands")
 
@@ -43,6 +43,16 @@ def _controller_status():
         return "unknown"
 
 
+def _camera_status():
+    """Return the name of the active relativistic camera, or 'none'."""
+    try:
+        doc = c4d.documents.GetActiveDocument()
+        cam = camera_tools.find_relativistic_camera(doc)
+        return cam.GetName() if cam is not None else "none"
+    except Exception:  # noqa: BLE001
+        return "unknown"
+
+
 def about_info_lines():
     """Build the list of text lines shown in the About dialog."""
     return [
@@ -53,6 +63,7 @@ def about_info_lines():
         "Running build:  {0}".format(_c4d_build()),
         "Octane:         {0}".format(_octane_status()),
         "Controller:     {0}".format(_controller_status()),
+        "Camera:         {0}".format(_camera_status()),
         "Phase:          {0}".format(constants.DEVELOPMENT_PHASE),
         "",
         "Status:",
@@ -143,6 +154,41 @@ class CreateControllerCommand(c4d.plugins.CommandData):
                 scene_controller.CONTROLLER_NAME
             )
         )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class SetupCameraCommand(c4d.plugins.CommandData):
+    """Set up the selected camera (or create one) as a relativistic observer."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        cam, action = camera_tools.setup_relativistic_camera(doc)
+        if cam is None or action == "failed":
+            c4d.gui.MessageDialog("Failed to set up the relativistic camera.")
+            return False
+
+        name = cam.GetName()
+        if action == "created":
+            message = (
+                "Created '{0}' with relativity User Data.\n"
+                "Open the Attribute Manager (User Data) to set Observer Beta or "
+                "Observer Velocity.".format(name)
+            )
+        elif action == "configured":
+            message = (
+                "Added relativity User Data to the selected camera '{0}'.".format(name)
+            )
+        else:  # "exists"
+            message = (
+                "Camera '{0}' already has relativity User Data; selected it.".format(name)
+            )
+        log.info("Setup Relativistic Camera: %s (%s).", name, action)
+        c4d.gui.MessageDialog(message)
         return True
 
     def GetState(self, doc):

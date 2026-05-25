@@ -47,15 +47,19 @@ Done:
   light, global beta, effect strengths, preview mode, Octane/bake toggles) and
   safe defaults; clean name-based read/write helpers in `scene_controller`.
   (A future `ObjectData`/SceneHook version may replace the Null.)
+- ✅ **Relativistic Camera (v1)** — *Setup Relativistic Camera* command uses the
+  selected camera or creates `ORC_Relativistic_Camera`, with organized User Data
+  (ORC enabled, observer beta, observer velocity, use-controller-global-beta,
+  preview toggles, Octane/OSL placeholders) and `compute_observer_beta` resolving
+  `beta` from the camera + controller via the math core. Shared User Data plumbing
+  factored into `c4d/userdata.py`. Octane/OSL remain stubs.
 - ✅ **Octane adapter stubs** — `detection.is_octane_available()` + no-op
   facade; verified the plugin imports with Octane **not** installed.
 
 Remaining:
 
 - 🔜 **Distribute controller state to effects** (deformer + materials read `c`,
-  beta, strengths from the controller).
-- 🔜 **Relativistic Camera Tag** — observer velocity (via the core), exposes
-  FOV/aspect. (placeholder module present)
+  beta, strengths from the controller; camera supplies `beta`/direction).
 - 🔜 **Relativistic Object Tag** — per-object world velocity + flags.
   (placeholder module present)
 - 🔜 Description resources under `c4d/descriptions/` for the above.

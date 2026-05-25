@@ -51,9 +51,25 @@ def register_all():
                   ids.COMMAND_CREATE_CONTROLLER)
         ok = False
 
+    # --- Setup Relativistic Camera command ---------------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_SETUP_CAMERA,
+        str="{0}: Setup Relativistic Camera".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Configure the selected camera (or create one) as a relativistic observer.",
+        dat=commands.SetupCameraCommand(),
+    )
+    if registered:
+        log.info("Registered 'Setup Relativistic Camera' (id=%s).",
+                 ids.COMMAND_SETUP_CAMERA)
+    else:
+        log.error("Failed to register 'Setup Relativistic Camera' (id=%s).",
+                  ids.COMMAND_SETUP_CAMERA)
+        ok = False
+
     # --- Later phases (not implemented yet) --------------------------------
-    # from . import camera_tools, object_tools
-    # ok &= camera_tools.register()
+    # from . import object_tools
     # ok &= object_tools.register()
 
     return ok

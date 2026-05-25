@@ -16,12 +16,13 @@ physically-based renderer (Octane), rather than a real-time game engine. See
 for the concept-by-concept mapping.
 
 > **Status: Phase 1 — in progress.**
-> The plugin loads in Cinema 4D 2023+ and registers two *Extensions* commands:
-> **About** and **Create Relativity Controller** (which adds an
-> `ORC_Relativity_Controller` Null with organized settings). The pure-Python
-> physics core (`openrelativity_c4d.core`) is implemented and unit-tested. The
-> Camera/Object tags, deformers, and Octane mapping are placeholders for later
-> phases. See [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) to get started and
+> The plugin loads in Cinema 4D 2023+ and registers three *Extensions* commands:
+> **About**, **Create Relativity Controller** (an `ORC_Relativity_Controller`
+> Null with scene settings), and **Setup Relativistic Camera** (an observer
+> camera with its own settings). The pure-Python physics core
+> (`openrelativity_c4d.core`) is implemented and unit-tested. Object tags,
+> deformers, and Octane mapping are placeholders for later phases. See
+> [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) to get started and
 > [`docs/ROADMAP.md`](docs/ROADMAP.md) for the plan.
 
 ---
@@ -61,12 +62,16 @@ Implemented now (Phase 1):
   global beta, effect strengths, preview mode, Octane/bake toggles) and clean
   read/write helpers. Stores settings now; drives effects in later phases. See
   [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md).
+- **Relativistic Camera** — *Extensions > Setup Relativistic Camera* configures
+  the selected camera (or creates `ORC_Relativistic_Camera`) with observer beta,
+  velocity, preview toggles, and Octane/OSL placeholders, plus a
+  `compute_observer_beta` helper that resolves `beta` from the camera and
+  controller.
 - **Octane adapter (optional, isolated)** — soft-detects Octane; the plugin
   imports and runs **without Octane installed**. Mapping is stubbed.
 
 Planned (later phases — see [`docs/ROADMAP.md`](docs/ROADMAP.md)):
 
-- **Relativistic Camera Tag** — observer frame & relativistic velocity addition.
 - **Relativistic Object Tag** — per-object velocity, causal visibility, effect flags.
 - **Lorentz deformation / bake utility** — moves real mesh points.
 - **Approximate Doppler / searchlight material adjustment** — per-object color & luminance.
