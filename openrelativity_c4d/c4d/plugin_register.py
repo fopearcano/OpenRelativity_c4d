@@ -303,4 +303,21 @@ def register_all():
                   ids.COMMAND_EXPORT_OSL_CAMERA)
         ok = False
 
+    # --- Export Relativity Metadata JSON command ---------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_EXPORT_METADATA,
+        str="{0}: Export Relativity Metadata JSON".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Export controller/camera/object relativity metadata to JSON.",
+        dat=commands.ExportMetadataCommand(),
+    )
+    if registered:
+        log.info("Registered 'Export Relativity Metadata JSON' (id=%s).",
+                 ids.COMMAND_EXPORT_METADATA)
+    else:
+        log.error("Failed to register 'Export Relativity Metadata JSON' (id=%s).",
+                  ids.COMMAND_EXPORT_METADATA)
+        ok = False
+
     return ok

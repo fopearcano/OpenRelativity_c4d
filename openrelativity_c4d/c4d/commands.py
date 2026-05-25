@@ -15,11 +15,14 @@
   *Export Experimental OSL Camera* - Octane detection, material preview (with
   Standard fallback), the AOV plan, and the experimental OSL camera export (see
   the octane package).
+* *Export Relativity Metadata JSON* - scene metadata for renderer/post (see the
+  export package).
 """
 
 import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
 
 from .. import constants, ids
+from ..export import metadata_export
 from ..logging_utils import get_logger
 from ..octane import adapter as octane_adapter
 from ..octane import aov_adapter as octane_aov
@@ -623,6 +626,43 @@ class ShowAOVPlanCommand(c4d.plugins.CommandData):
             "OpenRelativity C4D - AOV Plan\n\n"
             + octane_aov.format_aov_plan(plan, render_info)
         )
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class ExportMetadataCommand(c4d.plugins.CommandData):
+    """Export the scene's relativity metadata to a JSON file."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+
+        def_path = ""
+        try:
+            def_path = doc.GetDocumentPath() or ""
+        except Exception:  # noqa: BLE001
+            def_path = ""
+
+        path = c4d.storage.SaveDialog(
+            title="Export Relativity Metadata JSON",
+            force_suffix="json",
+            def_path=def_path,
+            def_file=metadata_export.default_filename(doc),
+        )
+        if not path:
+            return True  # user cancelled
+
+        result = metadata_export.export_metadata_json(doc, path)
+        if result["ok"]:
+            c4d.gui.MessageDialog(
+                "Exported relativity metadata for {0} object(s) to:\n{1}\n\n"
+                "Schema: docs/METADATA_SCHEMA.md (values are artistic "
+                "approximations).".format(result["object_count"], result["path"]))
+        else:
+            c4d.gui.MessageDialog(
+                "Failed to export metadata:\n{0}".format(result["error"]))
         return True
 
     def GetState(self, doc):

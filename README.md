@@ -101,6 +101,11 @@ Implemented now (Phase 1):
   [`docs/OCTANE_INTEGRATION.md`](docs/OCTANE_INTEGRATION.md),
   [`docs/AOV_PIPELINE.md`](docs/AOV_PIPELINE.md), and
   [`docs/OSL_CAMERA_EXPERIMENTS.md`](docs/OSL_CAMERA_EXPERIMENTS.md).
+- **Metadata export (JSON)** — *Export Relativity Metadata JSON* writes the
+  controller/camera/object settings, velocities, betas, and computed
+  Doppler/searchlight factors (with names, GUIDs, frame/time) to a documented,
+  dependency-free JSON file for renderer/post, a future bridge, debugging, and
+  reproducibility. See [`docs/METADATA_SCHEMA.md`](docs/METADATA_SCHEMA.md).
 
 Planned (later phases — see [`docs/ROADMAP.md`](docs/ROADMAP.md)):
 

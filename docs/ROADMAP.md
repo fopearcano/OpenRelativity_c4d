@@ -144,6 +144,11 @@ done; the rest below is unstarted.
   `octane/osl_camera.py` + the *Export Experimental OSL Camera* command write a
   clearly-marked placeholder shader; it is **not wired into Octane** (ray I/O
   binding unverified). See `OSL_CAMERA_EXPERIMENTS.md`.
+- ✅ **Metadata export (JSON)** — *Export Relativity Metadata JSON*
+  (`export/metadata_export.py`) writes controller/camera/object settings,
+  velocities, betas, and computed factors (names, GUIDs, frame/time) to a
+  documented, dependency-free JSON for external compositing, a future bridge,
+  debugging, and reproducibility. See `METADATA_SCHEMA.md`.
 - ⬜ **Per-frame bake workflow** for deformed geometry so Octane renders the
   apparent shapes.
 - ⬜ Presets and artist-facing UX (sensible defaults, unit handling, helpful

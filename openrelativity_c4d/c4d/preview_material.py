@@ -234,6 +234,25 @@ def set_preview_material(doc, obj, color, intensity=1.0):
     return _write_material(doc, obj, color, 1.0 if intensity is None else intensity)
 
 
+def compute_object_factors(controller, camera, obj):
+    """Return the relativistic factors for ``obj`` as a dict (read-only).
+
+    Keys: ``beta``, ``cos_theta``, ``doppler_factor``, ``searchlight_multiplier``.
+    Does not modify the scene. ``controller``/``camera`` may be ``None`` (defaults
+    are used). Shared by the preview and the metadata export so both agree.
+    """
+    settings = _controller_settings(controller)
+    obj_settings = object_tools.read_orc_object_settings(obj)
+    beta, cos_theta = _compute_inputs(obj, obj_settings, settings, camera)
+    return {
+        "beta": beta,
+        "cos_theta": cos_theta,
+        "doppler_factor": doppler.doppler_factor(beta, cos_theta),
+        "searchlight_multiplier": searchlight.searchlight_intensity_multiplier(
+            beta, cos_theta, settings["searchlight_strength"]),
+    }
+
+
 def _apply_to_object(doc, obj, settings, camera, do_doppler, do_searchlight,
                      writer=None):
     obj_settings = object_tools.read_orc_object_settings(obj)

@@ -204,6 +204,12 @@ Placeholder/stub fields (no effect yet): the camera's *Aberration*, *Octane
 Camera Sync*, and *OSL*; and each object's *Bake Eligible* and *Octane Material
 Sync*. No OSL is generated and no Octane material/tag is touched.
 
+**Exporting metadata.** *Extensions > “OpenRelativity C4D: Export Relativity
+Metadata JSON”* writes the current frame's controller/camera/object settings,
+velocities, betas, and computed Doppler/searchlight factors to a JSON file for
+compositing/debugging/reproducibility - schema in
+[`METADATA_SCHEMA.md`](METADATA_SCHEMA.md).
+
 ## 8. For developers
 
 Read and write values by **field name** (no hard-coded IDs). Controller, camera,
