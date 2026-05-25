@@ -9,7 +9,7 @@ import c4d  # Cinema 4D's module
 
 from .. import constants, ids
 from ..logging_utils import get_logger
-from . import commands, control_panel, icon_loader
+from . import commands, control_panel, icon_loader, ui_diagnostics
 
 log = get_logger("register")
 
@@ -352,6 +352,24 @@ def register_all():
     else:
         log.error("Failed to register 'Control Panel' (id=%s).",
                   ids.ID_ORC_CONTROL_PANEL_COMMAND)
+        ok = False
+
+    # --- UI Diagnostics command --------------------------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.ID_ORC_UI_DIAGNOSTICS_COMMAND,
+        str=constants.command_name("Diagnostics", "UI Diagnostics"),
+        info=0,
+        icon=icon_loader.safe_icon("icon_diagnostics"),
+        help="Show a copyable UI / icon / command-registration diagnostics report "
+             "(read-only).",
+        dat=ui_diagnostics.UIDiagnosticsCommand(),
+    )
+    if registered:
+        log.info("Registered 'UI Diagnostics' (id=%s).",
+                 ids.ID_ORC_UI_DIAGNOSTICS_COMMAND)
+    else:
+        log.error("Failed to register 'UI Diagnostics' (id=%s).",
+                  ids.ID_ORC_UI_DIAGNOSTICS_COMMAND)
         ok = False
 
     # --- command icon diagnostic (never affects registration success) ------

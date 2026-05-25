@@ -111,6 +111,18 @@ content (never your original objects/materials).
 - **Export OSL Camera** - write the experimental (placeholder) OSL camera shader to
   a file. Not wired into Octane; see [`OSL_CAMERA_EXPERIMENTS.md`](OSL_CAMERA_EXPERIMENTS.md).
 
+### Diagnostics
+
+| Menu label | Panel button | Class | ID constant | Destructive? |
+|---|---|---|---|:--:|
+| OpenRelativity C4D / Diagnostics / UI Diagnostics | UI Diagnostics | `UIDiagnosticsCommand` | `ID_ORC_UI_DIAGNOSTICS_COMMAND` | no |
+
+- **UI Diagnostics** - open a small, copyable report (also written to the console)
+  for debugging UI / icon / command-registration issues: plugin version + root
+  path, Cinema 4D version, each command's ID and load state, each icon's
+  found/loaded state, and the scene status. Read-only; see
+  [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md).
+
 ### Help
 
 | Menu label | Panel button | Class | ID constant | Destructive? |
@@ -123,9 +135,9 @@ content (never your original objects/materials).
 - **About** - show version, target/running Cinema 4D, Octane status, and
   controller/camera/object/preview state.
 
-The Control Panel's **Help** tab also offers two panel-only helpers (not menu
-commands): **UI Diagnostics** (scene status + which command icons loaded) and
-**Open Docs Folder**.
+The Control Panel mirrors these commands across its tabs (including **UI
+Diagnostics** on the *Help* tab). It also offers one panel-only helper that is not
+a menu command: **Open Docs Folder**.
 
 ## Legacy name cross-walk
 

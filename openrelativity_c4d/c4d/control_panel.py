@@ -48,7 +48,6 @@ class ControlPanelDialog(c4d.gui.GeDialog):
 
     _ID_REFRESH = 1020
     _ID_CLOSE = 1021
-    _ID_UI_DIAGNOSTICS = 1022
     _ID_OPEN_DOCS = 1023
 
     #: Dynamically-assigned command/icon gadget IDs start here (one block).
@@ -220,7 +219,8 @@ class ControlPanelDialog(c4d.gui.GeDialog):
         self._add_command("About", ids.ID_ORC_ABOUT_COMMAND, "icon_about")
         self._add_command("Octane Diagnostics",
                           ids.ID_ORC_OCTANE_DIAGNOSTICS_COMMAND, "icon_diagnostics")
-        self._add_local("UI Diagnostics", self._ID_UI_DIAGNOSTICS, "icon_diagnostics")
+        self._add_command("UI Diagnostics",
+                          ids.ID_ORC_UI_DIAGNOSTICS_COMMAND, "icon_diagnostics")
         self._add_local("Open Docs Folder", self._ID_OPEN_DOCS, "icon_control_panel")
         self.GroupEnd()
 
@@ -275,9 +275,6 @@ class ControlPanelDialog(c4d.gui.GeDialog):
         if cid == self._ID_CLOSE:
             self.Close()
             return True
-        if cid == self._ID_UI_DIAGNOSTICS:
-            self._show_ui_diagnostics()
-            return True
         if cid == self._ID_OPEN_DOCS:
             self._open_docs_folder()
             return True
@@ -301,17 +298,6 @@ class ControlPanelDialog(c4d.gui.GeDialog):
             return c4d.documents.GetActiveDocument()
         except Exception:  # noqa: BLE001
             return None
-
-    def _show_ui_diagnostics(self):
-        """Read-only: show scene status and the icon load summary in a dialog."""
-        status = ui_status.collect_status(self._active_doc(), self._last_action)
-        c4d.gui.MessageDialog(
-            "OpenRelativity C4D - UI diagnostics\n\n"
-            + status.format_summary()
-            + "\n\n"
-            + icon_loader.format_load_summary())
-        self._last_action = "UI diagnostics"
-        self.refresh_status()
 
     def _open_docs_folder(self):
         """Best-effort: open the repo ``docs/`` folder; fall back to showing its path."""

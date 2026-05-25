@@ -58,8 +58,9 @@ Status** to update the read-out.
 - **Octane** - Status, Apply Compatible Preview, Show AOV Plan, Export OSL Camera.
   (These work with Octane absent - they report status or fall back safely.)
 - **Export** - Metadata JSON.
-- **Help** - About, Octane Diagnostics, **UI Diagnostics** (shows scene status +
-  which command icons loaded), **Open Docs Folder**.
+- **Help** - About, Octane Diagnostics, **UI Diagnostics** (a copyable report of
+  command/icon/registration state - see [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md)),
+  **Open Docs Folder**.
 
 Each button shows a small section-coloured icon when available and **falls back to
 a plain text button if the icon is missing**. Every command button runs the

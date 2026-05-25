@@ -42,6 +42,8 @@ EXPECTED_FILES = [
     "openrelativity_c4d/c4d/control_panel.py",
     "openrelativity_c4d/c4d/icon_loader.py",
     "openrelativity_c4d/c4d/ui_status.py",
+    "openrelativity_c4d/c4d/ui_assets.py",
+    "openrelativity_c4d/c4d/ui_diagnostics.py",
     "openrelativity_c4d/c4d/scene_controller.py",
     "openrelativity_c4d/c4d/camera_tools.py",
     "openrelativity_c4d/c4d/object_tools.py",
@@ -92,6 +94,7 @@ EXPECTED_DOCS = [
     "docs/UI_DESIGN_SYSTEM.md",
     "docs/ICONS.md",
     "docs/COMMAND_REFERENCE.md",
+    "docs/TROUBLESHOOTING.md",
 ]
 
 # Directories that must never import Cinema 4D's `c4d` module.

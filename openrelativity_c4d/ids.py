@@ -64,10 +64,12 @@ ID_ORC_APPLY_OCTANE_MATERIAL_COMMAND = ORC_ID_BASE + 17
 ID_ORC_SHOW_AOV_PLAN_COMMAND = ORC_ID_BASE + 18
 ID_ORC_EXPORT_OSL_CAMERA_COMMAND = ORC_ID_BASE + 19
 ID_ORC_EXPORT_METADATA_COMMAND = ORC_ID_BASE + 20
+ID_ORC_UI_DIAGNOSTICS_COMMAND = ORC_ID_BASE + 27  # (offset continues past the reserved block)
 
 # --- Dialog layout IDs (GeDialog .Open/.Restore pluginid) -------------------
 ID_ORC_ABOUT_DIALOG = ORC_ID_BASE + 21
 ID_ORC_CONTROL_PANEL_DIALOG = ORC_ID_BASE + 22
+ID_ORC_UI_DIAGNOSTICS_DIALOG = ORC_ID_BASE + 28
 
 # --- Reserved for later phases (declared now; NOT registered/used yet) ------
 # Tracked here so every number lives in one place; wiring comes later. The
