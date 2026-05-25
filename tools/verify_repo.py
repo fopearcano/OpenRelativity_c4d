@@ -86,6 +86,7 @@ EXPECTED_DOCS = [
     "docs/V0_1_RELEASE_NOTES.md",
     "docs/C4D_PLUGIN_TYPE_MIGRATION.md",
     "docs/TIME_DELAY_LIGHT_CONE_DESIGN.md",
+    "docs/UI_UX_AUDIT.md",
 ]
 
 # Directories that must never import Cinema 4D's `c4d` module.
