@@ -1,38 +1,50 @@
-"""Approximate Doppler material preview (Standard/Physical materials).
+"""Relativity material preview (Standard/Physical) - Doppler + searchlight.
 
-The first *visible* effect. For each relativistic object whose *Doppler Material
-Preview* is on, this computes an approximate relativistic Doppler colour shift
-and applies it through a generated **Standard** material named
-``ORC_Doppler_<object name>``.
+Generates one shared **Standard** material per object,
+``ORC_Preview_<object name>``, and writes the approximate Doppler colour shift
+and/or the searchlight (beaming) brightness/emission to it. Three commands drive
+this with different effect combinations:
 
-This is an **artistic approximation, not spectral rendering** - see
-docs/DOPPLER_PREVIEW.md. It works with the Standard/Physical renderers and never
-requires Octane.
+* Doppler only      -> ``apply_preview(doc, do_doppler=True,  do_searchlight=False)``
+* Searchlight only  -> ``apply_preview(doc, do_doppler=False, do_searchlight=True)``
+* Both (combined)   -> ``apply_preview(doc, do_doppler=True,  do_searchlight=True)``
 
-Non-destructive strategy
-------------------------
-We never remove an object's existing material tags. We add (or update) one extra
-Texture tag that links our generated material; since later texture tags override
-earlier ones for the whole object, this overrides the look without touching the
-originals. *Clear* removes only our generated tags and materials, leaving the
-originals intact.
+Each call rewrites the material to a fully defined state, so the commands are
+predictable and idempotent (running "Doppler only" resets brightness to neutral,
+etc.). To see both effects at once use the combined command.
+
+**Artistic approximation, not spectral/radiometric rendering** - see
+docs/DOPPLER_PREVIEW.md and docs/SEARCHLIGHT_PREVIEW.md.
+
+Non-destructive: existing materials are never modified. One extra Texture tag
+links the generated material and overrides the object's look; *Clear* removes
+only the ORC-generated tags and materials.
 
 ``import c4d`` here resolves to Cinema 4D's module (absolute import).
 """
 
 import c4d
 
-from ..core import doppler, relativity_math, transforms
+from ..core import doppler, relativity_math, searchlight, transforms
 from ..logging_utils import get_logger
 from . import camera_tools, object_tools, scene_controller
 
-log = get_logger("doppler_material")
+log = get_logger("preview_material")
 
 #: Generated materials/tags are identified by this name prefix.
-MATERIAL_PREFIX = "ORC_Doppler_"
+PREFIX = "ORC_Preview_"
 
 #: Base colour used when an object has no readable material colour.
 DEFAULT_BASE_COLOR = (0.8, 0.8, 0.8)
+
+# --- artistic (NON-physical) clamps for the searchlight intensity -----------
+#: Diffuse-brightness multiplier is clamped to this range (never fully black,
+#: never absurdly bright) for a usable preview.
+MIN_BRIGHTNESS = 0.05
+MAX_BRIGHTNESS = 4.0
+#: Above multiplier 1 we add a little luminance ("glow"); gain and cap here.
+LUMINANCE_GAIN = 0.5
+MAX_LUMINANCE = 1.0
 
 
 # --- scene traversal ---------------------------------------------------------
@@ -53,15 +65,16 @@ def _controller_settings(controller):
             "c": relativity_math.DEFAULT_SPEED_OF_LIGHT,
             "global_beta": 0.0,
             "doppler_strength": 1.0,
+            "searchlight_strength": 1.0,
         }
     get = scene_controller.get_value
+    default_c = relativity_math.DEFAULT_SPEED_OF_LIGHT
     return {
         "enabled": bool(get(controller, scene_controller.FIELD_ENABLED, True)),
-        "c": float(get(controller, scene_controller.FIELD_SPEED_OF_LIGHT,
-                       relativity_math.DEFAULT_SPEED_OF_LIGHT)
-                   or relativity_math.DEFAULT_SPEED_OF_LIGHT),
+        "c": float(get(controller, scene_controller.FIELD_SPEED_OF_LIGHT, default_c) or default_c),
         "global_beta": float(get(controller, scene_controller.FIELD_BETA_OVERRIDE, 0.0) or 0.0),
         "doppler_strength": float(get(controller, scene_controller.FIELD_DOPPLER_STRENGTH, 1.0) or 1.0),
+        "searchlight_strength": float(get(controller, scene_controller.FIELD_SEARCHLIGHT_STRENGTH, 1.0) or 1.0),
     }
 
 
@@ -94,6 +107,16 @@ def _line_of_sight(obj, camera, use_camera_direction):
     return (0.0, 0.0, -1.0)
 
 
+def _compute_inputs(obj, obj_settings, settings, camera):
+    """Return ``(beta, cos_theta)`` for an object."""
+    velocity = object_tools.get_object_velocity(obj)
+    beta = _object_beta(obj_settings, velocity, settings)
+    use_camera_direction = bool(
+        obj_settings.get(object_tools.FIELD_USE_CAMERA_DIRECTION, True))
+    los = _line_of_sight(obj, camera, use_camera_direction)
+    return beta, transforms.cos_theta_towards_observer(velocity, los)
+
+
 def _base_color(obj):
     """Best-effort read of the object's current colour from a non-ORC material."""
     base = DEFAULT_BASE_COLOR
@@ -101,7 +124,7 @@ def _base_color(obj):
         if tag.GetType() != c4d.Ttexture:
             continue
         mat = tag[c4d.TEXTURETAG_MATERIAL]
-        if mat is None or mat.GetName().startswith(MATERIAL_PREFIX):
+        if mat is None or mat.GetName().startswith(PREFIX):
             continue
         col = mat[c4d.MATERIAL_COLOR_COLOR]
         if col is not None:
@@ -135,7 +158,7 @@ def _orc_texture_tag(obj):
     for tag in obj.GetTags():
         if tag.GetType() == c4d.Ttexture:
             mat = tag[c4d.TEXTURETAG_MATERIAL]
-            if mat is not None and mat.GetName().startswith(MATERIAL_PREFIX):
+            if mat is not None and mat.GetName().startswith(PREFIX):
                 return tag
     return None
 
@@ -154,41 +177,67 @@ def _ensure_texture_tag(doc, obj, mat):
 
 
 # --- the effect --------------------------------------------------------------
-def _apply_to_object(doc, obj, settings, camera):
+def _apply_to_object(doc, obj, settings, camera, do_doppler, do_searchlight):
     obj_settings = object_tools.read_orc_object_settings(obj)
     if not obj_settings.get(object_tools.FIELD_ORC_ENABLED, True):
         return False
-    if not obj_settings.get(object_tools.FIELD_DOPPLER_PREVIEW, True):
+
+    eff_doppler = do_doppler and bool(
+        obj_settings.get(object_tools.FIELD_DOPPLER_PREVIEW, True))
+    eff_searchlight = do_searchlight and bool(
+        obj_settings.get(object_tools.FIELD_SEARCHLIGHT_PREVIEW, True))
+    if not (eff_doppler or eff_searchlight):
         return False
 
-    velocity = object_tools.get_object_velocity(obj)
-    beta = _object_beta(obj_settings, velocity, settings)
-    use_camera_direction = bool(
-        obj_settings.get(object_tools.FIELD_USE_CAMERA_DIRECTION, True))
-    los = _line_of_sight(obj, camera, use_camera_direction)
-    cos_theta = transforms.cos_theta_towards_observer(velocity, los)
+    beta, cos_theta = _compute_inputs(obj, obj_settings, settings, camera)
+    base = _base_color(obj)
 
-    factor = doppler.doppler_factor(beta, cos_theta)
-    shifted = doppler.approximate_rgb_doppler_shift(
-        _base_color(obj), factor, settings["doppler_strength"])
+    # Colour channel (Doppler tint), or the untinted base colour.
+    if eff_doppler:
+        factor = doppler.doppler_factor(beta, cos_theta)
+        color = doppler.approximate_rgb_doppler_shift(
+            base, factor, settings["doppler_strength"])
+    else:
+        color = base
 
-    mat = _get_or_create_material(doc, MATERIAL_PREFIX + obj.GetName())
+    # Brightness + emission (searchlight), or neutral.
+    if eff_searchlight:
+        multiplier = searchlight.searchlight_intensity_multiplier(
+            beta, cos_theta, settings["searchlight_strength"])
+        brightness = relativity_math.clamp(multiplier, MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+        luminance_on = multiplier > 1.0
+        luminance = (relativity_math.clamp(
+            (multiplier - 1.0) * LUMINANCE_GAIN, 0.0, MAX_LUMINANCE)
+            if luminance_on else 0.0)
+    else:
+        brightness = 1.0
+        luminance_on = False
+        luminance = 0.0
+
+    color_vec = c4d.Vector(color[0], color[1], color[2])
+    mat = _get_or_create_material(doc, PREFIX + obj.GetName())
     mat[c4d.MATERIAL_USE_COLOR] = True
-    mat[c4d.MATERIAL_COLOR_COLOR] = c4d.Vector(shifted[0], shifted[1], shifted[2])
-    mat.Message(c4d.MSG_UPDATE)
+    mat[c4d.MATERIAL_COLOR_COLOR] = color_vec
+    mat[c4d.MATERIAL_COLOR_BRIGHTNESS] = brightness
+    mat[c4d.MATERIAL_USE_LUMINANCE] = luminance_on
+    if luminance_on:
+        mat[c4d.MATERIAL_LUMINANCE_COLOR] = color_vec
+        mat[c4d.MATERIAL_LUMINANCE_BRIGHTNESS] = luminance
     mat.Update(True, True)
 
     _ensure_texture_tag(doc, obj, mat)
-    log.debug("Doppler %s: beta=%.3f cosT=%.3f factor=%.3f -> %s",
-              obj.GetName(), beta, cos_theta, factor, shifted)
+    log.debug("Preview %s: beta=%.3f cosT=%.3f doppler=%s searchlight=%s",
+              obj.GetName(), beta, cos_theta, eff_doppler, eff_searchlight)
     return True
 
 
-def apply_preview(doc):
-    """Apply the Doppler material preview to all eligible objects.
+def apply_preview(doc, do_doppler=True, do_searchlight=True):
+    """Apply the relativity material preview to all eligible objects.
 
-    Returns ``(count, status)`` where ``status`` is ``"ok"``, ``"disabled"`` (the
-    controller's master Enabled is off), or ``"no_objects"``.
+    ``do_doppler`` / ``do_searchlight`` select which effects to fold in (the
+    per-object preview flags still gate each effect). Returns ``(count, status)``
+    where ``status`` is ``"ok"``, ``"disabled"`` (controller master Enabled off),
+    or ``"no_objects"``.
     """
     if doc is None:
         return 0, "no_objects"
@@ -205,18 +254,19 @@ def apply_preview(doc):
     doc.StartUndo()
     for obj in objects:
         try:
-            if _apply_to_object(doc, obj, settings, camera):
+            if _apply_to_object(doc, obj, settings, camera, do_doppler, do_searchlight):
                 count += 1
         except Exception:  # noqa: BLE001 - keep going for the other objects
-            log.exception("Failed to apply Doppler preview to %s.", obj.GetName())
+            log.exception("Failed to apply preview to %s.", obj.GetName())
     doc.EndUndo()
     c4d.EventAdd()
-    log.info("Applied Doppler material preview to %d object(s).", count)
+    log.info("Applied material preview (doppler=%s, searchlight=%s) to %d object(s).",
+             do_doppler, do_searchlight, count)
     return count, "ok"
 
 
 def clear_preview(doc):
-    """Remove all ORC Doppler tags and materials. Returns ``(tags, materials)``."""
+    """Remove all ORC preview tags and materials. Returns ``(tags, materials)``."""
     if doc is None:
         return 0, 0
     removed_tags = 0
@@ -229,7 +279,7 @@ def clear_preview(doc):
             if tag.GetType() != c4d.Ttexture:
                 continue
             mat = tag[c4d.TEXTURETAG_MATERIAL]
-            if mat is not None and mat.GetName().startswith(MATERIAL_PREFIX):
+            if mat is not None and mat.GetName().startswith(PREFIX):
                 doc.AddUndo(c4d.UNDOTYPE_DELETEOBJ, tag)
                 tag.Remove()
                 removed_tags += 1
@@ -238,26 +288,26 @@ def clear_preview(doc):
     mat = doc.GetFirstMaterial()
     while mat:
         nxt = mat.GetNext()
-        if mat.GetName().startswith(MATERIAL_PREFIX):
+        if mat.GetName().startswith(PREFIX):
             doc.AddUndo(c4d.UNDOTYPE_DELETEOBJ, mat)
             mat.Remove()
             removed_materials += 1
         mat = nxt
     doc.EndUndo()
     c4d.EventAdd()
-    log.info("Cleared Doppler preview: %d tag(s), %d material(s).",
+    log.info("Cleared material preview: %d tag(s), %d material(s).",
              removed_tags, removed_materials)
     return removed_tags, removed_materials
 
 
 def count_preview_materials(doc):
-    """Return the number of ORC Doppler materials currently in the document."""
+    """Return the number of ORC preview materials currently in the document."""
     if doc is None:
         return 0
     count = 0
     mat = doc.GetFirstMaterial()
     while mat:
-        if mat.GetName().startswith(MATERIAL_PREFIX):
+        if mat.GetName().startswith(PREFIX):
             count += 1
         mat = mat.GetNext()
     return count

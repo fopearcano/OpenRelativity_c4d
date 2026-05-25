@@ -119,21 +119,55 @@ def register_all():
                   ids.COMMAND_APPLY_DOPPLER)
         ok = False
 
-    # --- Clear Doppler Material Preview command ----------------------------
+    # --- Apply Searchlight Preview command ---------------------------------
     registered = c4d.plugins.RegisterCommandPlugin(
-        id=ids.COMMAND_CLEAR_DOPPLER,
-        str="{0}: Clear Doppler Material Preview".format(constants.PLUGIN_NAME),
+        id=ids.COMMAND_APPLY_SEARCHLIGHT,
+        str="{0}: Apply Searchlight Preview".format(constants.PLUGIN_NAME),
         info=0,
         icon=None,
-        help="Remove the ORC-generated Doppler preview materials and tags.",
-        dat=commands.ClearDopplerPreviewCommand(),
+        help="Apply the approximate searchlight (beaming) brightness preview.",
+        dat=commands.ApplySearchlightPreviewCommand(),
     )
     if registered:
-        log.info("Registered 'Clear Doppler Material Preview' (id=%s).",
-                 ids.COMMAND_CLEAR_DOPPLER)
+        log.info("Registered 'Apply Searchlight Preview' (id=%s).",
+                 ids.COMMAND_APPLY_SEARCHLIGHT)
     else:
-        log.error("Failed to register 'Clear Doppler Material Preview' (id=%s).",
-                  ids.COMMAND_CLEAR_DOPPLER)
+        log.error("Failed to register 'Apply Searchlight Preview' (id=%s).",
+                  ids.COMMAND_APPLY_SEARCHLIGHT)
+        ok = False
+
+    # --- Apply Relativity Material Preview (combined) command --------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_APPLY_RELATIVITY_PREVIEW,
+        str="{0}: Apply Relativity Material Preview".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Apply both the Doppler tint and the searchlight brightness.",
+        dat=commands.ApplyRelativityMaterialPreviewCommand(),
+    )
+    if registered:
+        log.info("Registered 'Apply Relativity Material Preview' (id=%s).",
+                 ids.COMMAND_APPLY_RELATIVITY_PREVIEW)
+    else:
+        log.error("Failed to register 'Apply Relativity Material Preview' (id=%s).",
+                  ids.COMMAND_APPLY_RELATIVITY_PREVIEW)
+        ok = False
+
+    # --- Clear Material Preview command ------------------------------------
+    registered = c4d.plugins.RegisterCommandPlugin(
+        id=ids.COMMAND_CLEAR_PREVIEW,
+        str="{0}: Clear Material Preview".format(constants.PLUGIN_NAME),
+        info=0,
+        icon=None,
+        help="Remove all ORC-generated preview materials and tags.",
+        dat=commands.ClearMaterialPreviewCommand(),
+    )
+    if registered:
+        log.info("Registered 'Clear Material Preview' (id=%s).",
+                 ids.COMMAND_CLEAR_PREVIEW)
+    else:
+        log.error("Failed to register 'Clear Material Preview' (id=%s).",
+                  ids.COMMAND_CLEAR_PREVIEW)
         ok = False
 
     return ok

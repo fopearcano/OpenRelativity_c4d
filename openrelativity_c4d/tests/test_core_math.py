@@ -289,6 +289,13 @@ class TestCosThetaTowardsObserver(unittest.TestCase):
         cos_t = transforms.cos_theta_towards_observer((0, 0, 1), (0, 0, 10))
         self.assertTrue(doppler.is_blueshift(doppler.doppler_factor(0.6, cos_t)))
 
+    def test_feeds_searchlight_consistently(self):
+        # Approaching object -> brighter (searchlight multiplier > 1).
+        cos_t = transforms.cos_theta_towards_observer((0, 0, 1), (0, 0, 10))
+        self.assertGreater(
+            searchlight.searchlight_intensity_multiplier(0.6, cos_t, 1.0), 1.0
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

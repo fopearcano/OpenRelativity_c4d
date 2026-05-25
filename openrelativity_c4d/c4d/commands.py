@@ -1,17 +1,19 @@
-"""Plugin commands.
+"""Plugin commands (registered under the *Extensions* menu).
 
-* *Extensions > OpenRelativity C4D: About* - a modal dialog with the plugin
-  version, target/running Cinema 4D version, Octane detection, whether a
-  Relativity Controller exists in the scene, and the development status.
-* *Extensions > OpenRelativity C4D: Create Relativity Controller* - creates (or
-  re-selects) the ``ORC_Relativity_Controller`` Null with its User Data.
+* *About* - status dialog (versions, Octane, controller/camera/objects, preview).
+* *Create Relativity Controller* - the ``ORC_Relativity_Controller`` Null.
+* *Setup Relativistic Camera* - the observer camera.
+* *Setup Selected Relativistic Objects* / *Select Relativistic Objects*.
+* *Apply Doppler Material Preview* / *Apply Searchlight Preview* /
+  *Apply Relativity Material Preview* / *Clear Material Preview* - the
+  approximate, non-destructive material previews (see preview_material).
 """
 
 import c4d  # Cinema 4D's module (absolute import; not the sibling sub-package)
 
 from .. import constants, ids
 from ..logging_utils import get_logger
-from . import camera_tools, doppler_material, object_tools, scene_controller
+from . import camera_tools, object_tools, preview_material, scene_controller
 
 log = get_logger("commands")
 
@@ -62,12 +64,12 @@ def _object_status():
         return "unknown"
 
 
-def _doppler_status():
-    """Return the count of active Doppler preview materials."""
+def _preview_status():
+    """Return the count of active relativity preview materials."""
     try:
         doc = c4d.documents.GetActiveDocument()
         return "{0} preview material(s)".format(
-            doppler_material.count_preview_materials(doc))
+            preview_material.count_preview_materials(doc))
     except Exception:  # noqa: BLE001
         return "unknown"
 
@@ -84,7 +86,7 @@ def about_info_lines():
         "Controller:     {0}".format(_controller_status()),
         "Camera:         {0}".format(_camera_status()),
         "Objects:        {0}".format(_object_status()),
-        "Doppler:        {0}".format(_doppler_status()),
+        "Preview:        {0}".format(_preview_status()),
         "Phase:          {0}".format(constants.DEVELOPMENT_PHASE),
         "",
         "Status:",
@@ -303,49 +305,84 @@ class SelectObjectsCommand(c4d.plugins.CommandData):
         return c4d.CMD_ENABLED
 
 
+def _apply_preview_message(count, status, what):
+    """Show the standard apply-result dialog."""
+    if status == "disabled":
+        c4d.gui.MessageDialog(
+            "The Relativity Controller is disabled (Enabled = off).\n"
+            "Nothing was applied."
+        )
+    elif status == "no_objects":
+        c4d.gui.MessageDialog(
+            "No relativistic objects found.\n"
+            "Run 'Setup Selected Relativistic Objects' first."
+        )
+    else:
+        c4d.gui.MessageDialog(
+            "Applied the {0} to {1} object(s).\n"
+            "This is an artistic approximation (see docs/), not spectral or "
+            "radiometric rendering.".format(what, count)
+        )
+
+
 class ApplyDopplerPreviewCommand(c4d.plugins.CommandData):
-    """Apply the approximate Doppler colour preview to relativistic objects."""
+    """Apply the approximate Doppler colour preview only."""
 
     def Execute(self, doc):
         if doc is None:
             return False
-
-        count, status = doppler_material.apply_preview(doc)
-        if status == "disabled":
-            c4d.gui.MessageDialog(
-                "The Relativity Controller is disabled (Enabled = off).\n"
-                "Nothing was applied."
-            )
-        elif status == "no_objects":
-            c4d.gui.MessageDialog(
-                "No relativistic objects found.\n"
-                "Run 'Setup Selected Relativistic Objects' first."
-            )
-        else:
-            c4d.gui.MessageDialog(
-                "Applied the Doppler material preview to {0} object(s).\n"
-                "This is an artistic approximation (see docs/DOPPLER_PREVIEW.md), "
-                "not spectral rendering.".format(count)
-            )
+        count, status = preview_material.apply_preview(
+            doc, do_doppler=True, do_searchlight=False)
+        _apply_preview_message(count, status, "Doppler material preview")
         return True
 
     def GetState(self, doc):
         return c4d.CMD_ENABLED
 
 
-class ClearDopplerPreviewCommand(c4d.plugins.CommandData):
-    """Remove the ORC-generated Doppler preview materials and tags."""
+class ApplySearchlightPreviewCommand(c4d.plugins.CommandData):
+    """Apply the approximate searchlight (beaming) brightness preview only."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+        count, status = preview_material.apply_preview(
+            doc, do_doppler=False, do_searchlight=True)
+        _apply_preview_message(count, status, "searchlight brightness preview")
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class ApplyRelativityMaterialPreviewCommand(c4d.plugins.CommandData):
+    """Apply both the Doppler tint and the searchlight brightness together."""
+
+    def Execute(self, doc):
+        if doc is None:
+            return False
+        count, status = preview_material.apply_preview(
+            doc, do_doppler=True, do_searchlight=True)
+        _apply_preview_message(count, status, "relativity material preview (Doppler + searchlight)")
+        return True
+
+    def GetState(self, doc):
+        return c4d.CMD_ENABLED
+
+
+class ClearMaterialPreviewCommand(c4d.plugins.CommandData):
+    """Remove all ORC-generated preview materials and tags (Doppler + searchlight)."""
 
     def Execute(self, doc):
         if doc is None:
             return False
 
-        tags, materials = doppler_material.clear_preview(doc)
+        tags, materials = preview_material.clear_preview(doc)
         if tags == 0 and materials == 0:
-            c4d.gui.MessageDialog("No Doppler preview to clear.")
+            c4d.gui.MessageDialog("No relativity material preview to clear.")
         else:
             c4d.gui.MessageDialog(
-                "Cleared the Doppler preview: removed {0} tag(s) and "
+                "Cleared the material preview: removed {0} tag(s) and "
                 "{1} material(s). Original materials were left untouched.".format(
                     tags, materials
                 )

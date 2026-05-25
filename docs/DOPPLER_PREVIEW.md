@@ -16,14 +16,19 @@ Standard/Physical renderer.
 
 ## Commands
 
-- **Extensions > “OpenRelativity C4D: Apply Doppler Material Preview”** — computes
-  and applies the preview to every eligible relativistic object.
-- **Extensions > “OpenRelativity C4D: Clear Doppler Material Preview”** — removes
-  everything the preview created.
+- **Extensions > “OpenRelativity C4D: Apply Doppler Material Preview”** — the
+  Doppler colour shift only.
+- **Extensions > “OpenRelativity C4D: Apply Relativity Material Preview”** — the
+  **combined** preview: Doppler colour **and** the searchlight brightness (see
+  [`SEARCHLIGHT_PREVIEW.md`](SEARCHLIGHT_PREVIEW.md)).
+- **Extensions > “OpenRelativity C4D: Clear Material Preview”** — removes every
+  ORC-generated preview material/tag.
 
 It is **not live**: re-run *Apply* after you move objects/the camera or change
 any beta/velocity/strength setting. The **About** dialog shows how many preview
-materials currently exist.
+materials currently exist. The Doppler and searchlight previews share one
+material per object (`ORC_Preview_<name>`); each apply command rewrites it to a
+defined state, so use the **combined** command to see both effects at once.
 
 ## What it does, step by step
 
@@ -59,18 +64,19 @@ and **Doppler Material Preview** on:
    read from the object's existing (non-ORC) material if it has one, otherwise a
    neutral grey `(0.8, 0.8, 0.8)`. The output is always clamped to `0..1`.
 
-5. The colour is written to a generated **Standard** material named
-   `ORC_Doppler_<object name>` and applied to the object (see below).
+5. The colour is written to the generated **Standard** material named
+   `ORC_Preview_<object name>` and applied to the object (see below). This is the
+   same material the searchlight preview uses (it writes the brightness instead).
 
 ## How materials are applied (non-destructive)
 
 The preview **never deletes or rewrites your existing materials**. Instead:
 
-- It creates/updates one Standard material per object, `ORC_Doppler_<name>`.
+- It creates/updates one Standard material per object, `ORC_Preview_<name>`.
 - It adds (or reuses) a single **Texture tag** on the object that links that
   material. Because later texture tags override earlier ones for the whole
   object, the preview overrides the look without modifying the originals.
-- **Clear** removes only the ORC texture tags and the `ORC_Doppler_*` materials.
+- **Clear** removes only the ORC texture tags and the `ORC_Preview_*` materials.
   Your original tags/materials are left exactly as they were.
 
 This is why no "original material backup" is needed: the originals are never
@@ -95,8 +101,10 @@ touched. (If you had per-polygon material selections, note the limitation below.
   material selections are not preserved in the preview, and the base colour is
   read from the last non-ORC texture tag.
 - **Not live** — re-run *Apply* after changes.
-- **Searchlight/beaming and Lorentz deformation are not part of this preview**
-  yet (separate later steps).
+- **Doppler is colour only.** The **searchlight/beaming** brightness is a
+  separate effect on the same material — see
+  [`SEARCHLIGHT_PREVIEW.md`](SEARCHLIGHT_PREVIEW.md). Lorentz deformation is a
+  later step.
 
 ## Quick workflow
 
@@ -105,9 +113,10 @@ touched. (If you had per-polygon material selections, note the limitation below.
 2. *Setup Relativistic Camera* (the observer).
 3. Select objects and *Setup Selected Relativistic Objects*; give them an
    *Object Beta* or *Velocity X/Y/Z*.
-4. *Apply Doppler Material Preview*.
+4. *Apply Doppler Material Preview* (or *Apply Relativity Material Preview* for
+   colour + brightness).
 5. Render with **Standard** or **Physical**.
-6. Adjust settings and re-apply; *Clear Doppler Material Preview* to remove.
+6. Adjust settings and re-apply; *Clear Material Preview* to remove.
 
 ## For developers
 
@@ -115,7 +124,7 @@ The math is pure and unit-tested
 ([`core/doppler.py`](../openrelativity_c4d/core/doppler.py),
 [`core/transforms.py`](../openrelativity_c4d/core/transforms.py)); the Cinema 4D
 side lives in
-[`c4d/doppler_material.py`](../openrelativity_c4d/c4d/doppler_material.py)
-(`apply_preview`, `clear_preview`, `count_preview_materials`). The C4D material
-behaviour is **manual-tested** - there are no automated tests for it, since it
-requires a running Cinema 4D.
+[`c4d/preview_material.py`](../openrelativity_c4d/c4d/preview_material.py)
+(`apply_preview(doc, do_doppler, do_searchlight)`, `clear_preview`,
+`count_preview_materials`). The C4D material behaviour is **manual-tested** -
+there are no automated tests for it, since it requires a running Cinema 4D.

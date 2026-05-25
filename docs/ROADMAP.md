@@ -60,19 +60,20 @@ Done:
   *Select Relativistic Objects* re-selects them. `object_tools` provides
   `is_orc_object` / `add_orc_object_data` / `read_orc_object_settings` /
   `collect_orc_objects`. Metadata only - no geometry/material change yet.
-- ✅ **Doppler material preview (first visible effect)** — *Apply / Clear Doppler
-  Material Preview* commands read the controller/camera/object settings, compute
-  beta + `cos_theta` (new `core.transforms.cos_theta_towards_observer`) and the
-  Doppler factor, and tint each object via a generated Standard material
-  (`ORC_Doppler_<name>`), non-destructively (layered Texture tag). Standard/
-  Physical compatible; Octane not required. See `docs/DOPPLER_PREVIEW.md`.
+- ✅ **Material previews (first visible effects)** — Doppler colour shift and
+  searchlight beaming brightness/emission, sharing one generated Standard
+  material per object (`ORC_Preview_<name>`), applied non-destructively (layered
+  Texture tag). Commands: *Apply Doppler Material Preview*, *Apply Searchlight
+  Preview*, *Apply Relativity Material Preview* (combined), *Clear Material
+  Preview*. Uses `core.doppler`, `core.searchlight`, and
+  `core.transforms.cos_theta_towards_observer`. Standard/Physical compatible;
+  Octane not required. See `docs/DOPPLER_PREVIEW.md` and
+  `docs/SEARCHLIGHT_PREVIEW.md`.
 - ✅ **Octane adapter stubs** — `detection.is_octane_available()` + no-op
   facade; verified the plugin imports with Octane **not** installed.
 
 Remaining:
 
-- 🔜 **Searchlight/beaming material adjustment** — per-object luminance from
-  `core.searchlight`, alongside the Doppler colour.
 - 🔜 **Combine the camera's velocity** into the object↔observer relative beta
   (currently beta is object/global only).
 - 🔜 **Lorentz Deformer / bake utility** — geometric transform on real points.

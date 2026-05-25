@@ -148,23 +148,32 @@ Select an object and open the **Attribute Manager** to edit its **User Data**:
 | **Bake Eligible** | Bool | Off | Mark this object to be included when baking effects for rendering. |
 | **Octane Material Sync Enabled** | Bool | Off | *Stub* - will mirror the Doppler/searchlight result onto the object's Octane material (Phase 3). Octane is **not** required. |
 
-## 6. Preview the Doppler effect
+## 6. Preview the relativistic effects
 
-The first **visible** effect. After setting up a controller, camera, and some
-objects with a beta/velocity, run **Extensions > “OpenRelativity C4D: Apply
-Doppler Material Preview”** to tint each object blue (approaching) or red
-(receding) with a generated Standard material, then render with Standard or
-Physical. **Clear Doppler Material Preview** removes it again. This is an
-artistic approximation, not spectral rendering - full details, behaviour, and
-limitations are in [`DOPPLER_PREVIEW.md`](DOPPLER_PREVIEW.md).
+The first **visible** effects. After setting up a controller, camera, and some
+objects with a beta/velocity, use the *Extensions* menu:
+
+- **Apply Doppler Material Preview** — tints each object blue (approaching) or
+  red (receding).
+- **Apply Searchlight Preview** — brightens (approaching) or dims (receding) each
+  object, with a little emission glow when strongly approaching.
+- **Apply Relativity Material Preview** — both at once (the usual choice).
+- **Clear Material Preview** — removes them all.
+
+All three generate one Standard material per object (`ORC_Preview_<name>`),
+applied non-destructively (a layered Texture tag; your materials are untouched),
+and render in Standard/Physical. These are **artistic approximations, not
+spectral/radiometric rendering** - see
+[`DOPPLER_PREVIEW.md`](DOPPLER_PREVIEW.md) and
+[`SEARCHLIGHT_PREVIEW.md`](SEARCHLIGHT_PREVIEW.md) for details and limitations.
 
 ## 7. What the fields do *not* do yet
 
-The **Doppler material preview** above is implemented. The following are still
-intentionally **not implemented yet** (see [`ROADMAP.md`](ROADMAP.md)):
+The **Doppler and searchlight material previews** above are implemented. The
+following are still intentionally **not implemented yet** (see
+[`ROADMAP.md`](ROADMAP.md)):
 
 - Lorentz **deformation** of geometry.
-- **Searchlight/beaming** material changes.
 - **Octane** output (the adapter is a safe no-op until Phase 3).
 - **Bake** workflow.
 
