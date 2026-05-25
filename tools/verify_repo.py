@@ -35,6 +35,7 @@ EXPECTED_FILES = [
     "openrelativity_c4d/core/searchlight.py",
     "openrelativity_c4d/core/transforms.py",
     "openrelativity_c4d/c4d/__init__.py",
+    "openrelativity_c4d/c4d/field_specs.py",
     "openrelativity_c4d/c4d/plugin_register.py",
     "openrelativity_c4d/c4d/commands.py",
     "openrelativity_c4d/c4d/control_panel.py",
@@ -81,6 +82,7 @@ EXPECTED_DOCS = [
     "docs/KNOWN_LIMITATIONS.md",
     "docs/LICENSE_DECISION_NEEDED.md",
     "docs/V0_1_RELEASE_NOTES.md",
+    "docs/C4D_PLUGIN_TYPE_MIGRATION.md",
 ]
 
 # Directories that must never import Cinema 4D's `c4d` module.
@@ -157,10 +159,24 @@ def check_docs():
     return True, ["{0} docs present".format(len(EXPECTED_DOCS))]
 
 
+def check_field_specs():
+    if REPO_ROOT not in sys.path:
+        sys.path.insert(0, REPO_ROOT)
+    from openrelativity_c4d.c4d import field_specs  # pure; no c4d
+
+    problems = field_specs.validate()
+    if "c4d" in sys.modules:
+        problems.append("importing field_specs pulled in c4d")
+    if problems:
+        return False, problems
+    return True, ["schema valid for {0} entities".format(len(field_specs.ENTITIES))]
+
+
 CHECKS = [
     ("expected files", check_expected_files),
     ("plugin entry point", check_entrypoint),
     ("no c4d in core/tests", check_no_c4d_imports),
+    ("field schema valid", check_field_specs),
     ("pure-Python tests", check_pure_tests),
     ("documentation", check_docs),
 ]

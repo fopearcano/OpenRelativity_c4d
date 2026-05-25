@@ -15,7 +15,9 @@ Plugin Café IDs** (https://plugincafe.maxon.net/). Several IDs currently sit
   plugins.
 
 ## 2. Real Cinema 4D `TagData` / `ObjectData` implementation
-Move from "Null + User Data" to proper plugin types:
+Move from "Null + User Data" to proper plugin types. **Plan + staged steps:**
+[`docs/C4D_PLUGIN_TYPE_MIGRATION.md`](docs/C4D_PLUGIN_TYPE_MIGRATION.md) (Step 1,
+the canonical `field_specs` schema, is done).
 - Controller as `SceneHookData`/`ObjectData`; camera & object settings as
   `TagData`; Lorentz contraction as an `ObjectData` **deformer** (live).
 - Author description resources (`.res`/`.h`/`.str`) under

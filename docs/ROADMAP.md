@@ -101,7 +101,10 @@ Remaining (rolls into Phase 2):
   (currently beta is object/global only).
 - 🔜 **Arbitrary-axis / point-level Lorentz** and **Terrell rotation** (true
   apparent geometry), plus a bake.
-- 🔜 Description resources under `c4d/descriptions/` if/when these move to tags.
+- 🔜 Migrate the controller/camera/object User Data to proper `TagData`/
+  `ObjectData` plugin types — plan + staged steps in
+  `C4D_PLUGIN_TYPE_MIGRATION.md` (Step 1, the canonical `field_specs` schema, is
+  done; recommends programmatic descriptions over `.res`).
 
 ---
 
