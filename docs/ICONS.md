@@ -70,19 +70,33 @@ audit's mapping).
 - One or two colours per icon (the section accent + white), plus red/blue only on
   the physics-/destructive-meaning icons (Doppler, Lorentz remove).
 
-## How Cinema 4D will use them (not wired yet)
+## How Cinema 4D loads them
 
-There is **no behavior change in this commit**: all 20 commands still register
-with `icon=None`. Wiring is a separate, later step (per the audit's plan):
+Loading is centralized in [`openrelativity_c4d/c4d/icon_loader.py`](../openrelativity_c4d/c4d/icon_loader.py)
+and is **safe by construction** - a missing or unreadable icon never affects
+whether a command works:
 
-- A small safe loader will resolve `png/<name>.png` relative to the plugin folder
-  and return a `c4d.bitmaps.BaseBitmap`, or **`None`** on any failure, so a
-  missing/unreadable icon silently falls back to today's text-only command.
-- The bitmap is then passed as the `icon=` argument of `RegisterCommandPlugin(...)`.
+- `get_plugin_root()` - the `openrelativity_c4d` package dir, derived from
+  `__file__` (no hardcoded absolute path).
+- `get_icon_path(name)` - resolves `resources/icons/png/<name>.png` (accepts the
+  bare name, a `.png` suffix, or a name without the `icon_` prefix); returns
+  `None` if the file is absent. Pure - imports no `c4d`.
+- `load_icon_bitmap(name)` - lazily imports `c4d`, loads the PNG via
+  `c4d.bitmaps.BaseBitmap().InitWith(path)`, and returns the bitmap or `None`
+  (never raises; logs at debug level).
+- `safe_icon(name)` - the cached, never-raising entry point used by registration;
+  returns a `BaseBitmap` or `None`.
 
-Cinema 4D's `BaseBitmap` reads standard PNG, so no special bitmap format is
-required; there is no existing icon-loading code to conform to (verified: the
-codebase currently passes `icon=None` everywhere).
+`plugin_register.py` passes `icon=icon_loader.safe_icon("icon_<name>")` for each
+command, so **if an icon is missing the command simply registers without one**
+(identical to the previous `icon=None` behavior - no behavior change). The
+icon→command mapping is the "Command(s) served" column above.
+
+At the end of registration the plugin logs a one-line **icon diagnostic** -
+`Command icons: N loaded, M missing.` - and, if any are missing, a warning listing
+them (and the loaded set at debug level), via `icon_loader.get_load_summary()` /
+`format_load_summary()`. Cinema 4D's `BaseBitmap` reads standard PNG, so no
+special bitmap format is required; the SVG sources are not loaded at runtime.
 
 ## Reproducibility
 
@@ -101,5 +115,6 @@ content** is unchanged regardless.
 - SVG and PNG are generated from the same shapes but rendered by different
   rasterizers (a browser vs. this script), so sub-pixel edges may differ slightly;
   the PNGs are the assets Cinema 4D loads.
-- Icons are **not yet referenced** by command registration (see above); doing so
-  is tracked as a follow-up.
+- The icon→command wiring (`icon_loader.safe_icon`) is exercised inside Cinema 4D
+  only; the unit tests cover the pure path logic and the safe `None` fallback
+  (Cinema 4D absent), not the actual `BaseBitmap` load.

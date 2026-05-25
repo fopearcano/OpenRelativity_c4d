@@ -126,3 +126,25 @@ copied-from-sample ID here can silently block another plugin (and vice versa).
 - **Audit:** run `python tools/audit_plugin_ids.py` to list the IDs, confirm
   uniqueness, flag any known sample IDs, and confirm every registration uses an
   `ids.*` constant. `ids.all_ids()` returns the full `{name: id}` map.
+
+## Icons
+
+Command icons are loaded through one place,
+`openrelativity_c4d/c4d/icon_loader.py`, which is **safe by construction** - a
+missing or unreadable icon never affects whether a command works.
+
+- Registration uses `icon=icon_loader.safe_icon("icon_<name>")`; `safe_icon`
+  returns a cached `c4d.bitmaps.BaseBitmap` or **`None`** (which registers the
+  command without an icon - the prior behavior). It never raises.
+- Paths resolve relative to the package via `get_plugin_root()` /
+  `get_icon_path()` (no hardcoded absolute paths). The PNGs live in
+  `openrelativity_c4d/resources/icons/png/`; the loader reads PNG only.
+- `icon_loader.py` has **no top-level `import c4d`** (lazy import inside
+  `load_icon_bitmap`), so the path logic is unit-tested in plain Python
+  (`tests/test_icon_loader.py`) and pulls in no Octane.
+- At the end of `register_all` the plugin logs an icon diagnostic
+  (`Command icons: N loaded, M missing.`, plus a warning listing any missing).
+  See `icon_loader.get_load_summary()` / `format_load_summary()`.
+- To add/replace an icon: regenerate via `python tools/generate_icons.py` (see
+  [`ICONS.md`](ICONS.md)); no registration code changes are needed as long as the
+  file name matches the `safe_icon("icon_<name>")` call.

@@ -119,9 +119,14 @@ def check_registrations_use_constants():
         with open(path) as handle:
             text = handle.read()
         for match in _REGISTER_CALL.finditer(text):
-            call_count += 1
             open_paren = text.index("(", match.start())
             args = _call_arg_span(text, open_paren)
+            # A real registration call always passes an `id=`. Spans without one
+            # are prose mentions (docstrings/comments referencing the API), so
+            # skip them rather than flag a non-existent raw ID.
+            if re.search(r"\bid\s*=", args) is None:
+                continue
+            call_count += 1
             raw = _ID_RAW.search(args)
             const = _ID_CONST.search(args)
             line = text.count("\n", 0, match.start()) + 1

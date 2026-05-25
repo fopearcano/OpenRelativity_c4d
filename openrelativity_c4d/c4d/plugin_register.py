@@ -9,7 +9,7 @@ import c4d  # Cinema 4D's module
 
 from .. import constants, ids
 from ..logging_utils import get_logger
-from . import commands, control_panel
+from . import commands, control_panel, icon_loader
 
 log = get_logger("register")
 
@@ -23,7 +23,7 @@ def register_all():
         id=ids.ID_ORC_ABOUT_COMMAND,
         str="{0}: About".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_about"),
         help="Show information about {0}.".format(constants.PLUGIN_NAME),
         dat=commands.AboutCommand(),
     )
@@ -38,7 +38,7 @@ def register_all():
         id=ids.ID_ORC_CREATE_CONTROLLER_COMMAND,
         str="{0}: Create Relativity Controller".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_setup_controller"),
         help="Create the ORC_Relativity_Controller Null with relativity settings.",
         dat=commands.CreateControllerCommand(),
     )
@@ -55,7 +55,7 @@ def register_all():
         id=ids.ID_ORC_SETUP_CAMERA_COMMAND,
         str="{0}: Setup Relativistic Camera".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_setup_camera"),
         help="Configure the selected camera (or create one) as a relativistic observer.",
         dat=commands.SetupCameraCommand(),
     )
@@ -72,7 +72,7 @@ def register_all():
         id=ids.ID_ORC_SETUP_OBJECTS_COMMAND,
         str="{0}: Setup Selected Relativistic Objects".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_setup_objects"),
         help="Add relativistic User Data to the selected objects.",
         dat=commands.SetupObjectsCommand(),
     )
@@ -89,7 +89,7 @@ def register_all():
         id=ids.ID_ORC_SELECT_OBJECTS_COMMAND,
         str="{0}: Select Relativistic Objects".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_setup_objects"),
         help="Select every object that has relativistic User Data.",
         dat=commands.SelectObjectsCommand(),
     )
@@ -106,7 +106,7 @@ def register_all():
         id=ids.ID_ORC_APPLY_DOPPLER_PREVIEW_COMMAND,
         str="{0}: Apply Doppler Material Preview".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_doppler_preview"),
         help="Apply the approximate Doppler colour preview to relativistic objects.",
         dat=commands.ApplyDopplerPreviewCommand(),
     )
@@ -123,7 +123,7 @@ def register_all():
         id=ids.ID_ORC_APPLY_SEARCHLIGHT_PREVIEW_COMMAND,
         str="{0}: Apply Searchlight Preview".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_searchlight_preview"),
         help="Apply the approximate searchlight (beaming) brightness preview.",
         dat=commands.ApplySearchlightPreviewCommand(),
     )
@@ -140,7 +140,7 @@ def register_all():
         id=ids.ID_ORC_APPLY_RELATIVITY_PREVIEW_COMMAND,
         str="{0}: Apply Relativity Material Preview".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_all_previews"),
         help="Apply both the Doppler tint and the searchlight brightness.",
         dat=commands.ApplyRelativityMaterialPreviewCommand(),
     )
@@ -157,7 +157,7 @@ def register_all():
         id=ids.ID_ORC_CLEAR_PREVIEW_COMMAND,
         str="{0}: Clear Material Preview".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_lorentz_remove"),
         help="Remove all ORC-generated preview materials and tags.",
         dat=commands.ClearMaterialPreviewCommand(),
     )
@@ -174,7 +174,7 @@ def register_all():
         id=ids.ID_ORC_CREATE_LORENTZ_PREVIEWS_COMMAND,
         str="{0}: Create Lorentz Preview Copies".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_lorentz_create"),
         help="Create non-destructive contracted duplicates for Lorentz preview.",
         dat=commands.CreateLorentzPreviewCommand(),
     )
@@ -191,7 +191,7 @@ def register_all():
         id=ids.ID_ORC_REMOVE_LORENTZ_PREVIEWS_COMMAND,
         str="{0}: Remove Lorentz Preview Copies".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_lorentz_remove"),
         help="Remove the Lorentz preview copies and restore the originals.",
         dat=commands.RemoveLorentzPreviewCommand(),
     )
@@ -208,7 +208,7 @@ def register_all():
         id=ids.ID_ORC_CREATE_TEST_SCENE_COMMAND,
         str="{0}: Create Test Scene".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_create_test_scene"),
         help="Build a demo scene: controller, camera, test objects and a light.",
         dat=commands.CreateTestSceneCommand(),
     )
@@ -225,7 +225,7 @@ def register_all():
         id=ids.ID_ORC_APPLY_ALL_PREVIEWS_COMMAND,
         str="{0}: Apply All Previews".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_all_previews"),
         help="Apply the material preview and create Lorentz preview copies.",
         dat=commands.ApplyAllPreviewsCommand(),
     )
@@ -241,7 +241,7 @@ def register_all():
         id=ids.ID_ORC_OCTANE_STATUS_COMMAND,
         str="{0}: Octane Status".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_octane_status"),
         help="Report Octane availability and status (no Octane changes).",
         dat=commands.OctaneStatusCommand(),
     )
@@ -257,7 +257,7 @@ def register_all():
         id=ids.ID_ORC_OCTANE_DIAGNOSTICS_COMMAND,
         str="{0}: Octane Diagnostics".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_diagnostics"),
         help="Report detected Octane IDs/classes/material parameters (read-only).",
         dat=commands.OctaneDiagnosticsCommand(),
     )
@@ -274,7 +274,7 @@ def register_all():
         id=ids.ID_ORC_APPLY_OCTANE_MATERIAL_COMMAND,
         str="{0}: Apply Octane-Compatible Material Preview".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_octane_status"),
         help="Apply the preview via Octane if supported, else a Standard fallback.",
         dat=commands.ApplyOctaneCompatibleMaterialPreviewCommand(),
     )
@@ -291,7 +291,7 @@ def register_all():
         id=ids.ID_ORC_SHOW_AOV_PLAN_COMMAND,
         str="{0}: Show AOV Plan".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_aov_plan"),
         help="Show the desired Relativity AOVs and Octane AOV support status.",
         dat=commands.ShowAOVPlanCommand(),
     )
@@ -307,7 +307,7 @@ def register_all():
         id=ids.ID_ORC_EXPORT_OSL_CAMERA_COMMAND,
         str="{0}: Export Experimental OSL Camera".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_export_osl"),
         help="Write the experimental (placeholder) OSL camera shader to a file.",
         dat=commands.ExportOSLCameraCommand(),
     )
@@ -324,7 +324,7 @@ def register_all():
         id=ids.ID_ORC_EXPORT_METADATA_COMMAND,
         str="{0}: Export Relativity Metadata JSON".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_export_metadata"),
         help="Export controller/camera/object relativity metadata to JSON.",
         dat=commands.ExportMetadataCommand(),
     )
@@ -341,7 +341,7 @@ def register_all():
         id=ids.ID_ORC_CONTROL_PANEL_COMMAND,
         str="{0}: Control Panel".format(constants.PLUGIN_NAME),
         info=0,
-        icon=None,
+        icon=icon_loader.safe_icon("icon_control_panel"),
         help="Open the OpenRelativity control panel (buttons for every command).",
         dat=control_panel.ControlPanelCommand(),
     )
@@ -351,5 +351,14 @@ def register_all():
         log.error("Failed to register 'Control Panel' (id=%s).",
                   ids.ID_ORC_CONTROL_PANEL_COMMAND)
         ok = False
+
+    # --- command icon diagnostic (never affects registration success) ------
+    loaded, missing = icon_loader.get_load_summary()
+    log.info("Command icons: %d loaded, %d missing.", len(loaded), len(missing))
+    if loaded:
+        log.debug("Loaded command icons: %s", ", ".join(loaded))
+    if missing:
+        log.warning("Command icons missing/failed (registered without icon): %s",
+                    ", ".join(missing))
 
     return ok
