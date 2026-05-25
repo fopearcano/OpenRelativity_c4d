@@ -183,17 +183,45 @@ plan):
 - **Lightweight.** Flat 32×32 PNGs only (+ optional 64×64 sources); no heavy or
   exotic formats.
 
-## 9. Out of scope (next steps, not done here)
+## 9. Control Panel layout (implemented)
 
-This document defines the system; it does **not** implement it. Follow-ups
-(tracked in the audit's plan), each behavior-neutral and tested in Cinema 4D:
+`c4d/control_panel.py` implements this system as a compact, non-modal
+`GeDialog` (`ControlPanelDialog`), built from small helper methods
+(`build_status_area`, `build_setup_tab`, `build_preview_tab`, `build_octane_tab`,
+`build_export_tab`, `build_diagnostics_tab`, `refresh_status`):
 
-1. Add `tools/generate_icons.py` (stdlib-only) to emit the §5 set into
-   `resources/icons/`.
-2. Add the safe icon loader and wire `icon=` in `plugin_register.py`.
-3. Apply the section accents and (optional) header images in the Control Panel;
-   convert it to the six section tabs.
-4. Mark destructive/clear actions with the red accent per principle 6.
+- **Persistent status area** at the top: Controller, Camera, ORC objects, Octane,
+  and the **Last action** message - refreshed after every button and via
+  **Refresh**.
+- **Workflow tabs** (`TabGroupBegin`) so only one section's buttons show at once,
+  keeping the window short: **Setup · Preview · Octane · Export · Help**. Every
+  command stays reachable (the previously-omitted ones - Select Objects, Apply All
+  Previews, Apply Octane Material, Export OSL - are now included).
+- **Buttons** call the registered commands via `c4d.CallCommand` (no behavior
+  change). Each row is `[icon] [text button]`: the icon comes from
+  `icon_loader.safe_icon(...)` via a guarded bitmap-button and **degrades to a
+  plain text button** if the icon or the bitmap-button GUI is unavailable - the
+  text button is always the reliable click target.
+- **Help tab** adds read-only conveniences that need no Octane: *UI Diagnostics*
+  (scene status + which command icons loaded) and *Open Docs Folder* (best-effort,
+  falls back to showing the path).
+- **Button/widget IDs** are defined centrally as class constants, with dynamic
+  command-row gadget IDs allocated from a single `_GADGET_BASE`.
+
+Destructive/clear actions (*Clear Material Preview*, *Remove Lorentz Copies*) use
+the red-accented icon per principle 6.
+
+### Screenshots
+
+_Placeholder - capture in Cinema 4D and add under `docs/images/` (none included
+yet)._ Suggested: the **Setup** and **Preview** tabs, and the status area with a
+scene loaded.
+
+## 10. Remaining follow-ups
+
+- Optional: group the **Extensions** menu entries into a grouped submenu
+  (`C4DPL_BUILDMENU`), driven from the same section model.
+- Optional: section header images in the Control Panel tabs.
 
 ---
 

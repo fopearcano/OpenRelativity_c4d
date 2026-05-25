@@ -25,29 +25,41 @@ For everyday use, open the one-stop panel: **Extensions > “OpenRelativity C4D:
 Control Panel”**. It is a small, dockable window with a button for every command
 plus a live status read-out, so you rarely need the Extensions menu directly.
 
-**Status** (updates after each action; press **Refresh** anytime):
+**Status** (always visible; updates after each action, or press **Refresh**):
 
 - **Controller** - `found` / `MISSING`
 - **Camera** - the relativistic camera's name / `MISSING`
 - **ORC objects** - how many relativistic objects exist
 - **Octane** - `detected` / `not detected` / `unknown`
+- **Last action** - the most recent button you pressed
 
-**Buttons**, grouped to stay compact:
+**Tabs** keep the panel short - only one section's buttons show at a time:
 
-- *Scene setup*: Create Relativity Controller, Setup Relativistic Camera, Setup
-  Selected Relativistic Objects, Create Test Scene.
-- *Material preview*: Apply Doppler Material Preview, Apply Searchlight Preview,
-  Apply Relativity Material Preview (both), Clear Material Preview.
-- *Lorentz geometry*: Create Lorentz Preview Copies, Remove Lorentz Preview Copies.
-- *Octane / export*: Octane Status, Show AOV Plan, Export Relativity Metadata JSON.
-- *Info*: About.
+- **Setup** - Create / Select Controller, Setup Relativistic Camera, Setup
+  Selected Objects, Select Relativistic Objects, Create Test Scene.
+- **Preview** - Apply Doppler Preview, Apply Searchlight Preview, Apply All
+  Material Previews, Apply All (+ Lorentz), Clear Material Preview, Create Lorentz
+  Copies, Remove Lorentz Copies.
+- **Octane** - Octane Status, Apply Octane Material, Show AOV Plan, Export OSL
+  Camera. (These work with Octane absent - they report status or fall back safely.)
+- **Export** - Export Metadata JSON.
+- **Help** - About, Octane Diagnostics, **UI Diagnostics** (shows scene status +
+  which command icons loaded), **Open Docs Folder**.
 
-Button labels match the menu command names exactly.
+Each button shows a small section-coloured icon when available and **falls back to
+a plain text button if the icon is missing**. Every command button runs the
+matching Extensions-menu command (identical behavior); **Refresh** and **Close**
+sit in the footer. The panel is **non-modal** - keep it open while you work, and
+the tabs keep it within a laptop screen. A typical first run: **Setup ▸ Create
+Test Scene** → **Preview ▸ Apply All Material Previews** → render (see
+[`QUICKSTART.md`](QUICKSTART.md)).
 
-Each button runs the matching command described in the rest of this guide. The
-panel is **non-modal** - keep it open while you work, and it stays narrow/short
-enough for laptop screens. A typical first run: *Create Test Scene* → *Apply All
-Material Previews* → render (see [`QUICKSTART.md`](QUICKSTART.md)).
+### Screenshots
+
+_Placeholder - to be captured inside Cinema 4D and added here (no screenshots are
+included yet)._ Suggested shots: the **Setup** tab, the **Preview** tab, and the
+status area with a scene loaded. Save them under `docs/images/` (e.g.
+`control_panel_setup.png`) and link them in this section.
 
 ## 3. Create the Relativity Controller
 

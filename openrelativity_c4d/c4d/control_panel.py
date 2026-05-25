@@ -1,146 +1,351 @@
-"""Central Control Panel dialog - one window with buttons for every command.
+"""Central Control Panel dialog - a compact, tabbed launcher for every command.
 
-A compact, non-modal :class:`c4d.gui.GeDialog`. Buttons trigger the already-
-registered command plugins via ``c4d.CallCommand`` (so there is no duplicated
-logic), and a status read-out shows controller/camera/object/Octane state. Kept
-narrow and grouped so it stays short enough for laptop screens.
+A non-modal :class:`c4d.gui.GeDialog` organised into workflow tabs (Setup,
+Preview, Octane, Export, Diagnostics/Help) with a persistent status read-out.
+Buttons trigger the already-registered command plugins via ``c4d.CallCommand`` -
+there is **no duplicated command logic and no behavior change**; the panel is just
+a launcher. Tabs keep it short enough for laptop screens (only one section's
+buttons are visible at a time).
 
-``import c4d`` here is Cinema 4D's module (this is a GUI-only module, loaded
-inside Cinema 4D via the plugin registration).
+Each command shows an optional small icon (via :mod:`.icon_loader`); if an icon is
+missing or Cinema 4D's bitmap-button GUI is unavailable, the button degrades to a
+plain text button - the click target is always a real text button, so commands
+remain reachable regardless of icons.
+
+``import c4d`` here is Cinema 4D's module (this is a GUI-only module, loaded inside
+Cinema 4D via the plugin registration).
 """
+
+import os
 
 import c4d
 
-from .. import ids
+from .. import constants, ids
 from ..logging_utils import get_logger
 from ..octane import detection as octane_detection
-from . import camera_tools, object_tools, scene_controller
+from . import camera_tools, icon_loader, object_tools, scene_controller
 
 log = get_logger("control_panel")
 
 
-def _status_values():
-    """Return ``(controller, camera, object_count, octane)`` status strings."""
-    controller = camera = objects = octane = "unknown"
-    try:
-        doc = c4d.documents.GetActiveDocument()
-        controller = "found" if scene_controller.find_controller(doc) else "MISSING"
-        cam = camera_tools.find_relativistic_camera(doc)
-        camera = cam.GetName() if cam is not None else "MISSING"
-        objects = str(len(object_tools.collect_orc_objects(doc)))
-    except Exception:  # noqa: BLE001
-        pass
-    try:
-        octane = ("detected" if octane_detection.detect_octane_available()
-                  else "not detected")
-    except Exception:  # noqa: BLE001
-        octane = "unknown"
-    return controller, camera, objects, octane
-
-
 class ControlPanelDialog(c4d.gui.GeDialog):
-    """Compact launcher panel with a live status read-out."""
+    """Compact, tabbed launcher panel with a live status read-out."""
 
-    _ID_STATUS_CONTROLLER = 1001
-    _ID_STATUS_CAMERA = 1002
-    _ID_STATUS_OBJECTS = 1003
-    _ID_STATUS_OCTANE = 1004
-    _ID_REFRESH = 1005
-    _ID_CLOSE = 1006
-    _BUTTON_BASE = 3000
+    # --- gadget IDs (all dialog widget IDs are defined here, centrally) -----
+    _ID_TABS = 1000
+    _ID_TAB_SETUP = 1001
+    _ID_TAB_PREVIEW = 1002
+    _ID_TAB_OCTANE = 1003
+    _ID_TAB_EXPORT = 1004
+    _ID_TAB_DIAG = 1005
 
-    # (section title, [(button label, command id), ...]). Button labels match the
-    # registered command names (minus the "OpenRelativity C4D: " prefix) for
-    # consistency; grouped into sections to stay compact.
-    _SECTIONS = (
-        ("Scene setup", (
-            ("Create Relativity Controller", ids.ID_ORC_CREATE_CONTROLLER_COMMAND),
-            ("Setup Relativistic Camera", ids.ID_ORC_SETUP_CAMERA_COMMAND),
-            ("Setup Selected Relativistic Objects", ids.ID_ORC_SETUP_OBJECTS_COMMAND),
-            ("Create Test Scene", ids.ID_ORC_CREATE_TEST_SCENE_COMMAND),
-        )),
-        ("Material preview", (
-            ("Apply Doppler Material Preview", ids.ID_ORC_APPLY_DOPPLER_PREVIEW_COMMAND),
-            ("Apply Searchlight Preview", ids.ID_ORC_APPLY_SEARCHLIGHT_PREVIEW_COMMAND),
-            ("Apply Relativity Material Preview", ids.ID_ORC_APPLY_RELATIVITY_PREVIEW_COMMAND),
-            ("Clear Material Preview", ids.ID_ORC_CLEAR_PREVIEW_COMMAND),
-        )),
-        ("Lorentz geometry", (
-            ("Create Lorentz Preview Copies", ids.ID_ORC_CREATE_LORENTZ_PREVIEWS_COMMAND),
-            ("Remove Lorentz Preview Copies", ids.ID_ORC_REMOVE_LORENTZ_PREVIEWS_COMMAND),
-        )),
-        ("Octane / export", (
-            ("Octane Status", ids.ID_ORC_OCTANE_STATUS_COMMAND),
-            ("Octane Diagnostics", ids.ID_ORC_OCTANE_DIAGNOSTICS_COMMAND),
-            ("Show AOV Plan", ids.ID_ORC_SHOW_AOV_PLAN_COMMAND),
-            ("Export Relativity Metadata JSON", ids.ID_ORC_EXPORT_METADATA_COMMAND),
-        )),
-        ("Info", (
-            ("About", ids.ID_ORC_ABOUT_COMMAND),
-        )),
-    )
+    _ID_STATUS_GROUP = 1010
+    _ID_STATUS_CONTROLLER = 1011
+    _ID_STATUS_CAMERA = 1012
+    _ID_STATUS_OBJECTS = 1013
+    _ID_STATUS_OCTANE = 1014
+    _ID_STATUS_LAST = 1015
 
-    def _add_status_row(self, label, value_id):
-        self.AddStaticText(0, c4d.BFH_LEFT, name=label)
-        self.AddStaticText(value_id, c4d.BFH_SCALEFIT, name="...")
+    _ID_REFRESH = 1020
+    _ID_CLOSE = 1021
+    _ID_UI_DIAGNOSTICS = 1022
+    _ID_OPEN_DOCS = 1023
 
-    def CreateLayout(self):
-        self.SetTitle("OpenRelativity C4D - Control Panel")
-        self.GroupBorderSpace(6, 6, 6, 6)
+    #: Dynamically-assigned command/icon gadget IDs start here (one block).
+    _GADGET_BASE = 2000
 
-        # --- status ---
-        self.GroupBegin(0, c4d.BFH_SCALEFIT, 2, 0, "Status")
+    def __init__(self):
+        super(ControlPanelDialog, self).__init__()
+        self._cmd_by_gadget = {}   # gadget id -> (command id, label)
+        self._icon_guis = {}       # gadget id -> BitmapButton (kept alive)
+        self._next_id = self._GADGET_BASE
+        self._last_action = "(none yet)"
+
+    # --- small layout helpers ----------------------------------------------
+    def _new_gadget_id(self):
+        gid = self._next_id
+        self._next_id += 1
+        return gid
+
+    def _add_icon(self, gadget_id, icon_name, clickable):
+        """Add a small icon bitmap-button for ``icon_name``; return ``True`` if added.
+
+        Fully guarded: returns ``False`` (adds nothing) if the icon is missing or
+        the bitmap-button custom GUI is unavailable, so callers fall back to a
+        text-only button. ``clickable`` makes the icon itself a button (a bonus
+        click target for command rows); decorative icons pass ``False``.
+        """
+        if not icon_name:
+            return False
+        try:
+            bitmap = icon_loader.safe_icon(icon_name)
+        except Exception:  # noqa: BLE001
+            bitmap = None
+        if bitmap is None:
+            return False
+        cgui = getattr(c4d, "CUSTOMGUI_BITMAPBUTTON", None)
+        if cgui is None:
+            return False
+        try:
+            settings = c4d.BaseContainer()
+            if hasattr(c4d, "BITMAPBUTTON_BUTTON"):
+                settings.SetBool(c4d.BITMAPBUTTON_BUTTON, bool(clickable))
+            if hasattr(c4d, "BITMAPBUTTON_TOGGLE"):
+                settings.SetBool(c4d.BITMAPBUTTON_TOGGLE, False)
+            gui = self.AddCustomGui(gadget_id, cgui, "",
+                                    c4d.BFH_LEFT | c4d.BFV_CENTER, 22, 22, settings)
+            if gui is None:
+                return False
+            try:
+                gui.SetImage(bitmap, False)
+            except Exception:  # noqa: BLE001 - gadget exists; just no image
+                pass
+            self._icon_guis[gadget_id] = gui
+            return True
+        except Exception:  # noqa: BLE001
+            log.debug("Icon button '%s' failed; using text only.", icon_name,
+                      exc_info=True)
+            return False
+
+    def _add_command(self, label, command_id, icon_name):
+        """Add an ``[icon] [text button]`` row that runs ``command_id``.
+
+        The text button is always present (reliable click target); the icon is a
+        bonus, also mapped to the command when shown. A placeholder keeps the
+        2-column grid aligned when no icon is available.
+        """
+        icon_gid = self._new_gadget_id()
+        if self._add_icon(icon_gid, icon_name, clickable=True):
+            self._cmd_by_gadget[icon_gid] = (command_id, label)
+        else:
+            self.AddStaticText(0, c4d.BFH_LEFT, name="")
+        btn_gid = self._new_gadget_id()
+        self.AddButton(btn_gid, c4d.BFH_SCALEFIT, name=label)
+        self._cmd_by_gadget[btn_gid] = (command_id, label)
+
+    def _add_local(self, label, gadget_id, icon_name):
+        """Add an ``[icon] [text button]`` row for a panel-local action.
+
+        The fixed ``gadget_id`` is handled directly in :meth:`Command` (not via
+        ``CallCommand``); the icon is decorative.
+        """
+        icon_gid = self._new_gadget_id()
+        if not self._add_icon(icon_gid, icon_name, clickable=False):
+            self.AddStaticText(0, c4d.BFH_LEFT, name="")
+        self.AddButton(gadget_id, c4d.BFH_SCALEFIT, name=label)
+
+    def _begin_tab(self, tab_id, title):
+        self.GroupBegin(tab_id, c4d.BFH_SCALEFIT | c4d.BFV_TOP, 2, 0, title)
+        self.GroupBorderSpace(8, 6, 8, 6)
+
+    # --- status area (always visible, top) ---------------------------------
+    def build_status_area(self):
+        self.GroupBegin(self._ID_STATUS_GROUP, c4d.BFH_SCALEFIT, 4, 0, "Status")
         self.GroupBorder(c4d.BORDER_GROUP_IN)
         self.GroupBorderSpace(6, 4, 6, 4)
-        self._add_status_row("Controller:", self._ID_STATUS_CONTROLLER)
-        self._add_status_row("Camera:", self._ID_STATUS_CAMERA)
-        self._add_status_row("ORC objects:", self._ID_STATUS_OBJECTS)
-        self._add_status_row("Octane:", self._ID_STATUS_OCTANE)
+        self.AddStaticText(0, c4d.BFH_LEFT, name="Controller:")
+        self.AddStaticText(self._ID_STATUS_CONTROLLER, c4d.BFH_SCALEFIT, name="...")
+        self.AddStaticText(0, c4d.BFH_LEFT, name="Camera:")
+        self.AddStaticText(self._ID_STATUS_CAMERA, c4d.BFH_SCALEFIT, name="...")
+        self.AddStaticText(0, c4d.BFH_LEFT, name="ORC objects:")
+        self.AddStaticText(self._ID_STATUS_OBJECTS, c4d.BFH_SCALEFIT, name="...")
+        self.AddStaticText(0, c4d.BFH_LEFT, name="Octane:")
+        self.AddStaticText(self._ID_STATUS_OCTANE, c4d.BFH_SCALEFIT, name="...")
         self.GroupEnd()
 
-        # --- command buttons, grouped, 2 columns each ---
-        self._cmd_by_gadget = {}
-        gadget_id = self._BUTTON_BASE
-        for title, buttons in self._SECTIONS:
-            self.GroupBegin(0, c4d.BFH_SCALEFIT, 2, 0, title)
-            self.GroupBorder(c4d.BORDER_GROUP_IN)
-            self.GroupBorderSpace(6, 4, 6, 4)
-            for label, command_id in buttons:
-                self.AddButton(gadget_id, c4d.BFH_SCALEFIT, name=label)
-                self._cmd_by_gadget[gadget_id] = command_id
-                gadget_id += 1
-            self.GroupEnd()
+        self.GroupBegin(0, c4d.BFH_SCALEFIT, 2, 0, "")
+        self.GroupBorderSpace(6, 0, 6, 2)
+        self.AddStaticText(0, c4d.BFH_LEFT, name="Last action:")
+        self.AddStaticText(self._ID_STATUS_LAST, c4d.BFH_SCALEFIT, name="(none yet)")
+        self.GroupEnd()
 
-        # --- footer ---
+    # --- tabs ---------------------------------------------------------------
+    def build_setup_tab(self):
+        self._begin_tab(self._ID_TAB_SETUP, "Setup")
+        self._add_command("Create / Select Controller",
+                          ids.ID_ORC_CREATE_CONTROLLER_COMMAND, "icon_setup_controller")
+        self._add_command("Setup Relativistic Camera",
+                          ids.ID_ORC_SETUP_CAMERA_COMMAND, "icon_setup_camera")
+        self._add_command("Setup Selected Objects",
+                          ids.ID_ORC_SETUP_OBJECTS_COMMAND, "icon_setup_objects")
+        self._add_command("Select Relativistic Objects",
+                          ids.ID_ORC_SELECT_OBJECTS_COMMAND, "icon_setup_objects")
+        self._add_command("Create Test Scene",
+                          ids.ID_ORC_CREATE_TEST_SCENE_COMMAND, "icon_create_test_scene")
+        self.GroupEnd()
+
+    def build_preview_tab(self):
+        self._begin_tab(self._ID_TAB_PREVIEW, "Preview")
+        self._add_command("Apply Doppler Preview",
+                          ids.ID_ORC_APPLY_DOPPLER_PREVIEW_COMMAND, "icon_doppler_preview")
+        self._add_command("Apply Searchlight Preview",
+                          ids.ID_ORC_APPLY_SEARCHLIGHT_PREVIEW_COMMAND, "icon_searchlight_preview")
+        self._add_command("Apply All Material Previews",
+                          ids.ID_ORC_APPLY_RELATIVITY_PREVIEW_COMMAND, "icon_all_previews")
+        self._add_command("Apply All (+ Lorentz)",
+                          ids.ID_ORC_APPLY_ALL_PREVIEWS_COMMAND, "icon_all_previews")
+        self._add_command("Clear Material Preview",
+                          ids.ID_ORC_CLEAR_PREVIEW_COMMAND, "icon_lorentz_remove")
+        self._add_command("Create Lorentz Copies",
+                          ids.ID_ORC_CREATE_LORENTZ_PREVIEWS_COMMAND, "icon_lorentz_create")
+        self._add_command("Remove Lorentz Copies",
+                          ids.ID_ORC_REMOVE_LORENTZ_PREVIEWS_COMMAND, "icon_lorentz_remove")
+        self.GroupEnd()
+
+    def build_octane_tab(self):
+        self._begin_tab(self._ID_TAB_OCTANE, "Octane")
+        self._add_command("Octane Status",
+                          ids.ID_ORC_OCTANE_STATUS_COMMAND, "icon_octane_status")
+        self._add_command("Apply Octane Material",
+                          ids.ID_ORC_APPLY_OCTANE_MATERIAL_COMMAND, "icon_octane_status")
+        self._add_command("Show AOV Plan",
+                          ids.ID_ORC_SHOW_AOV_PLAN_COMMAND, "icon_aov_plan")
+        self._add_command("Export OSL Camera",
+                          ids.ID_ORC_EXPORT_OSL_CAMERA_COMMAND, "icon_export_osl")
+        self.GroupEnd()
+
+    def build_export_tab(self):
+        self._begin_tab(self._ID_TAB_EXPORT, "Export")
+        self._add_command("Export Metadata JSON",
+                          ids.ID_ORC_EXPORT_METADATA_COMMAND, "icon_export_metadata")
+        self.AddStaticText(0, c4d.BFH_LEFT, name="")
+        self.AddStaticText(0, c4d.BFH_SCALEFIT,
+                           name="Writes a JSON sidecar (docs/METADATA_SCHEMA.md).")
+        self.GroupEnd()
+
+    def build_diagnostics_tab(self):
+        self._begin_tab(self._ID_TAB_DIAG, "Help")
+        self._add_command("About", ids.ID_ORC_ABOUT_COMMAND, "icon_about")
+        self._add_command("Octane Diagnostics",
+                          ids.ID_ORC_OCTANE_DIAGNOSTICS_COMMAND, "icon_diagnostics")
+        self._add_local("UI Diagnostics", self._ID_UI_DIAGNOSTICS, "icon_diagnostics")
+        self._add_local("Open Docs Folder", self._ID_OPEN_DOCS, "icon_control_panel")
+        self.GroupEnd()
+
+    def build_footer(self):
         self.GroupBegin(0, c4d.BFH_SCALEFIT, 2, 0, "")
         self.AddButton(self._ID_REFRESH, c4d.BFH_SCALEFIT, name="Refresh")
         self.AddButton(self._ID_CLOSE, c4d.BFH_SCALEFIT, name="Close")
         self.GroupEnd()
+
+    # --- GeDialog overrides -------------------------------------------------
+    def CreateLayout(self):
+        self.SetTitle("OpenRelativity C4D - Control Panel")
+        self._cmd_by_gadget = {}
+        self._icon_guis = {}
+        self._next_id = self._GADGET_BASE
+        self.GroupBorderSpace(6, 6, 6, 6)
+
+        self.build_status_area()
+
+        self.TabGroupBegin(self._ID_TABS, c4d.BFH_SCALEFIT | c4d.BFV_SCALEFIT,
+                           getattr(c4d, "TAB_TABS", 0))
+        self.build_setup_tab()
+        self.build_preview_tab()
+        self.build_octane_tab()
+        self.build_export_tab()
+        self.build_diagnostics_tab()
+        self.GroupEnd()  # tab group
+
+        self.build_footer()
         return True
 
     def InitValues(self):
-        self._refresh()
+        self.refresh_status()
         return True
 
-    def _refresh(self):
-        controller, camera, objects, octane = _status_values()
+    def refresh_status(self):
+        controller, camera, objects, octane = self._read_status()
         self.SetString(self._ID_STATUS_CONTROLLER, controller)
         self.SetString(self._ID_STATUS_CAMERA, camera)
         self.SetString(self._ID_STATUS_OBJECTS, objects)
         self.SetString(self._ID_STATUS_OCTANE, octane)
+        self.SetString(self._ID_STATUS_LAST, self._last_action)
 
     def Command(self, cid, msg):
         if cid == self._ID_REFRESH:
-            self._refresh()
+            self.refresh_status()
             return True
         if cid == self._ID_CLOSE:
             self.Close()
             return True
-        command_id = getattr(self, "_cmd_by_gadget", {}).get(cid)
-        if command_id is not None:
-            c4d.CallCommand(command_id)
-            self._refresh()  # state may have changed
+        if cid == self._ID_UI_DIAGNOSTICS:
+            self._show_ui_diagnostics()
+            return True
+        if cid == self._ID_OPEN_DOCS:
+            self._open_docs_folder()
+            return True
+        entry = self._cmd_by_gadget.get(cid)
+        if entry is not None:
+            command_id, label = entry
+            c4d.CallCommand(command_id)  # runs the real command (unchanged behavior)
+            self._last_action = "Ran: {0}".format(label)
+            self.refresh_status()
         return True
+
+    # --- panel-local helpers ------------------------------------------------
+    def _read_status(self):
+        """Return ``(controller, camera, objects, octane)`` status strings.
+
+        Fully guarded; never raises and never requires Octane.
+        """
+        controller = camera = objects = octane = "unknown"
+        try:
+            doc = c4d.documents.GetActiveDocument()
+            controller = "found" if scene_controller.find_controller(doc) else "MISSING"
+            cam = camera_tools.find_relativistic_camera(doc)
+            camera = cam.GetName() if cam is not None else "MISSING"
+            objects = str(len(object_tools.collect_orc_objects(doc)))
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            octane = ("detected" if octane_detection.detect_octane_available()
+                      else "not detected")
+        except Exception:  # noqa: BLE001
+            octane = "unknown"
+        return controller, camera, objects, octane
+
+    def _show_ui_diagnostics(self):
+        """Read-only: show scene status and the icon load summary in a dialog."""
+        controller, camera, objects, octane = self._read_status()
+        lines = [
+            "OpenRelativity C4D - UI diagnostics",
+            "",
+            "Controller:  {0}".format(controller),
+            "Camera:      {0}".format(camera),
+            "ORC objects: {0}".format(objects),
+            "Octane:      {0}".format(octane),
+            "",
+            icon_loader.format_load_summary(),
+        ]
+        c4d.gui.MessageDialog("\n".join(lines))
+        self._last_action = "UI diagnostics"
+        self.refresh_status()
+
+    def _open_docs_folder(self):
+        """Best-effort: open the repo ``docs/`` folder; fall back to showing its path."""
+        root = icon_loader.get_plugin_root()
+        candidates = [os.path.join(os.path.dirname(root), "docs"),
+                      os.path.join(root, "docs")]
+        path = next((p for p in candidates if os.path.isdir(p)), None)
+        if path is None:
+            c4d.gui.MessageDialog(
+                "Docs folder not found next to the plugin.\nProject page:\n"
+                + constants.PROJECT_URL)
+            self._last_action = "Open docs (not found)"
+            self.refresh_status()
+            return
+        opened = False
+        try:
+            execute = getattr(c4d.storage, "GeExecuteFile", None)
+            if execute is not None:
+                opened = bool(execute(path))
+        except Exception:  # noqa: BLE001
+            opened = False
+        if not opened:
+            c4d.gui.MessageDialog("Docs are here:\n{0}".format(path))
+        self._last_action = "Opened docs folder" if opened else "Showed docs path"
+        self.refresh_status()
 
 
 class ControlPanelCommand(c4d.plugins.CommandData):
@@ -154,7 +359,7 @@ class ControlPanelCommand(c4d.plugins.CommandData):
         return self.dialog.Open(
             dlgtype=c4d.DLG_TYPE_ASYNC,
             pluginid=ids.ID_ORC_CONTROL_PANEL_DIALOG,
-            defaultw=300,
+            defaultw=340,
             defaulth=0,
         )
 
