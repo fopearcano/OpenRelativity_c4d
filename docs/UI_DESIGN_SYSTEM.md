@@ -80,25 +80,28 @@ Supporting tones (for icon tiles and panel chrome on the dark UI):
 | Panel text | `#E6E6E6` | Status/labels |
 | Muted text | `#9AA0A6` | Secondary/hint text (same as Diagnostics gray) |
 
-Semantic exception: a few **physics-meaningful** icons may add red/blue accents
-where the meaning is essential (e.g. *Doppler* red-shift/blue-shift), layered on
-top of the section accent - see §5.
+As implemented (see [`ICONS.md`](ICONS.md)), the section colour is carried by the
+icon's **tile** and the glyph is **white**, so the set stays uniform; no per-icon
+"special" colours are used. Red remains a **runtime warning** colour (error
+dialogs, failed status), not something baked into an icon.
 
 ## 4. Icon style
 
 - **Flat colour only.** Solid fills, **no gradients**, no shadows, no bevels.
 - **Simple geometric shapes.** Circles, rounded rectangles, triangles, lines,
   arrows. One clear idea per icon; readable as a silhouette.
-- **Background:** prefer **transparent** (RGBA alpha) so icons sit on any C4D
-  toolbar/menu shade. Where a menu needs a solid tile for contrast, use the dark
-  tile `#232323` with the accent glyph on top (decide per integration need).
+- **Background (as implemented):** a **section-coloured rounded-square tile**
+  (1.5 px inset, ~6.5 px corner radius) on an otherwise transparent canvas, with a
+  **white glyph** on top. The tile carries the section colour and unifies the set;
+  the transparent corners let it sit on any C4D shade.
 - **Sizes:** **32×32 primary** (the size C4D command icons display at). Optional
   **64×64 source** for HiDPI / future redraws. No other sizes required.
 - **Construction rules** (for legibility at 32 px):
-  - keep a ~3 px transparent margin; draw within the inner ~26×26;
+  - consistent padding: glyphs drawn within the inner tile, clear of the edge;
   - minimum stroke/feature ~2 px at 32 (avoid 1 px hairlines);
-  - 1-2 colours per icon: the section accent + optional white/`#E6E6E6` for a
-    cut-out highlight (and red/blue only for the semantic icons in §5);
+  - glyph colours are just **white** + a **translucent white** for secondary marks;
+    the tile colour is reused to cut "holes" (lens, document lines) - no per-icon
+    accent colours;
   - **no text/letters inside icons unless unavoidable** (the *About* "i" mark is
     the one allowed glyph-letter).
 - **Format:** **PNG, 8-bit RGBA** only - widely supported by
@@ -106,6 +109,12 @@ top of the section accent - see §5.
   exotic formats** (avoids anything that may fail to load in Cinema 4D).
 
 ## 5. Proposed icon set
+
+> **As-built glyphs:** the final icons use a section-coloured tile + white glyph -
+> see [`ICONS.md`](ICONS.md) for the implemented set and the
+> [preview sheet](ICONS.md#preview-sheet). The table below is the original design
+> proposal; a few glyphs were simplified for family coherence (e.g. *Doppler* is
+> white opposing arrows, *Lorentz remove* is a trash glyph, *Clear* reuses it).
 
 The 16 prototype icons, each with its section/colour and a simple-shape glyph.
 File names use the bare `<name>` (see §6). "Serves" lists the command(s) the icon
@@ -134,9 +143,9 @@ is used for; a few commands reuse the nearest icon until dedicated ones exist.
 - *Select Relativistic Objects* reuses `setup_objects`.
 - *Apply Relativity Material Preview* reuses `all_previews` (both denote a
   combined apply); a dedicated composite can be added later.
-- *Clear Material Preview* has **no** dedicated icon yet: render `all_previews`
-  with the **red/error accent** (§3, principle 6) until a `clear_preview` icon is
-  added - the destructive-labelling rule still applies.
+- *Clear Generated Preview Materials* reuses `lorentz_remove` (the trash glyph);
+  the destructive intent is carried by that glyph plus the command label/help, not
+  by a red icon (see ICONS.md).
 - *Apply Octane-Compatible Material Preview* reuses `octane_status` until an
   octane-material variant exists.
 

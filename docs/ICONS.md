@@ -5,6 +5,13 @@ assets - produced by a script in this repo using only the Python standard
 library. **Nothing is downloaded**, there is **no external dependency**, and no
 copyrighted icon pack is used. They follow [`UI_DESIGN_SYSTEM.md`](UI_DESIGN_SYSTEM.md).
 
+They are a **coherent family**: every icon is a section-coloured **rounded-square
+tile** with a flat **white glyph** on top (a translucent white is used for
+secondary marks, and the tile colour is reused to "cut" holes in white shapes).
+Consistent 32×32 canvas, tile inset/corner radius, padding, and stroke widths give
+them one look; the section colour comes entirely from the tile - see the
+[preview sheet](#preview-sheet).
+
 ## How to regenerate
 
 ```sh
@@ -12,19 +19,21 @@ python tools/generate_icons.py          # write all SVG sources + PNG rasters
 python tools/generate_icons.py --list   # just list the icon names + sections
 ```
 
-The generator (`tools/generate_icons.py`) defines each icon as a few flat
-primitives (rect / disc / ring / line / polygon) in a 32×32 space, then writes
-**both** an SVG vector source and PNG rasters from that single description. PNGs
-are encoded by hand with `zlib` + `struct` (8-bit RGBA), anti-aliased by rendering
-at an integer supersample and box-averaging down with premultiplied alpha (so the
-transparent background gets no dark halo). Output is **deterministic** - re-running
-reproduces byte-identical assets.
+The generator (`tools/generate_icons.py`) defines each icon as a section tile
+plus a few flat primitives (rect / disc / ring / line / polygon) in a 32×32 space,
+then writes **an SVG vector source, PNG rasters, and a preview sheet** from that
+single description. PNGs are encoded by hand with `zlib` + `struct` (8-bit RGBA),
+anti-aliased by rendering at an integer supersample and box-averaging down with
+premultiplied alpha (so the transparent corners around the tile get no dark halo).
+Output is **deterministic** - re-running reproduces byte-identical assets.
 
 ## Where they live
 
 ```
 openrelativity_c4d/resources/icons/
   README.md
+  icon_sheet.png          # preview contact sheet (raster)
+  icon_sheet.svg          # preview contact sheet (labelled vector)
   src/<name>.svg          # editable vector source (viewBox 0 0 32)
   png/<name>.png          # 32x32 RGBA - the primary, C4D-loadable icon
   png/<name>_64.png       # 64x64 RGBA - optional HiDPI raster
@@ -32,43 +41,61 @@ openrelativity_c4d/resources/icons/
 
 `<name>` is the `icon_*` name from the table below (e.g. `icon_setup_camera`).
 
+## Preview sheet
+
+`tools/generate_icons.py` also writes a contact sheet of the whole set so the
+family can be eyeballed at a glance:
+
+- **`resources/icons/icon_sheet.png`** - all icons (64 px each) on a dark grid,
+  grouped by section so the colour coding is obvious.
+- **`resources/icons/icon_sheet.svg`** - the same, labelled with each icon name
+  (resolution-independent).
+
+Regenerate both with `python tools/generate_icons.py`.
+
 ## Icon set
 
-16 icons, each in its section colour (see [`UI_DESIGN_SYSTEM.md`](UI_DESIGN_SYSTEM.md) §3)
-with a simple-shape glyph. "Command(s)" is the user command each is intended for
-(some commands reuse the nearest icon until a dedicated one exists - mirroring the
-audit's mapping).
+16 icons. The **tile** carries the section colour (see
+[`UI_DESIGN_SYSTEM.md`](UI_DESIGN_SYSTEM.md) §3); the **glyph** is white. "Command(s)"
+is the user command each is intended for (some commands reuse the nearest icon -
+mirroring the registry in `c4d/ui_assets.py`).
 
-| Icon | Section / colour | Glyph | Command(s) served |
+| Icon | Tile (section colour) | White glyph | Command(s) served |
 |---|---|---|---|
-| `icon_about` | Help / cyan | info "i" in a disc | About |
-| `icon_control_panel` | Help / cyan | three sliders | Control Panel |
-| `icon_setup_controller` | Setup / blue | crosshair + centre node + orbit ring | Create Relativity Controller |
-| `icon_setup_camera` | Setup / blue | camera body + lens + viewfinder | Setup Relativistic Camera |
-| `icon_setup_objects` | Setup / blue | three cubes | Setup Selected Relativistic Objects · Select Relativistic Objects *(reuse)* |
+| `icon_setup_controller` | Setup / blue | crosshair + node + orbit ring | Create Controller |
+| `icon_setup_camera` | Setup / blue | camera body + lens + viewfinder | Setup Camera |
+| `icon_setup_objects` | Setup / blue | three squares | Setup Selected Objects · Select Objects *(reuse)* |
 | `icon_create_test_scene` | Setup / blue | ground grid + sphere | Create Test Scene |
-| `icon_doppler_preview` | Preview / violet (+blue/red) | violet ring with opposing blue-shift/red-shift arrows | Apply Doppler Material Preview |
-| `icon_searchlight_preview` | Preview / violet | beam cone from a source | Apply Searchlight Preview |
-| `icon_all_previews` | Preview / violet | stacked tiles + spark | Apply All Previews · Apply Relativity Material Preview *(reuse)* |
-| `icon_lorentz_create` | Preview / violet | narrow bar with inward arrows | Create Lorentz Preview Copies |
-| `icon_lorentz_remove` | Preview / violet + red | narrow bar with a red X | Remove Lorentz Preview Copies · Clear Material Preview *(reuse, red accent)* |
-| `icon_octane_status` | Octane / orange | orange ring + centre dot | Octane Status · Apply Octane-Compatible Material Preview *(reuse)* |
+| `icon_doppler_preview` | Preview / violet | opposing shift arrows in a ring | Apply Doppler |
+| `icon_searchlight_preview` | Preview / violet | beam cone from a source | Apply Searchlight |
+| `icon_all_previews` | Preview / violet | stacked sheets + spark | Apply All Materials · Apply All *(reuse)* |
+| `icon_lorentz_create` | Preview / violet | narrow bar + inward arrows | Create Lorentz Copies |
+| `icon_lorentz_remove` | Preview / violet | trash / delete bin | Remove Lorentz Copies · Clear Generated Materials *(reuse)* |
+| `icon_octane_status` | Octane / orange | ring + centre dot | Octane Status · Apply Compatible Preview *(reuse)* |
 | `icon_aov_plan` | Octane / orange | layered pass sheets | Show AOV Plan |
-| `icon_export_metadata` | Export / green | document + down/export arrow | Export Relativity Metadata JSON |
-| `icon_export_osl` | Export / green | camera rays to an image plane | Export Experimental OSL Camera |
-| `icon_diagnostics` | Diagnostics / gray | pulse / heartbeat line | Octane Diagnostics |
+| `icon_export_metadata` | Export / green | document + export arrow | Metadata JSON |
+| `icon_export_osl` | Export / green | camera rays to an image plane | Export OSL Camera |
+| `icon_diagnostics` | Diagnostics / gray | pulse / heartbeat line | Octane Diagnostics · UI Diagnostics *(reuse)* |
+| `icon_about` | Help / cyan | info "i" mark | About |
+| `icon_control_panel` | Help / cyan | three sliders | Control Panel |
 
 ## Style rules
 
+- **One coherent family:** section-coloured rounded tile + flat white glyph, the
+  same tile inset (1.5 px) and corner radius (~6.5 px) and consistent padding on
+  every icon.
 - Flat colour only - **no gradients**, shadows, or bevels.
+- Glyph palette is just **white** (`INK`) + a **translucent white** (`INK_DIM`) for
+  secondary marks; the tile colour is reused to punch holes (e.g. the camera lens,
+  the document's text lines). No per-icon "special" colours, so the set stays
+  uniform.
 - Simple geometric shapes; **no text** inside icons (the About "i" mark is the one
   allowed glyph-letter).
 - **32×32** is the primary size (the size C4D command icons display at); 64×64 is
   an optional HiDPI raster. SVG is resolution-independent.
-- **PNG, 8-bit RGBA**, transparent background - no SVG/TIFF/PSD or exotic formats
-  for the C4D-loaded asset (avoids anything that may fail to load in Cinema 4D).
-- One or two colours per icon (the section accent + white), plus red/blue only on
-  the physics-/destructive-meaning icons (Doppler, Lorentz remove).
+- **PNG, 8-bit RGBA** (transparent outside the tile) - no SVG/TIFF/PSD or exotic
+  formats for the C4D-loaded asset (avoids anything that may fail to load in
+  Cinema 4D).
 
 ## How Cinema 4D loads them
 
@@ -110,6 +137,10 @@ content** is unchanged regardless.
 - These are **prototype "programmer-art" icons**: clear and consistent, but not a
   professional set. They are **replaceable without any code change** - drop in new
   PNGs with the same names.
+- **Destructive intent** (Remove / Clear) is shown by the **trash glyph** plus the
+  command label and help text, not by a red icon - this keeps the family coherent
+  (red stays a runtime *warning* colour, per `UI_DESIGN_SYSTEM.md`, rather than
+  being baked into a tile).
 - Anti-aliasing is supersample-and-average (no hinting), so very thin features are
   intentionally kept ≥ ~2 px at 32 px.
 - SVG and PNG are generated from the same shapes but rendered by different

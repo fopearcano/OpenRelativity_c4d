@@ -1,27 +1,34 @@
 #!/usr/bin/env python3
 """Generate the plugin's flat command icons - reproducibly, with NO dependencies.
 
-Each icon is defined as a tiny list of flat geometric primitives (rect, disc,
-ring, line, polygon) in a 32x32 coordinate space. From that single description we
-emit:
+The icons are a **coherent family**: each is a section-coloured **rounded-square
+tile** with a flat **white glyph** on top (a translucent white, ``INK_DIM``, is
+used for secondary marks, and the tile colour is reused to "cut" holes in white
+shapes). Consistent 32x32 canvas, consistent tile inset/corner radius, consistent
+padding, and consistent stroke widths give them one look. Section colours follow
+docs/UI_DESIGN_SYSTEM.md:
 
-  * an **SVG** vector source  -> openrelativity_c4d/resources/icons/src/<name>.svg
-  * a **PNG** raster (32 + 64) -> openrelativity_c4d/resources/icons/png/<name>.png
-                                  openrelativity_c4d/resources/icons/png/<name>_64.png
+    Setup=blue  Preview=violet  Octane=orange  Export=green  Diagnostics=gray
+    Help=cyan
 
-PNG is written by hand using only the standard library (``zlib`` + ``struct``):
+From a single per-icon shape list we emit:
+
+  * an **SVG** vector source  -> resources/icons/src/<name>.svg
+  * a **PNG** raster (32 + 64) -> resources/icons/png/<name>.png (+ _64.png)
+  * a **preview sheet**        -> resources/icons/icon_sheet.svg (labelled)
+                                  resources/icons/icon_sheet.png
+
+PNG is written by hand with only the standard library (``zlib`` + ``struct``):
 no Pillow, no external icon library, nothing downloaded. Raster edges are
 anti-aliased by rendering at an integer supersample and box-averaging down
-(premultiplied alpha, so transparent backgrounds get no dark halo). Output is
-deterministic, so re-running reproduces the same assets.
+(premultiplied alpha). Output is deterministic - re-running reproduces the assets.
 
 Usage:
-    python tools/generate_icons.py            # write all SVG + PNG assets
+    python tools/generate_icons.py            # write all SVG + PNG assets + sheet
     python tools/generate_icons.py --list     # just print the icon names
 
-Colours and the section model follow docs/UI_DESIGN_SYSTEM.md. These are
-intentionally simple prototype assets (see docs/ICONS.md); they are NOT wired
-into command registration here (no behavior change).
+These are intentionally simple prototype assets (see docs/ICONS.md). Generating
+them changes no command behavior.
 """
 
 import math
@@ -39,22 +46,26 @@ CANVAS = 32  # design coordinate space (also the primary PNG size)
 PNG_SIZES = (32, 64)
 SUPERSAMPLE = {32: 4, 64: 3}  # hi-res factor per output size
 
-# --- palette (RGBA), from docs/UI_DESIGN_SYSTEM.md --------------------------
-BLUE = (62, 134, 224, 255)
-BLUE_D = (44, 104, 184, 255)
-VIOLET = (142, 111, 224, 255)
-VIOLET_L = (176, 150, 238, 255)
-VIOLET_D = (110, 84, 182, 255)
-ORANGE = (240, 136, 60, 255)
-ORANGE_D = (198, 104, 40, 255)
-ORANGE_L = (248, 170, 108, 255)
-GREEN = (63, 179, 107, 255)
-GREEN_D = (44, 140, 84, 255)
-GRAY = (154, 160, 166, 255)
-RED = (229, 72, 77, 255)
-CYAN = (70, 198, 222, 255)
-WHITE = (238, 240, 242, 255)
-BLUE_DOP = (74, 144, 226, 255)
+# --- palette (RGBA) ---------------------------------------------------------
+# One medium-saturated accent per section (the tile), plus a shared two-tone
+# white "ink" for the glyph. Medium tiles keep the white glyph high-contrast.
+BLUE = (54, 122, 204, 255)     # Setup
+VIOLET = (130, 100, 208, 255)  # Preview
+ORANGE = (224, 126, 50, 255)   # Octane
+GREEN = (52, 162, 100, 255)    # Export
+GRAY = (122, 130, 140, 255)    # Diagnostics
+CYAN = (52, 170, 192, 255)     # Help
+INK = (247, 248, 250, 255)      # primary glyph (near-white)
+INK_DIM = (247, 248, 250, 130)  # secondary glyph (translucent white -> pastel)
+
+SECTION_COLOR = {
+    "Setup": BLUE, "Preview": VIOLET, "Octane": ORANGE,
+    "Export": GREEN, "Diagnostics": GRAY, "Help": CYAN,
+}
+
+# Shared family geometry (in the 0..32 space).
+_TILE_INSET = 1.5
+_TILE_RADIUS = 6.5
 
 
 # --- primitive constructors (coordinates in the 0..32 design space) ---------
@@ -78,112 +89,125 @@ def P(pts, c):
     return {"t": "poly", "pts": pts, "c": c}
 
 
-# --- icon definitions: (name, section, [shapes]) ---------------------------
-def _icons():
+def _tile(accent):
+    """The shared rounded-square background tile in the section ``accent``."""
+    size = CANVAS - 2 * _TILE_INSET
+    return R(_TILE_INSET, _TILE_INSET, size, size, accent, r=_TILE_RADIUS)
+
+
+def _spark(cx, cy, outer, inner, c):
+    """A 4-point star (8 vertices) centred at ``(cx, cy)``."""
+    d = inner * 0.70
+    return P([
+        (cx, cy - outer), (cx + d, cy - d), (cx + outer, cy), (cx + d, cy + d),
+        (cx, cy + outer), (cx - d, cy + d), (cx - outer, cy), (cx - d, cy - d),
+    ], c)
+
+
+# --- icon glyphs: (name, section, [glyph shapes]) ---------------------------
+# Each glyph is drawn in white INK (+ INK_DIM for secondary marks; the section
+# accent is reused to punch "holes" into white shapes). The tile is prepended
+# automatically in :func:`_icons`. Grouped by section so the family reads clearly.
+def _glyphs():
     return [
-        ("icon_about", "Help", [
-            D(16, 16, 12.5, CYAN),
-            D(16, 10, 1.9, WHITE),
-            R(14.4, 13.2, 3.2, 9.4, WHITE, r=1.4),
-        ]),
-        ("icon_control_panel", "Help", [
-            R(6, 8.5, 20, 2.6, CYAN, r=1.3),
-            R(6, 15.5, 20, 2.6, CYAN, r=1.3),
-            R(6, 22.5, 20, 2.6, CYAN, r=1.3),
-            D(12, 9.8, 2.7, WHITE),
-            D(20, 16.8, 2.7, WHITE),
-            D(9, 23.8, 2.7, WHITE),
-        ]),
+        # --- Setup (blue) ---------------------------------------------------
         ("icon_setup_controller", "Setup", [
-            L(16, 3.5, 16, 28.5, 2.2, BLUE),
-            L(3.5, 16, 28.5, 16, 2.2, BLUE),
-            RING(16, 16, 10.5, 2.0, BLUE),
-            D(16, 16, 4.2, BLUE),
-            D(16, 16, 1.8, WHITE),
+            RING(16, 16, 10.5, 1.8, INK_DIM),
+            L(16, 5, 16, 27, 2.2, INK), L(5, 16, 27, 16, 2.2, INK),
+            D(16, 16, 3.6, INK), D(16, 16, 1.5, BLUE),
         ]),
         ("icon_setup_camera", "Setup", [
-            R(7, 8, 5.5, 3.4, BLUE, r=1.0),
-            R(5, 11, 18, 11, BLUE, r=2.0),
-            D(14, 16.5, 4.6, WHITE),
-            D(14, 16.5, 2.7, BLUE),
-            D(20, 14, 1.2, WHITE),
+            R(7.5, 8, 5.5, 3.3, INK, r=1.0),
+            R(5.5, 11, 21, 11.5, INK, r=2.2),
+            D(14.5, 16.7, 4.3, BLUE), D(14.5, 16.7, 1.7, INK),
         ]),
         ("icon_setup_objects", "Setup", [
-            R(4.5, 5, 9, 9, BLUE, r=1.6),
-            R(18.5, 5, 9, 9, BLUE_D, r=1.6),
-            R(11.5, 17, 9, 9, BLUE, r=1.6),
+            R(5, 5, 9, 9, INK, r=1.6),
+            R(18, 5, 9, 9, INK_DIM, r=1.6),
+            R(11.5, 17, 9, 9, INK, r=1.6),
         ]),
         ("icon_create_test_scene", "Setup", [
-            L(4, 27, 28, 27, 1.6, BLUE),
-            L(6, 22, 26, 22, 1.4, BLUE),
-            L(9, 27, 10.5, 22, 1.3, BLUE),
-            L(16, 27, 16, 22, 1.3, BLUE),
-            L(23, 27, 21.5, 22, 1.3, BLUE),
-            D(16, 14, 6.0, BLUE),
-            D(13.8, 11.8, 1.8, WHITE),
+            L(5, 26, 27, 26, 1.5, INK_DIM), L(7, 22, 25, 22, 1.3, INK_DIM),
+            L(10, 26, 11.5, 22, 1.2, INK_DIM), L(16, 26, 16, 22, 1.2, INK_DIM),
+            L(22, 26, 20.5, 22, 1.2, INK_DIM),
+            D(16, 13.5, 5.8, INK),
         ]),
+        # --- Preview (violet) ----------------------------------------------
         ("icon_doppler_preview", "Preview", [
-            RING(16, 16, 12.5, 2.0, VIOLET),
-            L(15, 16, 9.5, 16, 2.6, BLUE_DOP),
-            P([(9.5, 11.5), (4.7, 16), (9.5, 20.5)], BLUE_DOP),
-            L(17, 16, 22.5, 16, 2.6, RED),
-            P([(22.5, 11.5), (27.3, 16), (22.5, 20.5)], RED),
+            RING(16, 16, 12.0, 1.6, INK_DIM),
+            L(15, 16, 9.5, 16, 2.4, INK), P([(9.5, 12), (5.3, 16), (9.5, 20)], INK),
+            L(17, 16, 22.5, 16, 2.4, INK), P([(22.5, 12), (26.7, 16), (22.5, 20)], INK),
         ]),
         ("icon_searchlight_preview", "Preview", [
-            P([(9, 16), (27, 6.5), (27, 25.5)], VIOLET),
-            P([(9, 16), (25.5, 9.8), (25.5, 22.2)], VIOLET_L),
-            D(8.5, 16, 2.7, WHITE),
+            P([(9, 16), (26, 7), (26, 25)], INK),
+            L(11, 16, 25, 10, 1.2, VIOLET), L(11, 16, 25, 22, 1.2, VIOLET),
+            D(8.5, 16, 2.6, INK),
         ]),
         ("icon_all_previews", "Preview", [
-            R(9.5, 12.5, 15, 11, VIOLET_D, r=2.0),
-            R(6.0, 8.5, 15, 11, VIOLET, r=2.0),
-            P([(22, 18.2), (23.2, 20.8), (26, 22), (23.2, 23.2),
-               (22, 26), (20.8, 23.2), (18, 22), (20.8, 20.8)], WHITE),
+            R(9.5, 12.5, 15, 11, INK_DIM, r=2.0),
+            R(6.0, 8.5, 15, 11, INK, r=2.0),
+            _spark(22.6, 21.0, 3.4, 1.5, INK),
         ]),
         ("icon_lorentz_create", "Preview", [
-            R(14, 7, 4, 18, VIOLET, r=1.0),
-            L(3.5, 16, 8.5, 16, 2.2, VIOLET),
-            P([(8, 12.5), (12, 16), (8, 19.5)], VIOLET),
-            L(28.5, 16, 23.5, 16, 2.2, VIOLET),
-            P([(24, 12.5), (20, 16), (24, 19.5)], VIOLET),
+            R(13.5, 7, 5, 18, INK, r=1.2),
+            L(4, 16, 8.5, 16, 2.0, INK), P([(8, 12.5), (12, 16), (8, 19.5)], INK),
+            L(28, 16, 23.5, 16, 2.0, INK), P([(24, 12.5), (20, 16), (24, 19.5)], INK),
         ]),
         ("icon_lorentz_remove", "Preview", [
-            R(14, 7, 4, 18, VIOLET, r=1.0),
-            L(6.5, 6.5, 25.5, 25.5, 2.6, RED),
-            L(25.5, 6.5, 6.5, 25.5, 2.6, RED),
+            R(9.5, 9.3, 13, 2.4, INK, r=1.0),
+            R(13.5, 7, 5, 2.2, INK, r=1.0),
+            P([(11, 12), (21, 12), (19.8, 25), (12.2, 25)], INK),
+            L(14, 15, 14, 22, 1.3, VIOLET), L(16, 15, 16, 22, 1.3, VIOLET),
+            L(18, 15, 18, 22, 1.3, VIOLET),
         ]),
+        # --- Octane (orange) -----------------------------------------------
         ("icon_octane_status", "Octane", [
-            RING(16, 16, 12.0, 3.0, ORANGE),
-            D(16, 16, 3.4, ORANGE),
+            RING(16, 16, 11.0, 2.6, INK),
+            D(16, 16, 3.2, INK),
         ]),
         ("icon_aov_plan", "Octane", [
-            R(6, 8, 15, 11, ORANGE_D, r=1.5),
-            R(8.5, 11, 15, 11, ORANGE, r=1.5),
-            R(11, 14, 15, 11, ORANGE_L, r=1.5),
+            R(7.0, 8.5, 14.5, 10, INK_DIM, r=1.5),
+            R(10.5, 12.5, 14.5, 10, INK, r=1.5),
         ]),
+        # --- Export (green) ------------------------------------------------
         ("icon_export_metadata", "Export", [
-            R(7, 5, 13, 18, GREEN, r=1.2),
-            R(9.5, 8.5, 8, 1.5, WHITE, r=0.7),
-            R(9.5, 11.5, 8, 1.5, WHITE, r=0.7),
-            R(9.5, 14.5, 5, 1.5, WHITE, r=0.7),
-            R(15.0, 15.5, 2.2, 6.0, WHITE),
-            P([(12.8, 21.0), (19.2, 21.0), (16.0, 25.5)], WHITE),
+            R(8, 4, 12, 15, INK, r=1.3),
+            R(10, 7, 8, 1.4, GREEN, r=0.7), R(10, 10, 8, 1.4, GREEN, r=0.7),
+            R(10, 13, 5, 1.4, GREEN, r=0.7),
+            R(14.7, 17, 2.6, 4.6, INK), P([(12.6, 21), (19.4, 21), (16, 26)], INK),
         ]),
         ("icon_export_osl", "Export", [
-            R(24.3, 7, 2.2, 18, GREEN_D, r=1.0),
-            L(7, 16, 24.3, 8, 1.8, GREEN),
-            L(7, 16, 24.3, 16, 1.8, GREEN),
-            L(7, 16, 24.3, 24, 1.8, GREEN),
-            D(7, 16, 2.8, GREEN),
+            R(24.5, 7.5, 2.0, 17, INK_DIM, r=1.0),
+            L(7.5, 16, 24, 8.5, 1.8, INK), L(7.5, 16, 24, 16, 1.8, INK),
+            L(7.5, 16, 24, 23.5, 1.8, INK),
+            D(7.5, 16, 2.8, INK),
         ]),
+        # --- Diagnostics (gray) --------------------------------------------
         ("icon_diagnostics", "Diagnostics", [
-            L(4, 16, 11, 16, 2.4, GRAY),
-            L(11, 16, 14, 8, 2.4, GRAY),
-            L(14, 8, 18, 24, 2.4, GRAY),
-            L(18, 24, 21, 16, 2.4, GRAY),
-            L(21, 16, 28, 16, 2.4, GRAY),
+            L(5, 16, 11, 16, 2.4, INK), L(11, 16, 14, 8.5, 2.4, INK),
+            L(14, 8.5, 18, 23.5, 2.4, INK), L(18, 23.5, 21, 16, 2.4, INK),
+            L(21, 16, 27, 16, 2.4, INK),
+        ]),
+        # --- Help (cyan) ----------------------------------------------------
+        ("icon_about", "Help", [
+            D(16, 10.5, 2.1, INK),
+            R(14.5, 14, 3.0, 8.5, INK, r=1.3),
+        ]),
+        ("icon_control_panel", "Help", [
+            R(6.5, 9.5, 19, 2.2, INK_DIM, r=1.1), R(6.5, 15, 19, 2.2, INK_DIM, r=1.1),
+            R(6.5, 20.5, 19, 2.2, INK_DIM, r=1.1),
+            D(11, 10.6, 2.8, INK), D(21, 16.1, 2.8, INK), D(9, 21.6, 2.8, INK),
         ]),
     ]
+
+
+def _icons():
+    """Return ``[(name, section, shapes)]`` with the section tile prepended."""
+    out = []
+    for name, section, glyph in _glyphs():
+        accent = SECTION_COLOR[section]
+        out.append((name, section, [_tile(accent)] + glyph))
+    return out
 
 
 # --- rasterizer (supersampled, premultiplied downsample) --------------------
@@ -324,12 +348,12 @@ def _png_chunk(tag, data):
             + struct.pack(">I", zlib.crc32(tag + data) & 0xffffffff))
 
 
-def write_png(path, size, rgba):
+def write_png(path, width, height, rgba):
     sig = b"\x89PNG\r\n\x1a\n"
-    ihdr = struct.pack(">IIBBBBB", size, size, 8, 6, 0, 0, 0)  # 8-bit RGBA
-    stride = size * 4
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)  # 8-bit RGBA
+    stride = width * 4
     raw = bytearray()
-    for y in range(size):
+    for y in range(height):
         raw.append(0)  # filter type 0 (None)
         raw += rgba[y * stride:(y + 1) * stride]
     idat = zlib.compress(bytes(raw), 9)
@@ -383,6 +407,68 @@ def render_svg(shapes):
     return "\n".join(lines) + "\n"
 
 
+# --- preview sheet ----------------------------------------------------------
+_SHEET_COLS = 4
+_SHEET_BG = (38, 38, 42, 255)
+
+
+def render_sheet_svg(icons):
+    """A labelled vector contact sheet of every icon."""
+    cellw, cellh, pad, icon = 100, 86, 14, 56
+    scale = icon / float(CANVAS)
+    rows = (len(icons) + _SHEET_COLS - 1) // _SHEET_COLS
+    width = pad * 2 + _SHEET_COLS * cellw
+    height = pad * 2 + rows * cellh
+    parts = [
+        '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" '
+        'viewBox="0 0 %d %d">' % (width, height, width, height),
+        '<rect x="0" y="0" width="%d" height="%d" fill="%s"/>' % (
+            width, height, _hex(_SHEET_BG)),
+        "<!-- generated by tools/generate_icons.py - icon preview sheet -->",
+    ]
+    for idx, (name, _section, shapes) in enumerate(icons):
+        col, row = idx % _SHEET_COLS, idx // _SHEET_COLS
+        ix = pad + col * cellw + (cellw - icon) / 2.0
+        iy = pad + row * cellh + 6
+        parts.append('<g transform="translate(%g,%g) scale(%g)">' % (ix, iy, scale))
+        parts += [_svg_shape(s) for s in shapes]
+        parts.append('</g>')
+        parts.append(
+            '<text x="%g" y="%g" text-anchor="middle" font-family="monospace" '
+            'font-size="9" fill="#C8C8CC">%s</text>' % (
+                pad + col * cellw + cellw / 2.0, iy + icon + 14,
+                name.replace("icon_", "")))
+    parts.append('</svg>')
+    return "\n".join(parts) + "\n"
+
+
+def render_sheet_png(icons):
+    """Composite every icon (64px) onto a dark grid. Returns ``(w, h, rgba)``."""
+    cell, pad, icon = 80, 12, 64
+    rows = (len(icons) + _SHEET_COLS - 1) // _SHEET_COLS
+    width = pad * 2 + _SHEET_COLS * cell
+    height = pad * 2 + rows * cell
+    buf = bytearray(width * height * 4)
+    for i in range(0, len(buf), 4):
+        buf[i:i + 4] = bytes(_SHEET_BG)
+    for idx, (_name, _section, shapes) in enumerate(icons):
+        col, row = idx % _SHEET_COLS, idx // _SHEET_COLS
+        rgba = render_png_bytes(shapes, icon)
+        ox = pad + col * cell + (cell - icon) // 2
+        oy = pad + row * cell + (cell - icon) // 2
+        for y in range(icon):
+            for x in range(icon):
+                si = (y * icon + x) * 4
+                sa = rgba[si + 3] / 255.0
+                if sa <= 0:
+                    continue
+                di = ((oy + y) * width + (ox + x)) * 4
+                for ch in range(3):
+                    buf[di + ch] = int(rgba[si + ch] * sa + buf[di + ch] * (1.0 - sa) + 0.5)
+                buf[di + 3] = 255
+    return width, height, bytes(buf)
+
+
 def main(argv):
     icons = _icons()
     if "--list" in argv:
@@ -395,18 +481,24 @@ def main(argv):
 
     print("Generating %d icons -> %s" % (len(icons), os.path.relpath(ICON_DIR, REPO_ROOT)))
     for name, section, shapes in icons:
-        svg_path = os.path.join(SRC_DIR, name + ".svg")
-        with open(svg_path, "w") as fh:
+        with open(os.path.join(SRC_DIR, name + ".svg"), "w") as fh:
             fh.write(render_svg(shapes))
         for size in PNG_SIZES:
             suffix = "" if size == CANVAS else "_%d" % size
             png_path = os.path.join(PNG_DIR, "%s%s.png" % (name, suffix))
-            write_png(png_path, size, render_png_bytes(shapes, size))
+            write_png(png_path, size, size, render_png_bytes(shapes, size))
         png32 = os.path.join(PNG_DIR, name + ".png")
         print("  %-26s [%-11s] svg + png(%s)  %d B" % (
             name, section, "/".join(str(s) for s in PNG_SIZES),
             os.path.getsize(png32)))
-    print("Done. SVG sources in src/, PNG rasters in png/.")
+
+    with open(os.path.join(ICON_DIR, "icon_sheet.svg"), "w") as fh:
+        fh.write(render_sheet_svg(icons))
+    sheet_w, sheet_h, sheet_rgba = render_sheet_png(icons)
+    write_png(os.path.join(ICON_DIR, "icon_sheet.png"), sheet_w, sheet_h, sheet_rgba)
+    print("Wrote preview sheet: icon_sheet.svg + icon_sheet.png (%dx%d)." % (
+        sheet_w, sheet_h))
+    print("Done. SVG sources in src/, PNG rasters in png/, sheet in icons/.")
     return 0
 
 
