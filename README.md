@@ -1,5 +1,8 @@
 # OpenRelativity for Cinema 4D (`OpenRelativity_c4d`)
 
+**v0.1 prototype — C4D-native relativistic visualization scaffold with
+Octane-ready adapter architecture.**
+
 A **Cinema 4D 2023+ native** prototype for **artist-facing relativistic
 visualization** — simulating how objects look when they (or the observer) move
 at an appreciable fraction of the speed of light: length contraction, the
@@ -15,14 +18,15 @@ physically-based renderer (Octane), rather than a real-time game engine. See
 [`docs/ORIGINAL_OPENRELATIVITY_REFERENCE.md`](docs/ORIGINAL_OPENRELATIVITY_REFERENCE.md)
 for the concept-by-concept mapping.
 
-> **Status: Phase 1 — in progress.**
+> **Status: v0.1 prototype.**
 > The plugin loads in Cinema 4D 2023+ and registers *Extensions* commands to set
 > up the relativity **controller**, an observer **camera**, and per-**object**
 > settings, and to preview the **Doppler**, **searchlight**, and **Lorentz**
 > effects (plus a one-click **Create Test Scene** + **Apply All Previews**). The
 > pure-Python physics core (`openrelativity_c4d.core`) is implemented and
-> unit-tested. The previews are artistic approximations; Octane output is a later
-> phase.
+> unit-tested. The previews are **artistic approximations** (no physical
+> correctness claimed); Octane support is adapter/scaffolding-level only. Release
+> notes: [`docs/V0_1_RELEASE_NOTES.md`](docs/V0_1_RELEASE_NOTES.md).
 >
 > **New here?** Follow [`docs/QUICKSTART.md`](docs/QUICKSTART.md) (5 minutes).
 > Full reference: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md); plan:
@@ -30,6 +34,19 @@ for the concept-by-concept mapping.
 > next steps: [`TODO.md`](TODO.md).
 
 ---
+
+## Disclaimer (not affiliated)
+
+This is an **independent, unofficial** project. It is **not affiliated with,
+endorsed by, or sponsored by** the MIT Game Lab / MIT, OTOY (Octane), or Maxon.
+It is **inspired by** the MIT Game Lab's
+[OpenRelativity](https://github.com/MITGameLab/OpenRelativity); no upstream source
+is included here. "Cinema 4D" and "Maxon" are trademarks of Maxon Computer GmbH;
+"Octane" is a trademark of OTOY Inc.; "OpenRelativity" originates from the MIT
+Game Lab. All trademarks belong to their respective owners and are used only for
+identification. The relativistic effects here are **approximations** for
+visualization — see [Limitations](#limitations); **no physical correctness is
+claimed**.
 
 ## Why not just port the Unity project?
 
@@ -128,6 +145,40 @@ Planned (later phases — see [`docs/ROADMAP.md`](docs/ROADMAP.md)):
 See [`docs/PROJECT_CHARTER.md`](docs/PROJECT_CHARTER.md) for the full
 in-scope / out-of-scope lists.
 
+## Octane integration status
+
+Octane support is **optional, isolated, and adapter/scaffolding-level only** in
+v0.1 — **this is not a full Octane integration**. What exists:
+
+- Safe, ID-independent **detection** + an *Octane Status* report.
+- A material adapter that currently **falls back to Standard materials** (no
+  native Octane material is created yet).
+- An **AOV plan** documenting **manual** setup (no automatic AOV creation).
+- An **experimental OSL camera** generator (a placeholder file; **not** wired
+  into Octane).
+
+The plugin **imports and runs fully without Octane installed**. Details and the
+data still needed for native support:
+[`docs/OCTANE_INTEGRATION.md`](docs/OCTANE_INTEGRATION.md),
+[`docs/AOV_PIPELINE.md`](docs/AOV_PIPELINE.md),
+[`docs/OSL_CAMERA_EXPERIMENTS.md`](docs/OSL_CAMERA_EXPERIMENTS.md).
+
+## Limitations
+
+The effects are **artistic approximations, not physics-grade** and **not** full
+ray-traced relativistic rendering: RGB (not spectral) Doppler, an artistic
+searchlight multiplier, an axis-aligned Lorentz contraction (**not** Terrell
+rotation), and no light-travel-time sampling in the previews. Values are
+per-object/pivot-based. Full list:
+[`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md).
+
+## Roadmap
+
+v0.1 is the prototype scaffold. Planned next steps include registered plugin IDs,
+real `TagData`/`ObjectData` plugins, better velocity-direction handling, native
+Octane materials/AOVs, and a C++ migration of the math core. See
+[`docs/ROADMAP.md`](docs/ROADMAP.md) and the prioritized [`TODO.md`](TODO.md).
+
 ## Repository layout
 
 ```
@@ -214,6 +265,19 @@ Octane, ID replacement) are in [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
 > placeholders**. Obtain unique IDs from the Maxon Plugin Café and replace them
 > before distributing the plugin.
 
+## Quickstart
+
+After installing, the fastest path (≈5 minutes) is via the **Control Panel**
+(*Extensions > OpenRelativity C4D: Control Panel*):
+
+1. **Create Test Scene** — adds a controller, camera, four moving test objects,
+   and a light.
+2. **Apply Relativity Material Preview** (and/or **Create Lorentz Preview
+   Copies**).
+3. Render with **Standard** or **Physical**.
+
+Full walkthrough with expected results: [`docs/QUICKSTART.md`](docs/QUICKSTART.md).
+
 ## Development & tests
 
 The physics core runs without Cinema 4D. From the repository root:
@@ -233,8 +297,12 @@ later). The `c4d/` layer is tested manually inside Cinema 4D. See
 ## Attribution & license
 
 This project is conceptually inspired by **MIT Game Lab — OpenRelativity**
-(© 2013 Massachusetts Institute of Technology, MIT License). The upstream
-license is preserved in [`MITLicense.md`](MITLicense.md). The original Unity/C#
-source is **not** included here; this is an independent Cinema 4D-native work.
-Licensing for this repository is to be confirmed by the maintainer; the MIT
-License is the natural default given the lineage.
+(© 2013 Massachusetts Institute of Technology, MIT License). The upstream license
+is preserved in [`MITLicense.md`](MITLicense.md) **for attribution only — it is
+not this repository's license**, and no upstream source is included here.
+
+> ⚠️ **No license has been chosen for this repository yet.** Without a chosen
+> license, default copyright applies (all rights reserved) and others have no
+> distribution/modification rights. The maintainer must pick one — see
+> [`docs/LICENSE_DECISION_NEEDED.md`](docs/LICENSE_DECISION_NEEDED.md). A
+> `LICENSE` file should be added before any public release.

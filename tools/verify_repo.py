@@ -79,6 +79,8 @@ EXPECTED_DOCS = [
     "docs/TEST_PLAN_C4D.md",
     "docs/TEST_PLAN_OCTANE.md",
     "docs/KNOWN_LIMITATIONS.md",
+    "docs/LICENSE_DECISION_NEEDED.md",
+    "docs/V0_1_RELEASE_NOTES.md",
 ]
 
 # Directories that must never import Cinema 4D's `c4d` module.
